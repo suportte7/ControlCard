@@ -12,7 +12,7 @@
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     <link rel="icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f59e0b' rx='20'/%3E%3Ctext x='50' y='65' font-size='45' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'%3ECC%3C/text%3E%3C/svg%3E">
     
-    <title>ControlCard MAX - v1.8.0</title>
+    <title>ControlCard MAX - v1.9.0</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
     <style>
         /* TEMAS COM CORES SUAVES */
@@ -88,7 +88,6 @@
         .parc-badge { background: var(--primary); color: #000; padding: 1px 4px; border-radius: 4px; font-size: 0.6rem; font-weight: 800; margin-left: 4px; display: inline-block;}
         [data-theme="nubank"] .parc-badge, [data-theme="ocean"] .parc-badge, [data-theme="nature"] .parc-badge, [data-theme="light"] .parc-badge { color: #fff; }
 
-        /* ARVORES COMPACTAS */
         .tree-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 4px; overflow: hidden; transition: 0.2s; }
         .tree-header { padding: 5px 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
         .tree-person-info { display: flex; align-items: center; gap: 8px; }
@@ -115,17 +114,10 @@
         .dash-tab-btn { flex: 1; padding: 6px; border: none; background: transparent; color: var(--text-light); font-weight: 700; border-radius: 6px; cursor: pointer; font-size: 0.75rem;}
         .dash-tab-btn.active { background: var(--primary); color: var(--bg); }
 
-        /* FORMATACAO DE INPUTS */
         .form-group { margin-bottom: 12px; width: 100%; box-sizing: border-box;}
         .form-group label { display: block; font-size: 0.7rem; margin-bottom: 4px; font-weight: 800; color: var(--text-light); text-transform: uppercase; text-align: center; letter-spacing: 0.05em;}
-        .form-input { 
-            width: 100%; padding: 12px; border: 2px solid var(--border); 
-            border-radius: 10px; font-size: 1rem; font-weight: 700; 
-            background: var(--bg); color: var(--text); outline: none; 
-            box-sizing: border-box; text-align: center; transition: 0.2s;
-        }
+        .form-input { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 10px; font-size: 1rem; font-weight: 700; background: var(--bg); color: var(--text); outline: none; box-sizing: border-box; text-align: center; transition: 0.2s; }
         .form-input:focus { border-color: var(--primary); background: var(--surface); }
-        
         .up-text { text-transform: uppercase; }
 
         .input-destaque-despesa { font-size: 1.4rem !important; color: var(--danger) !important; font-weight: 900 !important; padding: 14px 10px !important; border-color: rgba(239,68,68,0.3) !important; background: rgba(239,68,68,0.05) !important; }
@@ -204,7 +196,7 @@
         .edicao-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
         .pagador-block { background: var(--surface); padding: 14px; border-radius: 12px; border: 2px solid var(--border); margin-bottom: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
 
-        /* ===== MODERNIZAÇÃO VISUAL v2 ===== */
+        /* ===== MODERNIZAÇÃO VISUAL ===== */
         :root { --radius: 16px; --shadow: 0 4px 20px rgba(0,0,0,.10); --shadow-lg: 0 12px 40px rgba(0,0,0,.25); }
         body { font-family: "Inter", -apple-system, "Segoe UI", Roboto, sans-serif; letter-spacing: -.01em; }
         .card { border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); border: 1px solid var(--border); transition: transform .2s, box-shadow .2s; }
@@ -226,408 +218,469 @@
         .calc-btn:active { transform: scale(.93); }
         .cat-badge, .parc-badge { border-radius: 999px; }
         ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-        #toast-app { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translate(-50%, 30px); opacity: 0; pointer-events: none; z-index: 99999; max-width: 90vw; padding: 14px 20px; border-radius: 14px; font-weight: 700; font-size: .95rem; color: #fff; background: var(--success); box-shadow: var(--shadow-lg); transition: all .3s cubic-bezier(.2,.8,.2,1); }
+        #toast-app { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translate(-50%, 30px); opacity: 0; pointer-events: none; z-index: 99999; max-width: 90vw; padding: 14px 20px; border-radius: 14px; font-weight: 700; font-size: .95rem; color: #fff; background: var(--success); box-shadow: var(--shadow-lg); transition: all .3s cubic-bezier(.2,.8,.2,1); text-align: center; }
         #toast-app.erro { background: var(--danger); }
         #toast-app.show { opacity: 1; transform: translate(-50%, 0); }
         @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+        /* ===== TELA DE BLOQUEIO (PIN) ===== */
+        #tela-lock { position: fixed; inset: 0; background: var(--bg); z-index: 999999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .pin-dots-container { display: flex; gap: 15px; margin-bottom: 40px; }
+        .pin-dot { width: 18px; height: 18px; border-radius: 50%; border: 3px solid var(--border); transition: 0.2s; background: transparent; }
+        .pin-dot.filled { background: var(--primary); border-color: var(--primary); box-shadow: 0 0 10px var(--primary); }
+        .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 300px; }
+        .pin-kbtn { width: 70px; height: 70px; border-radius: 35px; border: none; background: var(--surface); color: var(--text); font-size: 1.8rem; font-weight: bold; cursor: pointer; box-shadow: var(--shadow); transition: 0.1s; display: flex; align-items: center; justify-content: center; }
+        .pin-kbtn:active { transform: scale(0.9); background: var(--primary); color: #000; }
+        .pin-kbtn.btn-action { font-size: 1.1rem; background: transparent; box-shadow: none; border: 2px solid transparent;}
+        .pin-kbtn.btn-action:active { border-color: var(--border); background: transparent; color: var(--text); }
+        #app-wrapper { display: none; opacity: 0; transition: opacity 0.3s ease; }
     </style>
 </head>
 <body>
 
-<div class="theme-btn" style="right: 48px; background: transparent; border: 1px solid var(--border); color: var(--text-light);" onclick="mudarTela('config','Ajustes do Sistema')" title="Ajustes do Sistema"><span class="material-icons-outlined" style="font-size:1.1rem;">settings</span></div>
-<div class="theme-btn" onclick="ciclarTema()" title="Trocar Tema"><span class="material-icons-outlined" style="font-size:1.1rem;">palette</span></div>
-
-<div class="modal-overlay" id="modal-overlay" onclick="fecharModais()"></div>
-
-<div class="dock-wrapper">
-    <div class="dock" id="dock">
-        <div class="dock-item active-icon" id="icon-dashboard" onclick="mudarTela('dashboard','Visão Geral')"><span class="material-icons-outlined">space_dashboard</span></div>
-        <div class="dock-item" id="icon-calendario" onclick="mudarTela('calendario','Calendário')"><span class="material-icons-outlined">event_note</span></div>
-        <button class="dock-main" onclick="abrirModalLancamento()"><span class="material-icons-outlined">add</span></button>
-        <div class="dock-item" id="icon-extrato" onclick="mudarTela('extrato','Cobranças')"><span class="material-icons-outlined">receipt_long</span></div>
-    </div>
-</div>
-
-<!-- CALCULADORA MODAL -->
-<div class="calc-modal" id="modal-calc">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-        <h3 style="margin:0; color:var(--primary); font-size:1.1rem; text-transform: uppercase;">Calculadora Rápida</h3>
-        <button class="btn-small" style="padding: 6px 12px; border:none; background:var(--bg);" onclick="fecharCalc()"><span class="material-icons-outlined">close</span></button>
-    </div>
-    <div id="calc-display" style="background:var(--bg); border:2px solid var(--border); padding:16px; border-radius:12px; font-size:1.8rem; text-align:right; margin-bottom:15px; font-weight: 800;">0</div>
-    <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:8px;">
-        <button class="calc-btn" onclick="cBtn('7')">7</button><button class="calc-btn" onclick="cBtn('8')">8</button><button class="calc-btn" onclick="cBtn('9')">9</button><button class="calc-btn" style="color:var(--danger); border-color:rgba(239,68,68,0.3);" onclick="cBtn('C')">C</button>
-        <button class="calc-btn" onclick="cBtn('4')">4</button><button class="calc-btn" onclick="cBtn('5')">5</button><button class="calc-btn" onclick="cBtn('6')">6</button><button class="calc-btn" style="color:var(--primary); border-color:var(--border);" onclick="cBtn('/')">÷</button>
-        <button class="calc-btn" onclick="cBtn('1')">1</button><button class="calc-btn" onclick="cBtn('2')">2</button><button class="calc-btn" onclick="cBtn('3')">3</button><button class="calc-btn" style="color:var(--primary); border-color:var(--border);" onclick="cBtn('*')">×</button>
-        <button class="calc-btn" onclick="cBtn('.')">.</button><button class="calc-btn" onclick="cBtn('0')">0</button><button class="calc-btn" style="color:var(--primary); border-color:var(--border);" onclick="cBtn('-')">-</button><button class="calc-btn" style="color:var(--primary); border-color:var(--border);" onclick="cBtn('+')">+</button>
-        <button class="btn btn-success" style="grid-column: span 4; font-size:1.1rem; margin-top:8px; padding: 16px;" onclick="cConfirmar()"><span class="material-icons-outlined" style="font-size:1.4rem;">done</span> USAR VALOR</button>
-    </div>
-</div>
-
-<!-- MODAL LANÇAMENTO -->
-<div class="modal" id="modal-lancamento">
-    <button class="modal-close-btn" onclick="fecharModais()"><span class="material-icons-outlined" style="font-size:1.2rem;">close</span></button>
-    <div class="modal-drag"></div>
-    <div class="modal-tabs" style="margin-right: 30px;">
-        <button class="tab-btn active" id="tab-desp" onclick="trocarAbaModal('desp')">🛒 NOVA COMPRA</button>
-        <button class="tab-btn" id="tab-rec" onclick="trocarAbaModal('rec')">💰 RECEBIMENTO</button>
-    </div>
-
-    <!-- ABA DESPESA -->
-    <div id="form-desp">
-        <div class="form-group">
-            <label>Cartão Utilizado</label>
-            <select id="cartao" class="form-input input-destaque-cartao up-text"></select>
-        </div>
-        
-        <div class="form-group">
-            <label>Descrição Geral da Compra (Opcional)</label>
-            <input type="text" id="desc" class="form-input" placeholder="Ex: Compras no Supermercado">
-        </div>
-        
-        <div class="form-group">
-            <label>Categoria</label>
-            <select id="categoria-compra" class="form-input up-text"></select>
-        </div>
-
-        <div class="edicao-field-row">
-            <div class="form-group" style="margin-bottom:0;">
-                <label>Data Exata (Compra)</label>
-                <input type="date" id="data-compra-exata" class="form-input" onchange="atualizarMesRefCompra()">
-            </div>
-            <div class="form-group" style="margin-bottom:0;">
-                <label>Mês na Fatura (1ª Parc)</label>
-                <input type="month" id="data-compra-ref" class="form-input">
-            </div>
-        </div>
-
-        <div class="form-group" style="margin-top: 15px;">
-            <label>📸 Anexar Foto (Recibo/Nota)</label>
-            <label for="file-desp" class="comprovante-btn">
-                <span class="material-icons-outlined">add_a_photo</span> Tocar para Fotografar
-            </label>
-            <input type="file" id="file-desp" accept="image/*" capture="environment" style="display:none;" onchange="processarImagem(this, 'preview-desp', 'btn-rm-desp', 'base64Desp')">
-            <img id="preview-desp" class="img-preview">
-            <button class="btn-small" id="btn-rm-desp" style="display:none; margin: 10px auto 0; width: 100%; color: var(--danger); border-color: var(--danger);" onclick="removerImagem('preview-desp', 'file-desp', 'btn-rm-desp', 'base64Desp')">🗑️ REMOVER FOTO</button>
-        </div>
-        
-        <div style="margin: 25px 0 15px; border-top: 2px dashed var(--border); padding-top: 15px;">
-            <label style="font-size: 0.85rem; font-weight: 900; color: var(--primary); text-transform: uppercase; text-align: center; display: block;">👇 Divisão da Compra 👇</label>
-        </div>
-
-        <div id="pagadores-container"></div>
-
-        <button class="btn btn-outline" style="margin-bottom:20px; border-style: dashed; padding: 14px; color: var(--text);" onclick="addPagador()">
-            <span class="material-icons-outlined" style="font-size:1.4rem;">person_add</span> ADICIONAR OUTRA PESSOA
-        </button>
-
-        <button class="btn btn-primary" style="padding: 16px; font-size: 1.1rem;" onclick="salvarCompra()"><span class="material-icons-outlined">check_circle</span> FINALIZAR LANÇAMENTO</button>
-    </div>
-
-    <!-- ABA RECEBIMENTO -->
-    <div id="form-rec" style="display: none;">
-        <div class="form-group">
-            <label>Quem está pagando?</label>
-            <select id="pag-pessoa" class="form-input up-text" style="font-size: 1.2rem; color: var(--primary); border-color: var(--primary);"></select>
-        </div>
-        
-        <div class="form-group">
-            <label>Valor Recebido (R$)</label>
-            <input type="number" id="pag-valor" class="form-input input-destaque-receita" step="0.01" placeholder="0.00">
-        </div>
-
-        <div class="form-group">
-            <label>O que é este recebimento?</label>
-            <input type="text" id="pag-desc" class="form-input" placeholder="Ex: Acerto da fatura ou PIX Fulano">
-        </div>
-        
-        <div class="edicao-field-row">
-            <div class="form-group" style="margin-bottom:0;">
-                <label>Data que o $$ caiu</label>
-                <input type="date" id="pag-data" class="form-input">
-            </div>
-            <div class="form-group" style="margin-bottom:0;">
-                <label>Mês de Referência</label>
-                <input type="month" id="pag-data-ref" class="form-input">
-            </div>
-        </div>
-
-        <div class="form-group" style="margin-top: 15px;">
-            <label>📸 Anexar Comprovante de PIX</label>
-            <label for="file-pag" class="comprovante-btn" style="border-color: var(--success); color: var(--success); background: rgba(16,185,129,0.05);">
-                <span class="material-icons-outlined">add_a_photo</span> Tocar para Fotografar
-            </label>
-            <input type="file" id="file-pag" accept="image/*" style="display:none;" onchange="processarImagem(this, 'preview-pag', 'btn-rm-pag', 'base64Pag')">
-            <img id="preview-pag" class="img-preview">
-            <button class="btn-small" id="btn-rm-pag" style="display:none; margin: 10px auto 0; width: 100%; color: var(--danger); border-color: var(--danger);" onclick="removerImagem('preview-pag', 'file-pag', 'btn-rm-pag', 'base64Pag')">🗑 REMOVER FOTO</button>
-        </div>
-
-        <button class="btn btn-success" style="padding: 16px; font-size: 1.1rem; margin-top: 20px;" onclick="registrarBaixa()"><span class="material-icons-outlined">price_check</span> CONFIRMAR RECEBIMENTO</button>
-    </div>
-</div>
-
-<!-- MODAL EDIÇÃO DIRETA -->
-<div class="modal" id="modal-edicao">
-    <button class="modal-close-btn" onclick="fecharModais()"><span class="material-icons-outlined" style="font-size:1.1rem;">close</span></button>
-    <div class="modal-drag"></div>
-    <h3 style="margin: 0 0 20px; color: var(--primary); font-size: 1.3rem; border-bottom: 2px solid var(--border); padding-bottom: 15px; text-transform: uppercase; text-align: center; font-weight: 900;" id="edit-title">EDITAR LANÇAMENTO</h3>
-    
-    <input type="hidden" id="edit-id">
-    <input type="hidden" id="edit-tipo">
-
-    <div class="form-group" style="margin-bottom: 20px;">
-        <label id="edit-label-desc">DESCRIÇÃO</label>
-        <input type="text" id="edit-desc" class="form-input" style="font-size: 1.1rem; text-transform: none;">
+<!-- TELA DE BLOQUEIO (COFRE) -->
+<div id="tela-lock" style="display: none;">
+    <div style="text-align: center; margin-bottom: 30px;">
+        <div class="brand-mark" style="width: 50px; height: 50px; font-size: 1.5rem; margin: 0 auto 15px;">CC</div>
+        <h2 id="lock-title" style="color: var(--text); margin: 0; text-transform: uppercase; font-weight: 900; letter-spacing: 1px;">DIGITE A SENHA</h2>
+        <p id="lock-subtitle" style="color: var(--text-light); font-size: 0.8rem; margin: 5px 0 0;">Acesso restrito</p>
     </div>
     
-    <!-- NOVO BLOCO INTELIGENTE DE PARCELAS -->
-    <div class="edicao-field-row" id="box-edit-parcelas" style="display:none; background: rgba(59,130,246,0.05); padding: 10px; border-radius: 10px; border: 1px dashed #3b82f6; margin-bottom: 20px;">
-        <div class="form-group" style="margin-bottom:0;">
-            <label style="color:#3b82f6;">Nº NESTE MÊS</label>
-            <input type="number" id="edit-parc-atual" class="form-input" style="font-size: 1.4rem; font-weight: 900; color: #3b82f6; border-color: #3b82f6;">
-        </div>
-        <div class="form-group" style="margin-bottom:0;">
-            <label style="color:#3b82f6;">DE UM TOTAL DE</label>
-            <input type="number" id="edit-parc-total" class="form-input" style="font-size: 1.4rem; font-weight: 900; border-color: #3b82f6;">
-        </div>
-        <input type="hidden" id="edit-parc-original-key">
+    <div class="pin-dots-container">
+        <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
     </div>
-
-    <div class="edicao-field-row">
-        <div class="form-group" style="margin-bottom:0;"><label>VALOR DA PARCELA (R$)</label><input type="number" id="edit-valor" class="form-input" step="0.01" style="font-size: 1.4rem; font-weight: 900; padding: 14px;"></div>
-        <div class="form-group" style="margin-bottom:0;" id="box-edit-cat"><label>CATEGORIA</label><select id="edit-cat" class="form-input up-text"></select></div>
+    
+    <div class="keypad">
+        <button class="pin-kbtn" onclick="addPin('1')">1</button>
+        <button class="pin-kbtn" onclick="addPin('2')">2</button>
+        <button class="pin-kbtn" onclick="addPin('3')">3</button>
+        <button class="pin-kbtn" onclick="addPin('4')">4</button>
+        <button class="pin-kbtn" onclick="addPin('5')">5</button>
+        <button class="pin-kbtn" onclick="addPin('6')">6</button>
+        <button class="pin-btn" onclick="addPin('7')">7</button>
+        <button class="pin-kbtn" onclick="addPin('8')">8</button>
+        <button class="pin-kbtn" onclick="addPin('9')">9</button>
+        <button class="pin-kbtn btn-action" style="color: var(--danger);" onclick="clearPin()">LIMPAR</button>
+        <button class="pin-kbtn" onclick="addPin('0')">0</button>
+        <button class="pin-kbtn btn-action" style="color: var(--primary);" onclick="backPin()"><span class="material-icons-outlined" style="font-size: 2rem;">backspace</span></button>
     </div>
-
-    <div class="edicao-field-row">
-        <div class="form-group" style="margin-bottom:0;"><label>PESSOA</label><select id="edit-pessoa" class="form-input up-text" style="color: var(--primary); border-color: var(--primary);"></select></div>
-        <div class="form-group" style="margin-bottom:0;" id="box-edit-cartao"><label>CARTÃO</label><select id="edit-cartao" class="form-input up-text"></select></div>
-    </div>
-
-    <div class="edicao-field-row">
-        <div class="form-group" style="margin-bottom:0;"><label id="edit-label-data-real">DATA EXATA</label><input type="date" id="edit-data-real" class="form-input"></div>
-        <div class="form-group" style="margin-bottom:0;" id="box-edit-fatura"><label>MÊS REFERÊNCIA</label><input type="month" id="edit-data-ref" class="form-input"></div>
-    </div>
-
-    <div class="form-group" id="box-edit-comprovante" style="margin-top: 20px; display: none;">
-        <label>📸 COMPROVANTE SALVO</label>
-        <img id="edit-preview-comp" class="img-preview" style="display:block; max-height: 250px; margin: 0 auto;">
-    </div>
-
-    <div style="display: flex; gap: 15px; margin-top: 25px;">
-        <button class="btn btn-danger" style="flex: 1; padding: 16px;" onclick="excluirLançamentoModal()"><span class="material-icons-outlined">delete_forever</span> APAGAR</button>
-        <button class="btn btn-primary" style="flex: 2; padding: 16px;" onclick="salvarEdicaoModal()"><span class="material-icons-outlined">save</span> SALVAR</button>
+    <div id="lock-cancel-box" style="margin-top: 30px; display: none;">
+        <button class="btn btn-outline" onclick="cancelarSetupPin()">CANCELAR CONFIGURAÇÃO</button>
     </div>
 </div>
 
-<div class="app-container">
-    <div class="page-header">
-        <div class="brand-line">
-            <div class="brand-mark">CC</div>
-            <span class="brand-name">ControlCard <span class="v-badge" id="app-versao-badge">v1.8.0</span>
-                <span id="cloud-status-icon" class="material-icons-outlined cloud-status" title="Sincronização">cloud_off</span>
-            </span>
-        </div>
-        <h2 id="page-title">Visão Geral</h2>
-        <p id="page-subtitle">Acompanhe quem deve e faturas abertas</p>
-    </div>
+<!-- ENVELOPE PRINCIPAL DO APLICATIVO -->
+<div id="app-wrapper">
 
-    <!-- TELA 1: DASHBOARD -->
-    <div id="tela-dashboard" class="tela">
-        <div class="form-group">
-            <select id="dash-filtro-global" class="form-input up-text" style="font-weight: 900; color: var(--primary); border-color: var(--primary); font-size: 0.95rem; padding: 10px;" onchange="mudouFiltroDash()"></select>
-        </div>
-        <div id="dash-custom-dates" class="date-custom-grid" style="display:none;">
-            <div><label style="font-size:0.55rem; margin-bottom:2px;">INÍCIO</label><input type="date" id="dash-dt-ini" onchange="atualizarSaldos()"></div>
-            <div><label style="font-size:0.55rem; margin-bottom:2px;">FIM</label><input type="date" id="dash-dt-fim" onchange="atualizarSaldos()"></div>
-        </div>
+    <div class="theme-btn" style="right: 48px; background: transparent; border: 1px solid var(--border); color: var(--text-light);" onclick="mudarTela('config','Ajustes do Sistema')" title="Ajustes do Sistema"><span class="material-icons-outlined" style="font-size:1.1rem;">settings</span></div>
+    <div class="theme-btn" onclick="ciclarTema()" title="Trocar Tema"><span class="material-icons-outlined" style="font-size:1.1rem;">palette</span></div>
 
-        <div class="metric-grid">
-            <div class="metric"><small>Lançado</small><strong id="metric-despesas">R$ 0,00</strong></div>
-            <div class="metric"><small>Recebido</small><strong id="metric-pagamentos">R$ 0,00</strong></div>
-            <div class="metric"><small>Diferença</small><strong id="metric-saldo">R$ 0,00</strong></div>
-        </div>
+    <div class="modal-overlay" id="modal-overlay" onclick="fecharModais()"></div>
 
-        <div class="card">
-            <div class="dash-tabs">
-                <button class="dash-tab-btn active" id="btn-visao-pessoa" onclick="alternarVisaoDash('pessoa')">👤 POR PESSOA</button>
-                <button class="dash-tab-btn" id="btn-visao-cartao" onclick="alternarVisaoDash('cartao')">💳 POR CARTÃO</button>
-            </div>
-            <div id="lista-arvore-saldos"></div>
-        </div>
-
-        <div class="card" id="card-categorias" style="display:none;">
-            <h3 style="margin:0 0 10px; font-size:.8rem; text-transform:uppercase; color:var(--primary);">📊 Gastos por categoria</h3>
-            <div id="dash-categorias"></div>
+    <div class="dock-wrapper">
+        <div class="dock" id="dock">
+            <div class="dock-item active-icon" id="icon-dashboard" onclick="mudarTela('dashboard','Visão Geral')"><span class="material-icons-outlined">space_dashboard</span></div>
+            <div class="dock-item" id="icon-calendario" onclick="mudarTela('calendario','Calendário')"><span class="material-icons-outlined">event_note</span></div>
+            <button class="dock-main" onclick="abrirModalLancamento()"><span class="material-icons-outlined">add</span></button>
+            <div class="dock-item" id="icon-extrato" onclick="mudarTela('extrato','Cobranças')"><span class="material-icons-outlined">receipt_long</span></div>
         </div>
     </div>
 
-    <!-- TELA 2: CALENDÁRIO -->
-    <div id="tela-calendario" class="tela" style="display: none;">
-        <div class="card">
-            <div class="calendar-header">
-                <button class="cal-nav-btn" style="left:6px;" onclick="mudarMesCalendario(-1)"><span class="material-icons-outlined">chevron_left</span></button>
-                <div id="cal-mes-display" style="font-weight: 900; font-size: 1.1rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; cursor:pointer;" onclick="document.getElementById('cal-seletor-mes').showPicker()">SET/2026</div>
-                <input type="month" id="cal-seletor-mes" style="display:none;" onchange="irParaMesCalendario()">
-                <button class="cal-nav-btn" style="right:6px;" onclick="mudarMesCalendario(1)"><span class="material-icons-outlined">chevron_right</span></button>
-            </div>
-            
-            <div class="form-group" style="margin-bottom: 10px;">
-                <select id="cal-filtro-pessoa" class="form-input up-text" style="padding: 10px; font-size:0.85rem;" onchange="renderizarCalendario()"></select>
-            </div>
-            
-            <div id="cal-cartoes-chips" class="chip-container"></div>
-
-            <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 10px; padding: 8px; border-radius: 8px; background: var(--bg); border: 1px solid var(--primary);">
-                <span style="font-size: 0.7rem; color: var(--text-light); text-transform: uppercase; font-weight: 800;">TOTAL DESTE MÊS:</span>
-                <div id="cal-total-mes" style="font-size: 1.1rem; font-weight: 900; color: var(--primary); margin: 0;">R$ 0,00</div>
-            </div>
-
-            <div class="calendar-grid">
-                <div class="cal-day-header">Dom</div><div class="cal-day-header">Seg</div><div class="cal-day-header">Ter</div>
-                <div class="cal-day-header">Qua</div><div class="cal-day-header">Qui</div><div class="cal-day-header">Sex</div><div class="cal-day-header">Sáb</div>
-            </div>
-            <div class="calendar-grid" id="cal-grid-dias"></div>
+    <!-- CALCULADORA MODAL -->
+    <div class="calc-modal" id="modal-calc">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h3 style="margin:0; color:var(--primary); font-size:1.1rem; text-transform: uppercase;">Calculadora Rápida</h3>
+            <button class="btn-small" style="padding: 6px 12px; border:none; background:var(--bg);" onclick="fecharCalc()"><span class="material-icons-outlined">close</span></button>
         </div>
-
-        <div id="cal-dia-detalhe" class="dia-detalhe">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px; border-bottom: 1px dashed var(--border); padding-bottom: 8px;"><h4 id="cal-dia-titulo" style="margin:0; font-size: 0.9rem; color:var(--primary); text-transform: uppercase; font-weight: 900;">Detalhes do Dia</h4><button class="btn-small" onclick="fecharDetalheDia()" style="border:none; background:transparent; padding: 0;"><span class="material-icons-outlined" style="font-size: 1.3rem;">close</span></button></div>
-            <div id="cal-dia-lista"></div>
+        <div id="calc-display" style="background:var(--bg); border:2px solid var(--border); padding:16px; border-radius:12px; font-size:1.8rem; text-align:right; margin-bottom:15px; font-weight: 800;">0</div>
+        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:8px;">
+            <button class="calc-btn" onclick="cBtn('7')">7</button><button class="calc-btn" onclick="cBtn('8')">8</button><button class="calc-btn" onclick="cBtn('9')">9</button><button class="calc-btn" style="color:var(--danger); border-color:rgba(239,68,68,0.3);" onclick="cBtn('C')">C</button>
+            <button class="calc-btn" onclick="cBtn('4')">4</button><button class="calc-btn" onclick="cBtn('5')">5</button><button class="calc-btn" onclick="cBtn('6')">6</button><button class="calc-btn" style="color:var(--primary); border-color:var(--border);" onclick="cBtn('/')">÷</button>
+            <button class="calc-btn" onclick="cBtn('1')">1</button><button class="calc-btn" onclick="cBtn('2')">2</button><button class="calc-btn" onclick="cBtn('3')">3</button><button class="calc-btn" style="color:var(--primary); border-color:var(--border);" onclick="cBtn('*')">×</button>
+            <button class="calc-btn" onclick="cBtn('.')">.</button><button class="calc-btn" onclick="cBtn('0')">0</button><button class="calc-btn" style="color:var(--primary); border-color:var(--border);" onclick="cBtn('-')">-</button><button class="calc-btn" style="color:var(--primary); border-color:var(--border);" onclick="cBtn('+')">+</button>
+            <button class="btn btn-success" style="grid-column: span 4; font-size:1.1rem; margin-top:8px; padding: 16px;" onclick="cConfirmar()"><span class="material-icons-outlined" style="font-size:1.4rem;">done</span> USAR VALOR</button>
         </div>
     </div>
 
-    <!-- TELA 3: EXTRATO (COBRANÇAS) -->
-    <div id="tela-extrato" class="tela" style="display: none;">
-        <div class="card" style="padding: 10px;">
-            <h3 style="margin-bottom: 8px; font-size: 0.85rem; text-align: center; text-transform: uppercase; color: var(--primary);">Filtros de Cobrança</h3>
-            
-            <div class="form-group" style="margin-bottom: 8px;">
-                <select id="extrato-filtro-global" class="form-input up-text" style="font-weight: 800; padding: 10px; font-size: 0.9rem;" onchange="mudouFiltroExtrato()"></select>
-            </div>
-            <div id="extrato-custom-dates" class="date-custom-grid" style="display:none;">
-                <div><label style="font-size:0.55rem; margin-bottom:2px;">INÍCIO</label><input type="date" id="extrato-dt-ini" onchange="renderizarExtrato()"></div>
-                <div><label style="font-size:0.55rem; margin-bottom:2px;">FIM</label><input type="date" id="extrato-dt-fim" onchange="renderizarExtrato()"></div>
-            </div>
-
-            <div class="form-group" style="margin-bottom: 8px;">
-                <select id="extrato-pessoa" class="form-input up-text" style="padding:10px; font-size: 0.9rem; color: var(--primary); border-color: var(--primary);" onchange="renderizarExtrato()"></select>
-            </div>
-            
-            <div class="form-group" style="margin-bottom: 8px;">
-                <input type="search" id="extrato-busca" class="form-input" placeholder="🔍 Buscar por descrição..." oninput="renderizarExtrato()" style="padding:10px; font-size:.9rem;">
-            </div>
-            <div id="ext-cartoes-chips" class="chip-container" style="margin-bottom: 4px;"></div>
+    <!-- MODAL LANÇAMENTO -->
+    <div class="modal" id="modal-lancamento">
+        <button class="modal-close-btn" onclick="fecharModais()"><span class="material-icons-outlined" style="font-size:1.2rem;">close</span></button>
+        <div class="modal-drag"></div>
+        <div class="modal-tabs" style="margin-right: 30px;">
+            <button class="tab-btn active" id="tab-desp" onclick="trocarAbaModal('desp')">🛒 NOVA COMPRA</button>
+            <button class="tab-btn" id="tab-rec" onclick="trocarAbaModal('rec')">💰 RECEBIMENTO</button>
         </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border: 1px solid var(--border); padding: 10px 12px; border-radius: 10px; background: var(--surface);">
-            <div>
-                <strong id="contagem-selecionados" style="font-size: 0.85rem; color: var(--primary); text-transform: uppercase;">0 itens</strong>
-                <span id="total-selecionados" style="font-size: 1.1rem; font-weight: 900; display:block; margin-top: 2px;">R$ 0,00</span>
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-                <button class="btn-outline" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px;" onclick="selecionarTodasExtrato()">Selecionar Tudo</button>
-                <button class="btn-success" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px;" onclick="enviarZapSelecionados()"><span class="material-icons-outlined" style="font-size:1rem;">send</span> WHATSAPP</button>
-            </div>
-        </div>
-
-        <div id="lista-transacoes-container"></div>
-    </div>
-
-    <!-- TELA 4: AJUSTES -->
-    <div id="tela-config" class="tela" style="display: none;">
-        
-        <div class="section-label" style="color: var(--primary);">🛠 Ferramentas Extras</div>
-        <div class="card" style="border-color: var(--primary);">
-            <h3 style="color: var(--primary); font-size:0.9rem;"><span class="material-icons-outlined">layers</span> Gestão de Assinaturas e Parcelas</h3>
-            <p class="helper">Aumente, diminua a quantidade, mude o valor da assinatura ou cancele totalmente.</p>
-            <div class="form-group"><label>PESSOA:</label><select id="parc-pessoa" class="form-input up-text" style="padding:10px;" onchange="renderizarListaParcelamentos()"></select></div>
-            <div id="lista-parcelamentos-container" style="margin: 12px 0;"></div>
-        </div>
-        <div class="card">
-            <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">move_up</span> Repassar Dívida</h3>
-            <p class="helper">Transfira contas pendentes de uma pessoa para outra sem alterar faturas.</p>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                <div class="form-group" style="margin:0;"><label>TIRAR DE:</label><select id="transf-de" class="form-input up-text" style="padding:10px;" onchange="renderizarListaTransferencia()"></select></div>
-                <div class="form-group" style="margin:0;"><label>PASSAR PARA:</label><select id="transf-para" class="form-input up-text" style="padding:10px;"></select></div>
-            </div>
-            <div id="lista-transferencia-container" style="margin: 10px 0;"></div>
-            <button class="btn btn-outline" style="border-color: var(--primary); color: var(--primary); padding:10px;" onclick="executarTransferenciaInterativa()">Repassar Contas Marcadas</button>
-        </div>
-        <div class="section-label" style="color: var(--danger);">🔧 Correção Direta</div>
-        <div class="card" style="border: 1px solid var(--danger);">
-            <h3 style="color: var(--danger); font-size:0.9rem;"><span class="material-icons-outlined">build</span> Substituir em Massa</h3>
-            <p class="helper" style="margin-bottom: 10px;">Mova faturas inteiras de forma rápida.</p>
-            <div class="box-correcao">
-                <div class="box-title" style="color: var(--danger);">LADO 1: Onde está o erro?</div>
-                <div class="form-group"><label>SE A PESSOA FOR:</label><select id="corr-orig-pessoa" class="form-input up-text" style="padding:10px;"></select></div>
-                <div class="form-group" style="margin-bottom:0;"><label>E O CARTÃO FOR:</label><select id="corr-orig-cartao" class="form-input up-text" style="padding:10px;"></select></div>
-            </div>
-            <div class="box-correcao" style="border-color: var(--success);">
-                <div class="box-title" style="color: var(--success);">LADO 2: Para onde deve ir?</div>
-                <div class="form-group"><label>MUDAR A PESSOA PARA:</label><select id="corr-dest-pessoa" class="form-input up-text" style="padding:10px;"></select></div>
-                <div class="form-group" style="margin-bottom:0;"><label>MUDAR O CARTÃO PARA:</label><select id="corr-dest-cartao" class="form-input up-text" style="padding:10px;"></select></div>
-            </div>
-            <button class="btn btn-danger" style="padding:10px;" onclick="executarCorrecaoLadoALado()">APLICAR CORREÇÃO</button>
-        </div>
-        <div class="section-label">Sistema & Backup Nuvem</div>
-        <div class="card">
-            <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">cloud_sync</span> Sincronizar Google Drive</h3>
-            <p class="helper">Cole a URL do seu Google Script para criar uma <strong>Planilha Viva</strong> e fazer backup silencioso de todos os dados do app sempre que tiver internet.</p>
-            <div class="form-group" style="display:flex; gap:8px; flex-direction: column;">
-                <input type="url" id="drive-webhook" class="form-input" style="font-size: 0.8rem; text-transform: none; padding:10px;" placeholder="https://script.google.com/..." onchange="salvarWebhook()">
-                <button class="btn btn-outline" style="padding:10px; border-color: var(--primary); color: var(--primary);" onclick="backupParaDrive(true)"><span class="material-icons-outlined">sync</span> SINCRONIZAR AGORA</button>
-            </div>
-            <hr style="border: 1px solid var(--border); margin: 12px 0;">
-            <button class="btn btn-outline" style="margin-bottom: 8px; padding:10px;" onclick="document.getElementById('import-file').click()"><span class="material-icons-outlined">file_upload</span> Importar Backup Manual</button>
-            <input type="file" id="import-file" accept=".json" onchange="importarBackup(event)" style="display:none;">
-            <button class="btn btn-outline" style="margin-bottom: 12px; padding:10px;" onclick="exportarBackup(false)"><span class="material-icons-outlined">download</span> Baixar Backup Manual</button>
-            <hr style="border: 1px solid var(--border); margin: 12px 0;">
-            <button class="btn btn-danger" style="padding:10px;" onclick="zerarApp()"><span class="material-icons-outlined">delete_forever</span> ZERAR BASE COMPLETA</button>
-        </div>
-        <div class="section-label" style="color: var(--danger);">Limpeza de Base</div>
-        <div class="card" style="border-color: rgba(239, 68, 68, 0.3);">
-            <h3 style="color: var(--danger); font-size:0.9rem;"><span class="material-icons-outlined">delete_sweep</span> Lixeira por Data</h3>
-            <p class="helper">Apague históricos velhos para deixar o app leve (Recomendado para aliviar fotos antigas).</p>
+        <!-- ABA DESPESA -->
+        <div id="form-desp">
             <div class="form-group">
-                <label>APAGAR TUDO ANTES DE:</label>
-                <input type="month" id="corte-lixeira-mes" class="form-input" style="border-color: var(--danger); padding:10px;">
+                <label>Cartão Utilizado</label>
+                <select id="cartao" class="form-input input-destaque-cartao up-text"></select>
             </div>
-            <button class="btn btn-danger" style="padding:10px;" onclick="executarLimpezaPorData()">APAGAR ANTIGOS</button>
-            <hr style="border: 1px solid var(--border); margin: 12px 0;">
-            <p class="helper">Limpeza automática de listas de opções (Cadastros não usados):</p>
-            <button class="btn btn-outline" style="padding:10px;" onclick="limparOrfaos()">REMOVER CADASTROS VAZIOS</button>
+            
+            <div class="form-group">
+                <label>Descrição Geral da Compra (Opcional)</label>
+                <input type="text" id="desc" class="form-input" placeholder="Ex: Compras no Supermercado">
+            </div>
+            
+            <div class="form-group">
+                <label>Categoria</label>
+                <select id="categoria-compra" class="form-input up-text"></select>
+            </div>
+
+            <div class="edicao-field-row">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>Data Exata (Compra)</label>
+                    <input type="date" id="data-compra-exata" class="form-input" onchange="atualizarMesRefCompra()">
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>Mês na Fatura (1ª Parc)</label>
+                    <input type="month" id="data-compra-ref" class="form-input">
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 15px;">
+                <label>📸 Anexar Foto (Recibo/Nota)</label>
+                <label for="file-desp" class="comprovante-btn">
+                    <span class="material-icons-outlined">add_a_photo</span> Tocar para Fotografar
+                </label>
+                <input type="file" id="file-desp" accept="image/*" capture="environment" style="display:none;" onchange="processarImagem(this, 'preview-desp', 'btn-rm-desp', 'base64Desp')">
+                <img id="preview-desp" class="img-preview">
+                <button class="btn-small" id="btn-rm-desp" style="display:none; margin: 10px auto 0; width: 100%; color: var(--danger); border-color: var(--danger);" onclick="removerImagem('preview-desp', 'file-desp', 'btn-rm-desp', 'base64Desp')">🗑️️ REMOVER FOTO</button>
+            </div>
+            
+            <div style="margin: 25px 0 15px; border-top: 2px dashed var(--border); padding-top: 15px;">
+                <label style="font-size: 0.85rem; font-weight: 900; color: var(--primary); text-transform: uppercase; text-align: center; display: block;">👇 Divisão da Compra 👇</label>
+            </div>
+
+            <div id="pagadores-container"></div>
+
+            <button class="btn btn-outline" style="margin-bottom:20px; border-style: dashed; padding: 14px; color: var(--text);" onclick="addPagador()">
+                <span class="material-icons-outlined" style="font-size:1.4rem;">person_add</span> ADICIONAR OUTRA PESSOA
+            </button>
+
+            <button class="btn btn-primary" style="padding: 16px; font-size: 1.1rem;" onclick="salvarCompra()"><span class="material-icons-outlined">check_circle</span> FINALIZAR LANÇAMENTO</button>
         </div>
-        <div class="section-label">Cadastros Ativos (Edição Global)</div>
-        <div class="card">
-            <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">category</span> Categorias</h3>
-            <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                <div style="display:flex; flex:1; gap:4px;"><input type="text" id="nova-categoria" class="form-input up-text" placeholder="Ex: 🍔 ALIMENTAÇÃO" style="margin-bottom:0; padding:10px;"><button class="btn-small" onclick="inserirEmoji(this, 'nova-categoria')">😀</button></div>
-                <button class="btn btn-primary" style="width: auto; padding: 0 12px;" onclick="addCategoria()">SALVAR</button>
+
+        <!-- ABA RECEBIMENTO -->
+        <div id="form-rec" style="display: none;">
+            <div class="form-group">
+                <label>Quem está pagando?</label>
+                <select id="pag-pessoa" class="form-input up-text" style="font-size: 1.2rem; color: var(--primary); border-color: var(--primary);"></select>
             </div>
-            <div id="lista-edit-categorias"></div>
+            
+            <div class="form-group">
+                <label>Valor Recebido (R$)</label>
+                <input type="number" id="pag-valor" class="form-input input-destaque-receita" step="0.01" placeholder="0.00">
+            </div>
+
+            <div class="form-group">
+                <label>O que é este recebimento?</label>
+                <input type="text" id="pag-desc" class="form-input" placeholder="Ex: Acerto da fatura ou PIX Fulano">
+            </div>
+            
+            <div class="edicao-field-row">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>Data que o $$ caiu</label>
+                    <input type="date" id="pag-data" class="form-input">
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>Mês de Referência</label>
+                    <input type="month" id="pag-data-ref" class="form-input">
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 15px;">
+                <label>📸 Anexar Comprovante de PIX</label>
+                <label for="file-pag" class="comprovante-btn" style="border-color: var(--success); color: var(--success); background: rgba(16,185,129,0.05);">
+                    <span class="material-icons-outlined">add_a_photo</span> Tocar para Fotografar
+                </label>
+                <input type="file" id="file-pag" accept="image/*" style="display:none;" onchange="processarImagem(this, 'preview-pag', 'btn-rm-pag', 'base64Pag')">
+                <img id="preview-pag" class="img-preview">
+                <button class="btn-small" id="btn-rm-pag" style="display:none; margin: 10px auto 0; width: 100%; color: var(--danger); border-color: var(--danger);" onclick="removerImagem('preview-pag', 'file-pag', 'btn-rm-pag', 'base64Pag')">🗑 REMOVER FOTO</button>
+            </div>
+
+            <button class="btn btn-success" style="padding: 16px; font-size: 1.1rem; margin-top: 20px;" onclick="registrarBaixa()"><span class="material-icons-outlined">price_check</span> CONFIRMAR RECEBIMENTO</button>
         </div>
-        <div class="card">
-            <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">people</span> Pessoas</h3>
-            <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                <div style="display:flex; flex:1; gap:4px;"><input type="text" id="nova-pessoa" class="form-input up-text" placeholder="Ex: 👨 NETO" style="margin-bottom:0; padding:10px;"><button class="btn-small" onclick="inserirEmoji(this, 'nova-pessoa')">😀</button></div>
-                <button class="btn btn-primary" style="width: auto; padding: 0 12px;" onclick="addPessoa()">SALVAR</button>
-            </div>
-            <div id="lista-edit-pessoas"></div>
+    </div>
+
+    <!-- MODAL EDIÇÃO DIRETA -->
+    <div class="modal" id="modal-edicao">
+        <button class="modal-close-btn" onclick="fecharModais()"><span class="material-icons-outlined" style="font-size:1.1rem;">close</span></button>
+        <div class="modal-drag"></div>
+        <h3 style="margin: 0 0 20px; color: var(--primary); font-size: 1.3rem; border-bottom: 2px solid var(--border); padding-bottom: 15px; text-transform: uppercase; text-align: center; font-weight: 900;" id="edit-title">EDITAR LANÇAMENTO</h3>
+        
+        <input type="hidden" id="edit-id">
+        <input type="hidden" id="edit-tipo">
+
+        <div class="form-group" style="margin-bottom: 20px;">
+            <label id="edit-label-desc">DESCRIÇÃO</label>
+            <input type="text" id="edit-desc" class="form-input" style="font-size: 1.1rem; text-transform: none;">
         </div>
-        <div class="card">
-            <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">credit_card</span> Cartões</h3>
-            <div class="form-group"><div style="display:flex; gap:4px; flex:1;"><input type="text" id="novo-cartao-nome" class="form-input up-text" placeholder="Ex: 💳 NUBANK" style="padding:10px;"><button class="btn-small" onclick="inserirEmoji(this, 'novo-cartao-nome')">😀</button></div></div>
-            <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                <div class="form-group" style="flex:1; margin:0;"><label>FECHA</label><input type="number" id="novo-cartao-fecha" class="form-input" placeholder="25" style="padding:10px;"></div>
-                <div class="form-group" style="flex:1; margin:0;"><label>VENCE</label><input type="number" id="novo-cartao-vence" class="form-input" placeholder="05" style="padding:10px;"></div>
+        
+        <!-- BLOCO INTELIGENTE DE PARCELAS -->
+        <div class="edicao-field-row" id="box-edit-parcelas" style="display:none; background: rgba(59,130,246,0.05); padding: 10px; border-radius: 10px; border: 1px dashed #3b82f6; margin-bottom: 20px;">
+            <div class="form-group" style="margin-bottom:0;">
+                <label style="color:#3b82f6;">Nº NESTE MÊS</label>
+                <input type="number" id="edit-parc-atual" class="form-input" style="font-size: 1.4rem; font-weight: 900; color: #3b82f6; border-color: #3b82f6;">
             </div>
-            <button class="btn btn-outline" style="margin-bottom: 10px; padding:10px;" onclick="addCartao()">ADICIONAR CARTÃO</button>
-            <div id="lista-edit-cartoes"></div>
+            <div class="form-group" style="margin-bottom:0;">
+                <label style="color:#3b82f6;">DE UM TOTAL DE</label>
+                <input type="number" id="edit-parc-total" class="form-input" style="font-size: 1.4rem; font-weight: 900; border-color: #3b82f6;">
+            </div>
+            <input type="hidden" id="edit-parc-original-key">
+        </div>
+
+        <div class="edicao-field-row">
+            <div class="form-group" style="margin-bottom:0;"><label>VALOR DA PARCELA (R$)</label><input type="number" id="edit-valor" class="form-input" step="0.01" style="font-size: 1.4rem; font-weight: 900; padding: 14px;"></div>
+            <div class="form-group" style="margin-bottom:0;" id="box-edit-cat"><label>CATEGORIA</label><select id="edit-cat" class="form-input up-text"></select></div>
+        </div>
+
+        <div class="edicao-field-row">
+            <div class="form-group" style="margin-bottom:0;"><label>PESSOA</label><select id="edit-pessoa" class="form-input up-text" style="color: var(--primary); border-color: var(--primary);"></select></div>
+            <div class="form-group" style="margin-bottom:0;" id="box-edit-cartao"><label>CARTÃO</label><select id="edit-cartao" class="form-input up-text"></select></div>
+        </div>
+
+        <div class="edicao-field-row">
+            <div class="form-group" style="margin-bottom:0;"><label id="edit-label-data-real">DATA EXATA</label><input type="date" id="edit-data-real" class="form-input"></div>
+            <div class="form-group" style="margin-bottom:0;" id="box-edit-fatura"><label>MÊS REFERÊNCIA</label><input type="month" id="edit-data-ref" class="form-input"></div>
+        </div>
+
+        <div class="form-group" id="box-edit-comprovante" style="margin-top: 20px; display: none;">
+            <label>📸 COMPROVANTE SALVO</label>
+            <img id="edit-preview-comp" class="img-preview" style="display:block; max-height: 250px; margin: 0 auto;">
+        </div>
+
+        <div style="display: flex; gap: 15px; margin-top: 25px;">
+            <button class="btn btn-danger" style="flex: 1; padding: 16px;" onclick="excluirLançamentoModal()"><span class="material-icons-outlined">delete_forever</span> APAGAR</button>
+            <button class="btn btn-primary" style="flex: 2; padding: 16px;" onclick="salvarEdicaoModal()"><span class="material-icons-outlined">save</span> SALVAR</button>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <div class="page-header">
+            <div class="brand-line">
+                <div class="brand-mark">CC</div>
+                <span class="brand-name">ControlCard <span class="v-badge" id="app-versao-badge">v1.9.0</span>
+                    <span id="cloud-status-icon" class="material-icons-outlined cloud-status" title="Sincronização">cloud_off</span>
+                </span>
+            </div>
+            <h2 id="page-title">Visão Geral</h2>
+            <p id="page-subtitle">Acompanhe quem deve e faturas abertas</p>
+        </div>
+
+        <!-- TELA 1: DASHBOARD -->
+        <div id="tela-dashboard" class="tela">
+            <div class="form-group">
+                <select id="dash-filtro-global" class="form-input up-text" style="font-weight: 900; color: var(--primary); border-color: var(--primary); font-size: 0.95rem; padding: 10px;" onchange="mudouFiltroDash()"></select>
+            </div>
+            <div id="dash-custom-dates" class="date-custom-grid" style="display:none;">
+                <div><label style="font-size:0.55rem; margin-bottom:2px;">INÍCIO</label><input type="date" id="dash-dt-ini" onchange="atualizarSaldos()"></div>
+                <div><label style="font-size:0.55rem; margin-bottom:2px;">FIM</label><input type="date" id="dash-dt-fim" onchange="atualizarSaldos()"></div>
+            </div>
+
+            <div class="metric-grid">
+                <div class="metric"><small>Lançado</small><strong id="metric-despesas">R$ 0,00</strong></div>
+                <div class="metric"><small>Recebido</small><strong id="metric-pagamentos">R$ 0,00</strong></div>
+                <div class="metric"><small>Diferença</small><strong id="metric-saldo">R$ 0,00</strong></div>
+            </div>
+
+            <div class="card">
+                <div class="dash-tabs">
+                    <button class="dash-tab-btn active" id="btn-visao-pessoa" onclick="alternarVisaoDash('pessoa')">👤 POR PESSOA</button>
+                    <button class="dash-tab-btn" id="btn-visao-cartao" onclick="alternarVisaoDash('cartao')">💳 POR CARTÃO</button>
+                </div>
+                <div id="lista-arvore-saldos"></div>
+            </div>
+
+            <div class="card" id="card-categorias" style="display:none;">
+                <h3 style="margin:0 0 10px; font-size:.8rem; text-transform:uppercase; color:var(--primary);">📊 Gastos por categoria</h3>
+                <div id="dash-categorias"></div>
+            </div>
+        </div>
+
+        <!-- TELA 2: CALENDÁRIO -->
+        <div id="tela-calendario" class="tela" style="display: none;">
+            <div class="card">
+                <div class="calendar-header">
+                    <button class="cal-nav-btn" style="left:6px;" onclick="mudarMesCalendario(-1)"><span class="material-icons-outlined">chevron_left</span></button>
+                    <div id="cal-mes-display" style="font-weight: 900; font-size: 1.1rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; cursor:pointer;" onclick="document.getElementById('cal-seletor-mes').showPicker()">SET/2026</div>
+                    <input type="month" id="cal-seletor-mes" style="display:none;" onchange="irParaMesCalendario()">
+                    <button class="cal-nav-btn" style="right:6px;" onclick="mudarMesCalendario(1)"><span class="material-icons-outlined">chevron_right</span></button>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <select id="cal-filtro-pessoa" class="form-input up-text" style="padding: 10px; font-size:0.85rem;" onchange="renderizarCalendario()"></select>
+                </div>
+                
+                <div id="cal-cartoes-chips" class="chip-container"></div>
+
+                <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 10px; padding: 8px; border-radius: 8px; background: var(--bg); border: 1px solid var(--primary);">
+                    <span style="font-size: 0.7rem; color: var(--text-light); text-transform: uppercase; font-weight: 800;">TOTAL DESTE MÊS:</span>
+                    <div id="cal-total-mes" style="font-size: 1.1rem; font-weight: 900; color: var(--primary); margin: 0;">R$ 0,00</div>
+                </div>
+
+                <div class="calendar-grid">
+                    <div class="cal-day-header">Dom</div><div class="cal-day-header">Seg</div><div class="cal-day-header">Ter</div>
+                    <div class="cal-day-header">Qua</div><div class="cal-day-header">Qui</div><div class="cal-day-header">Sex</div><div class="cal-day-header">Sáb</div>
+                </div>
+                <div class="calendar-grid" id="cal-grid-dias"></div>
+            </div>
+
+            <div id="cal-dia-detalhe" class="dia-detalhe">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px; border-bottom: 1px dashed var(--border); padding-bottom: 8px;"><h4 id="cal-dia-titulo" style="margin:0; font-size: 0.9rem; color:var(--primary); text-transform: uppercase; font-weight: 900;">Detalhes do Dia</h4><button class="btn-small" onclick="fecharDetalheDia()" style="border:none; background:transparent; padding: 0;"><span class="material-icons-outlined" style="font-size: 1.3rem;">close</span></button></div>
+                <div id="cal-dia-lista"></div>
+            </div>
+        </div>
+
+        <!-- TELA 3: EXTRATO (COBRANÇAS) -->
+        <div id="tela-extrato" class="tela" style="display: none;">
+            <div class="card" style="padding: 10px;">
+                <h3 style="margin-bottom: 8px; font-size: 0.85rem; text-align: center; text-transform: uppercase; color: var(--primary);">Filtros de Cobrança</h3>
+                
+                <div class="form-group" style="margin-bottom: 8px;">
+                    <select id="extrato-filtro-global" class="form-input up-text" style="font-weight: 800; padding: 10px; font-size: 0.9rem;" onchange="mudouFiltroExtrato()"></select>
+                </div>
+                <div id="extrato-custom-dates" class="date-custom-grid" style="display:none;">
+                    <div><label style="font-size:0.55rem; margin-bottom:2px;">INÍCIO</label><input type="date" id="extrato-dt-ini" onchange="renderizarExtrato()"></div>
+                    <div><label style="font-size:0.55rem; margin-bottom:2px;">FIM</label><input type="date" id="extrato-dt-fim" onchange="renderizarExtrato()"></div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 8px;">
+                    <select id="extrato-pessoa" class="form-input up-text" style="padding:10px; font-size: 0.9rem; color: var(--primary); border-color: var(--primary);" onchange="renderizarExtrato()"></select>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 8px;">
+                    <input type="search" id="extrato-busca" class="form-input" placeholder="🔍 Buscar por descrição..." oninput="renderizarExtrato()" style="padding:10px; font-size:.9rem;">
+                </div>
+                <div id="ext-cartoes-chips" class="chip-container" style="margin-bottom: 4px;"></div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border: 1px solid var(--border); padding: 10px 12px; border-radius: 10px; background: var(--surface);">
+                <div>
+                    <strong id="contagem-selecionados" style="font-size: 0.85rem; color: var(--primary); text-transform: uppercase;">0 itens</strong>
+                    <span id="total-selecionados" style="font-size: 1.1rem; font-weight: 900; display:block; margin-top: 2px;">R$ 0,00</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <button class="btn-outline" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px;" onclick="selecionarTodasExtrato()">Selecionar Tudo</button>
+                    <button class="btn-success" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px;" onclick="enviarZapSelecionados()"><span class="material-icons-outlined" style="font-size:1rem;">send</span> WHATSAPP</button>
+                </div>
+            </div>
+
+            <div id="lista-transacoes-container"></div>
+        </div>
+
+        <!-- TELA 4: AJUSTES -->
+        <div id="tela-config" class="tela" style="display: none;">
+            
+            <div class="section-label" style="color: var(--primary);">🔒 Segurança do App</div>
+            <div class="card">
+                <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">lock</span> Tela de Bloqueio (Cofre)</h3>
+                <p class="helper">Proteja seu aplicativo com um PIN de 4 dígitos. Bloqueia o acesso de curiosos.</p>
+                <div id="box-seguranca" style="text-align: center;"></div>
+            </div>
+
+            <div class="section-label" style="color: var(--primary);">🛠 Ferramentas Extras</div>
+            <div class="card" style="border-color: var(--primary);">
+                <h3 style="color: var(--primary); font-size:0.9rem;"><span class="material-icons-outlined">layers</span> Gestão de Assinaturas e Parcelas</h3>
+                <p class="helper">Aumente, diminua a quantidade, mude o valor da assinatura ou cancele totalmente.</p>
+                <div class="form-group"><label>PESSOA:</label><select id="parc-pessoa" class="form-input up-text" style="padding:10px;" onchange="renderizarListaParcelamentos()"></select></div>
+                <div id="lista-parcelamentos-container" style="margin: 12px 0;"></div>
+            </div>
+            <div class="card">
+                <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">move_up</span> Repassar Dívida</h3>
+                <p class="helper">Transfira contas pendentes de uma pessoa para outra sem alterar faturas.</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <div class="form-group" style="margin:0;"><label>TIRAR DE:</label><select id="transf-de" class="form-input up-text" style="padding:10px;" onchange="renderizarListaTransferencia()"></select></div>
+                    <div class="form-group" style="margin:0;"><label>PASSAR PARA:</label><select id="transf-para" class="form-input up-text" style="padding:10px;"></select></div>
+                </div>
+                <div id="lista-transferencia-container" style="margin: 10px 0;"></div>
+                <button class="btn btn-outline" style="border-color: var(--primary); color: var(--primary); padding:10px;" onclick="executarTransferenciaInterativa()">Repassar Contas Marcadas</button>
+            </div>
+            <div class="section-label" style="color: var(--danger);">🔧 Correção Direta</div>
+            <div class="card" style="border: 1px solid var(--danger);">
+                <h3 style="color: var(--danger); font-size:0.9rem;"><span class="material-icons-outlined">build</span> Substituir em Massa</h3>
+                <p class="helper" style="margin-bottom: 10px;">Mova faturas inteiras de forma rápida.</p>
+                <div class="box-correcao">
+                    <div class="box-title" style="color: var(--danger);">LADO 1: Onde está o erro?</div>
+                    <div class="form-group"><label>SE A PESSOA FOR:</label><select id="corr-orig-pessoa" class="form-input up-text" style="padding:10px;"></select></div>
+                    <div class="form-group" style="margin-bottom:0;"><label>E O CARTÃO FOR:</label><select id="corr-orig-cartao" class="form-input up-text" style="padding:10px;"></select></div>
+                </div>
+                <div class="box-correcao" style="border-color: var(--success);">
+                    <div class="box-title" style="color: var(--success);">LADO 2: Para onde deve ir?</div>
+                    <div class="form-group"><label>MUDAR A PESSOA PARA:</label><select id="corr-dest-pessoa" class="form-input up-text" style="padding:10px;"></select></div>
+                    <div class="form-group" style="margin-bottom:0;"><label>MUDAR O CARTÃO PARA:</label><select id="corr-dest-cartao" class="form-input up-text" style="padding:10px;"></select></div>
+                </div>
+                <button class="btn btn-danger" style="padding:10px;" onclick="executarCorrecaoLadoALado()">APLICAR CORREÇÃO</button>
+            </div>
+            <div class="section-label">Sistema & Backup Nuvem</div>
+            <div class="card">
+                <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">cloud_sync</span> Sincronizar Google Drive</h3>
+                <p class="helper">Cole a URL do seu Google Script para criar uma <strong>Planilha Viva</strong> e fazer backup silencioso de todos os dados do app sempre que tiver internet.</p>
+                <div class="form-group" style="display:flex; gap:8px; flex-direction: column;">
+                    <input type="url" id="drive-webhook" class="form-input" style="font-size: 0.8rem; text-transform: none; padding:10px;" placeholder="https://script.google.com/..." onchange="salvarWebhook()">
+                    <button class="btn btn-outline" style="padding:10px; border-color: var(--primary); color: var(--primary);" onclick="backupParaDrive(true)"><span class="material-icons-outlined">sync</span> SINCRONIZAR AGORA</button>
+                </div>
+                <hr style="border: 1px solid var(--border); margin: 12px 0;">
+                <button class="btn btn-outline" style="margin-bottom: 8px; padding:10px;" onclick="document.getElementById('import-file').click()"><span class="material-icons-outlined">file_upload</span> Importar Backup Manual</button>
+                <input type="file" id="import-file" accept=".json" onchange="importarBackup(event)" style="display:none;">
+                <button class="btn btn-outline" style="margin-bottom: 12px; padding:10px;" onclick="exportarBackup(false)"><span class="material-icons-outlined">download</span> Baixar Backup Manual</button>
+                <hr style="border: 1px solid var(--border); margin: 12px 0;">
+                <button class="btn btn-danger" style="padding:10px;" onclick="zerarApp()"><span class="material-icons-outlined">delete_forever</span> ZERAR BASE COMPLETA</button>
+            </div>
+            <div class="section-label" style="color: var(--danger);">Limpeza de Base</div>
+            <div class="card" style="border-color: rgba(239, 68, 68, 0.3);">
+                <h3 style="color: var(--danger); font-size:0.9rem;"><span class="material-icons-outlined">delete_sweep</span> Lixeira por Data</h3>
+                <p class="helper">Apague históricos velhos para deixar o app leve (Recomendado para aliviar fotos antigas).</p>
+                <div class="form-group">
+                    <label>APAGAR TUDO ANTES DE:</label>
+                    <input type="month" id="corte-lixeira-mes" class="form-input" style="border-color: var(--danger); padding:10px;">
+                </div>
+                <button class="btn btn-danger" style="padding:10px;" onclick="executarLimpezaPorData()">APAGAR ANTIGOS</button>
+                <hr style="border: 1px solid var(--border); margin: 12px 0;">
+                <p class="helper">Limpeza automática de listas de opções (Cadastros não usados):</p>
+                <button class="btn btn-outline" style="padding:10px;" onclick="limparOrfaos()">REMOVER CADASTROS VAZIOS</button>
+            </div>
+            <div class="section-label">Cadastros Ativos (Edição Global)</div>
+            <div class="card">
+                <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">category</span> Categorias</h3>
+                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                    <div style="display:flex; flex:1; gap:4px;"><input type="text" id="nova-categoria" class="form-input up-text" placeholder="Ex: 🍔 ALIMENTAÇÃO" style="margin-bottom:0; padding:10px;"><button class="btn-small" onclick="inserirEmoji(this, 'nova-categoria')">😀</button></div>
+                    <button class="btn btn-primary" style="width: auto; padding: 0 12px;" onclick="addCategoria()">SALVAR</button>
+                </div>
+                <div id="lista-edit-categorias"></div>
+            </div>
+            <div class="card">
+                <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">people</span> Pessoas</h3>
+                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                    <div style="display:flex; flex:1; gap:4px;"><input type="text" id="nova-pessoa" class="form-input up-text" placeholder="Ex: 👨 NETO" style="margin-bottom:0; padding:10px;"><button class="btn-small" onclick="inserirEmoji(this, 'nova-pessoa')">😀</button></div>
+                    <button class="btn btn-primary" style="width: auto; padding: 0 12px;" onclick="addPessoa()">SALVAR</button>
+                </div>
+                <div id="lista-edit-pessoas"></div>
+            </div>
+            <div class="card">
+                <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">credit_card</span> Cartões</h3>
+                <div class="form-group"><div style="display:flex; gap:4px; flex:1;"><input type="text" id="novo-cartao-nome" class="form-input up-text" placeholder="Ex: 💳 NUBANK" style="padding:10px;"><button class="btn-small" onclick="inserirEmoji(this, 'novo-cartao-nome')">😀</button></div></div>
+                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                    <div class="form-group" style="flex:1; margin:0;"><label>FECHA</label><input type="number" id="novo-cartao-fecha" class="form-input" placeholder="25" style="padding:10px;"></div>
+                    <div class="form-group" style="flex:1; margin:0;"><label>VENCE</label><input type="number" id="novo-cartao-vence" class="form-input" placeholder="05" style="padding:10px;"></div>
+                </div>
+                <button class="btn btn-outline" style="margin-bottom: 10px; padding:10px;" onclick="addCartao()">ADICIONAR CARTÃO</button>
+                <div id="lista-edit-cartoes"></div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
     /* ================= TEMAS E FORMATADORES ================= */
+    const APP_VERSION = '1.9.0';
+    const DB_NOME_FIXO = 'ControlCard_v1_DB'; 
+    let db = JSON.parse(localStorage.getItem(DB_NOME_FIXO)) || { pessoas: [], cartoes: [], categorias: [], despesas: [], pagamentos: [] };
+    if(!db.pessoasInativas) db.pessoasInativas = [];
+    if(!db.cartoesInativos) db.cartoesInativos = [];
+    if(!db.categoriasInativas) db.categoriasInativas = [];
+
     const temas = ['lambo', 'nubank', 'dracula', 'ocean', 'nature', 'light', 'neon', 'coffee', 'midnight', 'hacker', 'synthwave', 'sunset', 'darkgold', 'barbie'];
     let idxTema = parseInt(localStorage.getItem('cc_v1_Theme')) || 0;
     if(idxTema >= temas.length) idxTema = 0;
@@ -646,10 +699,151 @@
         return `${MESES_ABREV[parseInt(mes)-1]}/${ano}`;
     }
 
+    function getParcelaBadge(desc) {
+        let matchParc = desc.match(/\((\d+)\/(\d+)\)/);
+        if (!matchParc) return { descLimp: desc, badgeHtml: '' };
+        let isLast = matchParc[1] === matchParc[2]; 
+        let descLimp = desc.replace(/\(\d+\/\d+\)/, '').trim();
+        let style = isLast ? 'background: var(--success); color: #fff;' : '';
+        let icon = isLast ? ' 🏁' : '';
+        let badgeHtml = `<div class="parc-badge" style="${style}">${matchParc[1]}/${matchParc[2]}${icon}</div>`;
+        return { descLimp, badgeHtml };
+    }
+
     function getLocalToday() {
         let d = new Date();
         d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
         return d.toISOString().split('T')[0];
+    }
+
+    function toast(msg, tipo) {
+        let t = document.getElementById('toast-app');
+        if (!t) { t = document.createElement('div'); t.id = 'toast-app'; document.body.appendChild(t); }
+        t.className = 'show ' + (tipo || 'ok');
+        t.textContent = msg;
+        clearTimeout(t._h);
+        t._h = setTimeout(() => t.className = '', 3200);
+    }
+
+    /* ================= TELA DE BLOQUEIO (COFRE PIN) ================= */
+    let appPin = localStorage.getItem('cc_pin') || '';
+    let currentPin = '';
+    let pinMode = 'login'; // login, setup1, setup2
+
+    function checkLock() {
+        if(!appPin) {
+            document.getElementById('app-wrapper').style.display = 'block';
+            document.getElementById('app-wrapper').style.opacity = '1';
+            document.getElementById('tela-lock').style.display = 'none';
+            iniciarPWA();
+        } else {
+            document.getElementById('app-wrapper').style.display = 'none';
+            document.getElementById('tela-lock').style.display = 'flex';
+            pinMode = 'login';
+            currentPin = '';
+            updatePinDots();
+            document.getElementById('lock-title').innerText = "DIGITE A SENHA";
+            document.getElementById('lock-subtitle').innerText = "Acesso restrito";
+            document.getElementById('lock-cancel-box').style.display = 'none';
+        }
+    }
+
+    function addPin(digit) {
+        if(currentPin.length < 4) {
+            currentPin += digit;
+            updatePinDots();
+            if(currentPin.length === 4) {
+                setTimeout(processPin, 100); 
+            }
+        }
+    }
+
+    function clearPin() { currentPin = ''; updatePinDots(); }
+    function backPin() { currentPin = currentPin.slice(0, -1); updatePinDots(); }
+
+    function updatePinDots() {
+        let dots = document.querySelectorAll('.pin-dot');
+        dots.forEach((dot, index) => {
+            if(index < currentPin.length) dot.classList.add('filled');
+            else dot.classList.remove('filled');
+        });
+    }
+
+    function processPin() {
+        if(pinMode === 'login') {
+            if(currentPin === appPin) {
+                document.getElementById('tela-lock').style.display = 'none';
+                document.getElementById('app-wrapper').style.display = 'block';
+                setTimeout(() => document.getElementById('app-wrapper').style.opacity = '1', 50);
+                iniciarPWA();
+            } else {
+                toast('Senha incorreta!', 'erro');
+                currentPin = ''; updatePinDots();
+            }
+        } else if(pinMode === 'setup1') {
+            appPin = currentPin; // Guarda temporário
+            currentPin = ''; updatePinDots();
+            pinMode = 'setup2';
+            document.getElementById('lock-title').innerText = "CONFIRME A SENHA";
+            document.getElementById('lock-subtitle').innerText = "Digite a mesma senha novamente";
+        } else if(pinMode === 'setup2') {
+            if(currentPin === appPin) {
+                localStorage.setItem('cc_pin', appPin);
+                toast('✅ Senha configurada com sucesso!');
+                pinMode = 'login';
+                document.getElementById('tela-lock').style.display = 'none';
+                document.getElementById('app-wrapper').style.display = 'block';
+                setTimeout(() => document.getElementById('app-wrapper').style.opacity = '1', 50);
+                carregarEdicaoSeguranca();
+            } else {
+                toast('As senhas não coincidem. Tente novamente.', 'erro');
+                appPin = ''; currentPin = ''; updatePinDots();
+                pinMode = 'setup1';
+                document.getElementById('lock-title').innerText = "CRIE SUA SENHA";
+                document.getElementById('lock-subtitle').innerText = "Digite 4 números";
+            }
+        }
+    }
+
+    function iniciarSetupPin() {
+        fecharModais();
+        document.getElementById('app-wrapper').style.opacity = '0';
+        setTimeout(() => {
+            document.getElementById('app-wrapper').style.display = 'none';
+            document.getElementById('tela-lock').style.display = 'flex';
+            pinMode = 'setup1';
+            currentPin = ''; updatePinDots();
+            document.getElementById('lock-title').innerText = "CRIE SUA SENHA";
+            document.getElementById('lock-subtitle').innerText = "Digite 4 números para bloqueio";
+            document.getElementById('lock-cancel-box').style.display = 'block';
+        }, 200);
+    }
+
+    function cancelarSetupPin() {
+        appPin = localStorage.getItem('cc_pin') || '';
+        document.getElementById('tela-lock').style.display = 'none';
+        document.getElementById('app-wrapper').style.display = 'block';
+        setTimeout(() => document.getElementById('app-wrapper').style.opacity = '1', 50);
+        carregarEdicaoSeguranca();
+    }
+
+    function removerPin() {
+        if(confirm("Deseja remover a senha de acesso do aplicativo?")) {
+            localStorage.removeItem('cc_pin');
+            appPin = '';
+            toast('Senha removida com sucesso!');
+            carregarEdicaoSeguranca();
+        }
+    }
+
+    function carregarEdicaoSeguranca() {
+        const box = document.getElementById('box-seguranca');
+        if(!box) return;
+        if(localStorage.getItem('cc_pin')) {
+            box.innerHTML = `<button class="btn btn-outline" style="border-color: var(--danger); color: var(--danger); padding:12px;" onclick="removerPin()">REMOVER SENHA ATUAL</button>`;
+        } else {
+            box.innerHTML = `<button class="btn btn-primary" style="padding:12px;" onclick="iniciarSetupPin()">CRIAR SENHA DE 4 DÍGITOS</button>`;
+        }
     }
 
     /* ================= VARIÁVEIS DE CÂMERA/FOTOS ================= */
@@ -709,7 +903,7 @@
         if(id === 'dashboard') { atualizarSaldos(); }
         if(id === 'calendario') { renderizarCalendario(); }
         if(id === 'extrato') { renderizarExtrato(); }
-        if(id === 'config') { carregarEdicaoPessoas(); carregarEdicaoCartoes(); carregarEdicaoCategorias(); preencherListasCorrecao(); renderizarListaTransferencia(); renderizarListaParcelamentos();}
+        if(id === 'config') { carregarEdicaoPessoas(); carregarEdicaoCartoes(); carregarEdicaoCategorias(); preencherListasCorrecao(); renderizarListaTransferencia(); renderizarListaParcelamentos(); carregarEdicaoSeguranca();}
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -776,13 +970,7 @@
         fecharCalc();
     }
 
-    /* ================= BANCO DE DADOS ================= */
-    const APP_VERSION = '1.8.0'; // <- única fonte da versão (lembre de igualar em sw.js)
-    const DB_NOME_FIXO = 'ControlCard_v1_DB'; 
-    let db = JSON.parse(localStorage.getItem(DB_NOME_FIXO)) || { pessoas: [], cartoes: [], categorias: [], despesas: [], pagamentos: [] };
-    if(!db.pessoasInativas) db.pessoasInativas = [];
-    if(!db.cartoesInativos) db.cartoesInativos = [];
-    if(!db.categoriasInativas) db.categoriasInativas = [];
+    /* ================= BANCO DE DADOS E BACKUP NUVEM ================= */
 
     function salvarDB() { 
         localStorage.setItem(DB_NOME_FIXO, JSON.stringify(db)); 
@@ -806,15 +994,18 @@
     }
 
     window.onload = () => { 
-        carregarWebhook();
-        carregarSelects(); 
-        montarFiltrosGlobais();
-        atualizarSaldos(); 
-        verificarBackupAutomatico();
-        
-        window.addEventListener('online', () => backupParaDrive(false));
-        window.addEventListener('offline', () => setCloudStatus('error'));
+        checkLock(); // Inicia bloqueando a tela e chamando o PWA em seguida
     };
+
+    window.addEventListener('online', () => {
+        toast('🌐 Conexão restaurada! Sincronizando...', 'ok');
+        backupParaDrive(false);
+    });
+    
+    window.addEventListener('offline', () => {
+        toast('📵 Você está offline. O app salvará localmente.', 'erro');
+        setCloudStatus('error');
+    });
 
     function carregarWebhook() {
         let w = localStorage.getItem('cc_drive_webhook');
@@ -828,7 +1019,7 @@
     async function backupParaDrive(manual = false) {
         if(!navigator.onLine) {
             setCloudStatus('error');
-            if(manual) alert("Você está offline. O aplicativo salvará na nuvem automaticamente quando a internet voltar.");
+            if(manual) toast("Offline. O aplicativo enviará depois quando houver internet.", 'erro');
             return;
         }
 
@@ -869,12 +1060,12 @@
             } else {
                 setCloudStatus('ok');
                 if(enviaHtml && manual) localStorage.setItem('cc_last_html_ver', versaoAtual);
-                if(manual) alert("✅ Sincronizado com sucesso (Planilha Viva e Backup) no seu Google Drive!");
+                if(manual) toast("✅ Sincronizado com sucesso!");
             }
         })
         .catch(err => {
             setCloudStatus('error');
-            if(manual) alert("❌ Erro de comunicação. Verifique a sua URL do Google Script.");
+            if(manual) alert("❌ Erro de comunicação. Verifique a URL do Google Script.");
         });
     }
 
@@ -913,7 +1104,7 @@
             catch (err) { e.target.value = ''; return toast('Arquivo inválido: não é um JSON legível.', 'erro'); }
             if (!novo || typeof novo !== 'object' || !Array.isArray(novo.despesas) || !Array.isArray(novo.pagamentos)) {
                 e.target.value = '';
-                return toast('Esse arquivo não parece ser um backup do ControlCard.', 'erro');
+                return toast('Esse arquivo não parece ser um backup.', 'erro');
             }
             const resumo = `${novo.despesas.length} despesas, ${novo.pagamentos.length} recebimentos`;
             if (!confirm(`Substituir os dados atuais por este backup (${resumo})?\n\nUm backup de segurança dos dados atuais será baixado antes.`)) { e.target.value = ''; return; }
@@ -1110,7 +1301,7 @@
         return dataStr >= range.ini && dataStr <= range.fim;
     }
 
-    // --- NOVA INTELIGÊNCIA DE EDIÇÃO (MÓDULO UNIFICADO) ---
+    // --- MÓDULO UNIFICADO DE EDIÇÃO ---
     function abrirEdicao(id, tipo) {
         document.getElementById('edit-id').value = id;
         document.getElementById('edit-tipo').value = tipo;
@@ -1223,7 +1414,7 @@
                     d.valor = valor; d.categoria = cat; d.cartao = cartao; d.pessoa = pessoa; d.dataCompra = dataReal; d.dataRef = dataRef;
 
                     // Cria as novas pro futuro
-                    let extra = isParc ? (nTotal - nAtual) : 36; // Mensalidade recria por 3 anos invisivel
+                    let extra = isParc ? (nTotal - nAtual) : 36;
                     let currRef = d.dataRef;
                     let baseId = Date.now();
                     
@@ -1243,7 +1434,6 @@
                         });
                     }
                 } else {
-                    // Se ele não quiser propagar, apenas atualiza esta parcela em específico
                     d.desc = isParc ? `${descBase} (${nAtual}/${nTotal})` : descBase;
                     d.valor = valor; d.categoria = cat; d.cartao = cartao; d.pessoa = pessoa; d.dataCompra = dataReal; d.dataRef = dataRef;
                 }
@@ -1274,7 +1464,6 @@
                     let idsToDelete = db.despesas.filter(x => getGroupKey(x) === origKey && x.dataRef >= d.dataRef).map(x => x.id);
                     db.despesas = db.despesas.filter(x => !idsToDelete.includes(x.id));
                 } else {
-                    // Apaga apenas este mês
                     db.despesas = db.despesas.filter(x => x.id !== id);
                 }
             } else {
@@ -1355,20 +1544,10 @@
     function removerPagador(id) { document.getElementById(id).remove(); atualizarBotoesRemover(); }
     function atualizarBotoesRemover() { const bs = document.querySelectorAll('.btn-remove-pag'); bs.forEach(b => b.style.display = bs.length === 1 ? 'none' : 'block'); }
 
-    // ===== CORREÇÃO: função que faltava (causava erro silencioso no FINALIZAR) =====
     function gerarMesVencimentoBase(mesBase, parcela) {
         const [a, m] = String(mesBase).split('-').map(Number);
         const d = new Date(a, (m - 1) + (parcela - 1), 1);
         return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-    }
-
-    function toast(msg, tipo) {
-        let t = document.getElementById('toast-app');
-        if (!t) { t = document.createElement('div'); t.id = 'toast-app'; document.body.appendChild(t); }
-        t.className = 'show ' + (tipo || 'ok');
-        t.textContent = msg;
-        clearTimeout(t._h);
-        t._h = setTimeout(() => t.className = '', 3200);
     }
 
     function salvarCompra() {
@@ -1454,7 +1633,6 @@
         backupParaDrive(false); toast('✅ Recebimento registrado!');
     }
 
-    // ===== NOVAS FERRAMENTAS v1.7.0 =====
     function brl(v) { return (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 
     function renderizarCategoriasDash(despesas) {
@@ -2293,7 +2471,7 @@
         }
     }
 
-    /* ================= PERSISTÊNCIA + PWA (v1.8.0) ================= */
+    /* ================= PERSISTÊNCIA + PWA (v1.9.0) ================= */
     function idbAbrir() {
         return new Promise((res, rej) => {
             if (!window.indexedDB) return rej(new Error('sem IndexedDB'));
@@ -2325,14 +2503,14 @@
         if (!dbVazio(db)) return;
         const e = await lerEspelhoIDB();
         if (dbVazio(e)) return;
-        if (confirm(`Seus dados locais estão vazios, mas existe uma cópia de segurança com ${(e.despesas || []).length} despesas e ${(e.pagamentos || []).length} recebimentos.\n\nRestaurar agora?`)) {
+        if (confirm(`Seus dados locais estão vazios, mas existe uma cópia de segurança local com ${(e.despesas || []).length} despesas.\n\nRestaurar agora?`)) {
             ['pessoas','cartoes','categorias','despesas','pagamentos','pessoasInativas','cartoesInativos','categoriasInativas'].forEach(k => { if (!Array.isArray(e[k])) e[k] = []; });
             db = e; salvarDB(); atualizarTodasTelas(); preencherListasCorrecao();
             toast('✅ Dados restaurados da cópia de segurança');
         }
     }
 
-    (function iniciarPWA() {
+    function iniciarPWA() {
         const b = document.getElementById('app-versao-badge'); if (b) b.textContent = 'v' + APP_VERSION;
         document.title = 'ControlCard MAX - v' + APP_VERSION;
         try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
@@ -2340,7 +2518,7 @@
         if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
             navigator.serviceWorker.register('sw.js').catch(e => console.warn('SW não registrado:', e));
         }
-    })();
+    }
 </script>
 </body>
 </html>
