@@ -1,7 +1,7 @@
 // Service Worker do ControlCard — mantenha VERSAO igual a APP_VERSION do index.html
 const VERSAO = '1.8.0';
 const CACHE = 'controlcard-' + VERSAO;
-const SHELL = ['./', 'index.html', 'manifest.json', 'icons/icon-192.png', 'icons/icon-512.png'];
+const SHELL = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png'];;
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
