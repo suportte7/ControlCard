@@ -8,11 +8,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#f59e0b">
-    <link id="pwa-manifest" rel="manifest" href="manifest.json?v=3">
-    <link rel="apple-touch-icon" href="icon-192.png?v=3">
+    <link id="pwa-manifest" rel="manifest" href="manifest.json?v=4">
+    <link rel="apple-touch-icon" href="icon-192.png?v=4">
     <link rel="icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f59e0b' rx='20'/%3E%3Ctext x='50' y='65' font-size='45' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'%3ECC%3C/text%3E%3C/svg%3E">
     
-    <title>ControlCard MAX - v1.9.1</title>
+    <title>ControlCard MAX - v1.9.2</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
     <style>
         /* TEMAS COM CORES SUAVES */
@@ -440,7 +440,7 @@
         <div class="page-header">
             <div class="brand-line">
                 <div class="brand-mark">CC</div>
-                <span class="brand-name">ControlCard <span class="v-badge" id="app-versao-badge">v1.9.1</span>
+                <span class="brand-name">ControlCard <span class="v-badge" id="app-versao-badge">v1.9.2</span>
                     <span id="cloud-status-icon" class="material-icons-outlined cloud-status" title="Sincronização">cloud_off</span>
                 </span>
             </div>
@@ -595,10 +595,13 @@
             <div class="section-label">Sistema & Backup Nuvem</div>
             <div class="card">
                 <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">cloud_sync</span> Sincronizar Google Drive</h3>
-                <p class="helper">Cole a URL do seu Google Script para criar uma <strong>Planilha Viva</strong> e fazer backup silencioso de todos os dados do app sempre que tiver internet.</p>
+                <p class="helper">Use os botões abaixo para enviar ou puxar do Google Drive. O sistema detectará atualizações automaticamente ao abrir.</p>
                 <div class="form-group" style="display:flex; gap:8px; flex-direction: column;">
                     <input type="url" id="drive-webhook" class="form-input" style="font-size: 0.8rem; text-transform: none; padding:10px;" placeholder="https://script.google.com/..." onchange="salvarWebhook()">
-                    <button class="btn btn-outline" style="padding:10px; border-color: var(--primary); color: var(--primary);" onclick="backupParaDrive(true)"><span class="material-icons-outlined">sync</span> SINCRONIZAR AGORA</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-outline" style="flex:1; padding:10px; border-color: var(--primary); color: var(--primary);" onclick="puxarDoDrive()"><span class="material-icons-outlined">cloud_download</span> PUXAR (Vem)</button>
+                        <button class="btn btn-primary" style="flex:1; padding:10px;" onclick="backupParaDrive(true)"><span class="material-icons-outlined">cloud_upload</span> ENVIAR (Vai)</button>
+                    </div>
                 </div>
                 <hr style="border: 1px solid var(--border); margin: 12px 0;">
                 <button class="btn btn-outline" style="margin-bottom: 8px; padding:10px;" onclick="document.getElementById('import-file').click()"><span class="material-icons-outlined">file_upload</span> Importar Backup Manual</button>
@@ -653,7 +656,7 @@
 
 <script>
     /* ================= TEMAS E FORMATADORES ================= */
-    const APP_VERSION = '1.9.1';
+    const APP_VERSION = '1.9.2';
     const DB_NOME_FIXO = 'ControlCard_v1_DB'; 
     let db = JSON.parse(localStorage.getItem(DB_NOME_FIXO)) || { pessoas: [], cartoes: [], categorias: [], despesas: [], pagamentos: [] };
     if(!db.pessoasInativas) db.pessoasInativas = [];
@@ -701,13 +704,13 @@
         t.className = 'show ' + (tipo || 'ok');
         t.textContent = msg;
         clearTimeout(t._h);
-        t._h = setTimeout(() => t.className = '', 3200);
+        t._h = setTimeout(() => t.className = '', 3500);
     }
 
     /* ================= TELA DE BLOQUEIO (COFRE PIN) ================= */
     let appPin = localStorage.getItem('cc_pin') || '';
     let currentPin = '';
-    let pinMode = 'login'; // login, setup1, setup2
+    let pinMode = 'login'; 
 
     function checkLock() {
         if(!appPin) {
@@ -760,7 +763,7 @@
                 currentPin = ''; updatePinDots();
             }
         } else if(pinMode === 'setup1') {
-            appPin = currentPin; // Guarda temporário
+            appPin = currentPin; 
             currentPin = ''; updatePinDots();
             pinMode = 'setup2';
             document.getElementById('lock-title').innerText = "CONFIRME A SENHA";
@@ -995,6 +998,89 @@
         localStorage.setItem('cc_drive_webhook', document.getElementById('drive-webhook').value.trim());
     }
 
+    function getMaxId(obj) {
+        let m1 = (obj.despesas||[]).reduce((max, d) => Math.max(max, d.id), 0);
+        let m2 = (obj.pagamentos||[]).reduce((max, p) => Math.max(max, p.id), 0);
+        return Math.max(m1, m2);
+    }
+
+    // 💡 O RADAR INTELIGENTE (VERIFICA A NUVEM AO ABRIR)
+    async function verificarNuvemNaInicializacao() {
+        if(!navigator.onLine) return; 
+        let url = localStorage.getItem('cc_drive_webhook');
+        if(!url) return; 
+
+        try {
+            let res = await fetch(url, { redirect: "follow" });
+            let nuvem = await res.json();
+            if(nuvem.erro || !nuvem.despesas) return;
+
+            let maxLocal = getMaxId(db);
+            let maxNuvem = getMaxId(nuvem);
+
+            if (maxNuvem > maxLocal) {
+                // Nuvem está com compras mais novas!
+                if(confirm("🔔 ATENÇÃO: Detectamos dados mais novos no seu Google Drive (feitos em outro aparelho).\n\nDeseja PUXAR esses dados e atualizar esta tela agora?")) {
+                    ['pessoas','cartoes','categorias','pessoasInativas','cartoesInativos','categoriasInativas'].forEach(k => { if (!Array.isArray(nuvem[k])) nuvem[k] = []; });
+                    try { exportarBackup(true); } catch (err) {} 
+                    db = nuvem;
+                    salvarDB();
+                    atualizarTodasTelas();
+                    preencherListasCorrecao();
+                    toast("✅ Aplicativo atualizado com sucesso!");
+                    setCloudStatus('ok');
+                } else {
+                    toast("Você pode puxar os dados depois pela aba de Ajustes.", "ok");
+                }
+            } else if (maxLocal > maxNuvem) {
+                // Local está com compras mais novas. Empurra pra nuvem silenciosamente!
+                backupParaDrive(false);
+            } else {
+                // Os dois estão exatamente iguais. Faz nada.
+                setCloudStatus('ok');
+            }
+        } catch(e) {
+            console.log("Erro na verificação automática:", e);
+            setCloudStatus('error');
+        }
+    }
+
+    // O BOTÃO DE PUXAR MANUAL (Na aba Ajustes)
+    function puxarDoDrive() {
+        if(!navigator.onLine) return toast("Você está offline!", "erro");
+        let url = localStorage.getItem('cc_drive_webhook');
+        if(!url) return toast("Configure a URL do Google Drive primeiro.", "erro");
+
+        if(!confirm("Isso vai apagar a tela atual e PUXAR os dados que estão salvos na Nuvem. Deseja continuar?")) return;
+
+        toast("Buscando na nuvem... Aguarde.", "ok");
+        setCloudStatus('syncing');
+
+        fetch(url, { redirect: "follow" })
+        .then(res => res.json())
+        .then(novo => {
+            if(novo.erro) {
+                setCloudStatus('error');
+                return alert("Erro na nuvem: " + novo.erro);
+            }
+            if (!novo.despesas || !novo.pagamentos) return alert("Nenhum dado encontrado na nuvem.");
+
+            try { exportarBackup(true); } catch (err) {} 
+            ['pessoas','cartoes','categorias','pessoasInativas','cartoesInativos','categoriasInativas'].forEach(k => { if (!Array.isArray(novo[k])) novo[k] = []; });
+
+            db = novo; 
+            salvarDB();
+            atualizarTodasTelas();
+            preencherListasCorrecao();
+            setCloudStatus('ok');
+            toast("✅ Dados PUXADOS com sucesso!");
+        })
+        .catch(err => {
+            setCloudStatus('error');
+            alert("Erro ao conectar no Google: " + err.message);
+        });
+    }
+
     async function backupParaDrive(manual = false) {
         if(!navigator.onLine) {
             setCloudStatus('error');
@@ -1040,25 +1126,14 @@
                 setCloudStatus('ok');
                 if(enviaHtml && manual) localStorage.setItem('cc_last_html_ver', versaoAtual);
                 if(manual) toast("✅ Sincronizado com sucesso!");
+                let hj = new Date().toLocaleDateString('pt-BR');
+                localStorage.setItem('cc_bkp_diario', hj);
             }
         })
         .catch(err => {
             setCloudStatus('error');
             if(manual) alert("❌ Erro de comunicação. Verifique a URL do Google Script.");
         });
-    }
-
-    function verificarBackupAutomatico() {
-        if(!db || !db.despesas || db.despesas.length === 0) return;
-        let hj = new Date().toLocaleDateString('pt-BR');
-        
-        backupParaDrive(false); 
-
-        let ultimo = localStorage.getItem('cc_bkp_diario');
-        if(ultimo !== hj) {
-            exportarBackup(true); 
-            localStorage.setItem('cc_bkp_diario', hj);
-        }
     }
 
     function exportarBackup(auto = false) {
@@ -1092,7 +1167,7 @@
             db = novo;
             salvarDB(); atualizarTodasTelas(); preencherListasCorrecao();
             toast('✅ Dados importados: ' + resumo);
-            verificarBackupAutomatico();
+            backupParaDrive(false);
             e.target.value = '';
         };
         r.readAsText(f, "UTF-8");
@@ -2490,20 +2565,30 @@
     }
 
     function iniciarPWA() {
-        // ESSA É A PARTE QUE ESTAVA FALTANDO AO DESBLOQUEAR A TELA!
         carregarWebhook();
         carregarSelects(); 
         montarFiltrosGlobais();
         atualizarSaldos(); 
-        verificarBackupAutomatico();
+
+        window.addEventListener('online', () => {
+            toast('🌐 Conexão restaurada!', 'ok');
+            backupParaDrive(false);
+        });
         
-        window.addEventListener('online', () => backupParaDrive(false));
-        window.addEventListener('offline', () => setCloudStatus('error'));
+        window.addEventListener('offline', () => {
+            toast('📵 Você está offline. O app salvará localmente.', 'erro');
+            setCloudStatus('error');
+        });
 
         const b = document.getElementById('app-versao-badge'); if (b) b.textContent = 'v' + APP_VERSION;
         document.title = 'ControlCard MAX - v' + APP_VERSION;
         try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
-        verificarEspelho();
+        
+        // Verifica o cofre de segurança e depois puxa o Radar do Google!
+        verificarEspelho().then(() => {
+            verificarNuvemNaInicializacao();
+        });
+
         if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
             navigator.serviceWorker.register('sw.js').catch(e => console.warn('SW não registrado:', e));
         }
