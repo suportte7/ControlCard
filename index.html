@@ -8,11 +8,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#f59e0b">
-    <link id="pwa-manifest" rel="manifest" href="manifest.json?v=4">
-    <link rel="apple-touch-icon" href="icon-192.png?v=4">
+    <link id="pwa-manifest" rel="manifest" href="manifest.json?v=6">
+    <link rel="apple-touch-icon" href="icon-192.png?v=6">
     <link rel="icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f59e0b' rx='20'/%3E%3Ctext x='50' y='65' font-size='45' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'%3ECC%3C/text%3E%3C/svg%3E">
     
-    <title>ControlCard MAX - v1.9.2</title>
+    <title>ControlCard MAX - v1.9.4</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
     <style>
         /* TEMAS COM CORES SUAVES */
@@ -344,27 +344,44 @@
         <!-- ABA RECEBIMENTO -->
         <div id="form-rec" style="display: none;">
             <div class="form-group">
-                <label>Quem está pagando?</label>
+                <label>Quem está pagando / abatendo?</label>
                 <select id="pag-pessoa" class="form-input up-text" style="font-size: 1.2rem; color: var(--primary); border-color: var(--primary);"></select>
             </div>
             
             <div class="form-group">
-                <label>Valor Recebido (R$)</label>
-                <input type="number" id="pag-valor" class="form-input input-destaque-receita" step="0.01" placeholder="0.00">
+                <label>O que é este recebimento/abatimento?</label>
+                <input type="text" id="pag-desc" class="form-input" placeholder="Ex: Abatimento de dívida ou PIX Fulano">
             </div>
 
-            <div class="form-group">
-                <label>O que é este recebimento?</label>
-                <input type="text" id="pag-desc" class="form-input" placeholder="Ex: Acerto da fatura ou PIX Fulano">
+            <div style="display: flex; gap: 10px;">
+                <div class="form-group" style="flex: 2; margin-bottom:0;">
+                    <label>Valor (R$)</label>
+                    <div style="display: flex; gap: 6px;">
+                        <input type="number" id="pag-valor" class="form-input input-destaque-receita" step="0.01" placeholder="0.00" style="padding: 10px;">
+                        <button class="btn-success" style="border-radius: 10px; width: 45px; border:none; display:flex; align-items:center; justify-content:center;" onclick="abrirCalc(this)"><span class="material-icons-outlined" style="font-size:1.3rem;">calculate</span></button>
+                    </div>
+                </div>
+                <div class="form-group" style="flex: 1.5; margin-bottom:0;">
+                    <label>Tipo</label>
+                    <select id="pag-tipo" class="form-input up-text" style="font-size: 0.9rem; font-weight: 900; padding: 12px 6px;" onchange="mudarTipoPagamento(this)">
+                        <option value="1">À VISTA</option>
+                        <option value="P">PARCELADO</option>
+                        <option value="A">MENSALIDADE</option>
+                    </select>
+                </div>
+                <div class="form-group box-parcelas-pag" style="flex: 0.8; margin-bottom:0; display:none;">
+                    <label>Vezes</label>
+                    <input type="number" id="pag-parcelas" class="form-input" value="2" style="font-size: 1.2rem; font-weight: 900; padding: 10px; text-align: center;">
+                </div>
             </div>
             
-            <div class="edicao-field-row">
+            <div class="edicao-field-row" style="margin-top: 15px;">
                 <div class="form-group" style="margin-bottom:0;">
-                    <label>Data que o $$ caiu</label>
+                    <label>Data Exata</label>
                     <input type="date" id="pag-data" class="form-input">
                 </div>
                 <div class="form-group" style="margin-bottom:0;">
-                    <label>Mês de Referência</label>
+                    <label>Mês na Fatura (Abatimento)</label>
                     <input type="month" id="pag-data-ref" class="form-input">
                 </div>
             </div>
@@ -438,12 +455,13 @@
 
     <div class="app-container">
         <div class="page-header">
-            <div class="brand-line">
+            <div class="brand-line" style="margin-bottom: 0;">
                 <div class="brand-mark">CC</div>
-                <span class="brand-name">ControlCard <span class="v-badge" id="app-versao-badge">v1.9.2</span>
+                <span class="brand-name">ControlCard <span class="v-badge" id="app-versao-badge">v1.9.4</span>
                     <span id="cloud-status-icon" class="material-icons-outlined cloud-status" title="Sincronização">cloud_off</span>
                 </span>
             </div>
+            <div style="font-size: 0.55rem; color: var(--text-light); margin-left: 34px; margin-bottom: 8px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;">By <span style="color: var(--primary);">@waldomironetto</span></div>
             <h2 id="page-title">Visão Geral</h2>
             <p id="page-subtitle">Acompanhe quem deve e faturas abertas</p>
         </div>
@@ -562,7 +580,7 @@
             <div class="section-label" style="color: var(--primary);">🛠 Ferramentas Extras</div>
             <div class="card" style="border-color: var(--primary);">
                 <h3 style="color: var(--primary); font-size:0.9rem;"><span class="material-icons-outlined">layers</span> Gestão de Assinaturas e Parcelas</h3>
-                <p class="helper">Aumente, diminua a quantidade, mude o valor da assinatura ou cancele totalmente.</p>
+                <p class="helper">Aumente, diminua a quantidade, edite o valor ou cancele as suas compras e os seus <strong style="color:var(--success);">recebimentos mensais</strong> em lote.</p>
                 <div class="form-group"><label>PESSOA:</label><select id="parc-pessoa" class="form-input up-text" style="padding:10px;" onchange="renderizarListaParcelamentos()"></select></div>
                 <div id="lista-parcelamentos-container" style="margin: 12px 0;"></div>
             </div>
@@ -656,7 +674,7 @@
 
 <script>
     /* ================= TEMAS E FORMATADORES ================= */
-    const APP_VERSION = '1.9.2';
+    const APP_VERSION = '1.9.4';
     const DB_NOME_FIXO = 'ControlCard_v1_DB'; 
     let db = JSON.parse(localStorage.getItem(DB_NOME_FIXO)) || { pessoas: [], cartoes: [], categorias: [], despesas: [], pagamentos: [] };
     if(!db.pessoasInativas) db.pessoasInativas = [];
@@ -679,17 +697,6 @@
         if(!mesStr || !mesStr.includes('-')) return mesStr;
         let [ano, mes] = mesStr.split('-');
         return `${MESES_ABREV[parseInt(mes)-1]}/${ano}`;
-    }
-
-    function getParcelaBadge(desc) {
-        let matchParc = desc.match(/\((\d+)\/(\d+)\)/);
-        if (!matchParc) return { descLimp: desc, badgeHtml: '' };
-        let isLast = matchParc[1] === matchParc[2]; 
-        let descLimp = desc.replace(/\(\d+\/\d+\)/, '').trim();
-        let style = isLast ? 'background: var(--success); color: #fff;' : '';
-        let icon = isLast ? ' 🏁' : '';
-        let badgeHtml = `<div class="parc-badge" style="${style}">${matchParc[1]}/${matchParc[2]}${icon}</div>`;
-        return { descLimp, badgeHtml };
     }
 
     function getLocalToday() {
@@ -934,6 +941,12 @@
         }
     }
 
+    function mudarTipoPagamento(sel) {
+        let box = document.querySelector('.box-parcelas-pag');
+        if(sel.value === 'P') box.style.display = 'block';
+        else box.style.display = 'none';
+    }
+
     /* ================= CALCULADORA FLUTUANTE ================= */
     let calcTargetInput = null; let calcExp = "";
     function abrirCalc(btn) { calcTargetInput = btn.previousElementSibling; calcExp = ""; document.getElementById('calc-display').innerText = "0"; document.getElementById('modal-calc').classList.add('open'); }
@@ -980,7 +993,7 @@
     };
 
     window.addEventListener('online', () => {
-        toast('🌐 Conexão restaurada! Sincronizando...', 'ok');
+        toast('🌐 Conexão restaurada!', 'ok');
         backupParaDrive(false);
     });
     
@@ -1019,7 +1032,6 @@
             let maxNuvem = getMaxId(nuvem);
 
             if (maxNuvem > maxLocal) {
-                // Nuvem está com compras mais novas!
                 if(confirm("🔔 ATENÇÃO: Detectamos dados mais novos no seu Google Drive (feitos em outro aparelho).\n\nDeseja PUXAR esses dados e atualizar esta tela agora?")) {
                     ['pessoas','cartoes','categorias','pessoasInativas','cartoesInativos','categoriasInativas'].forEach(k => { if (!Array.isArray(nuvem[k])) nuvem[k] = []; });
                     try { exportarBackup(true); } catch (err) {} 
@@ -1033,10 +1045,8 @@
                     toast("Você pode puxar os dados depois pela aba de Ajustes.", "ok");
                 }
             } else if (maxLocal > maxNuvem) {
-                // Local está com compras mais novas. Empurra pra nuvem silenciosamente!
                 backupParaDrive(false);
             } else {
-                // Os dois estão exatamente iguais. Faz nada.
                 setCloudStatus('ok');
             }
         } catch(e) {
@@ -1045,7 +1055,7 @@
         }
     }
 
-    // O BOTÃO DE PUXAR MANUAL (Na aba Ajustes)
+    // O BOTÃO DE PUXAR MANUAL
     function puxarDoDrive() {
         if(!navigator.onLine) return toast("Você está offline!", "erro");
         let url = localStorage.getItem('cc_drive_webhook');
@@ -1182,8 +1192,11 @@
 
     function getGroupKey(d) {
         if(d.isAssinatura) return d.assinaturaId;
-        let baseDesc = d.desc.replace(/\(\d+\/\d+\)/, '').trim();
-        return `${baseDesc}_${d.cartao}_${d.dataCompra}`;
+        let baseDesc = (d.desc||'').replace(/\(\d+\/\d+\)/, '').trim();
+        // Se for despesa
+        if(d.cartao) return `${baseDesc}_${d.cartao}_${d.dataCompra}`;
+        // Se for pagamento/recebimento
+        return `PAG_${baseDesc}_${d.pessoa}_${d.data}`;
     }
 
     /* ================= CONTROLE DE CHIPS E SELECTS ================= */
@@ -1275,7 +1288,7 @@
         let selectOptions = `
             <option value="MES_ATUAL">MÊS ATUAL</option>
             <option value="MES_ANTERIOR">MÊS ANTERIOR</option>
-            <option value="ULTIMOS_3">ÚLTIMOS 3 MESES</option>
+            <option value="ULTIMOS_3">ÚLTIMOS 3 বহুমЕСES</option>
             <option value="ULTIMOS_6">ÚLTIMOS 6 MESES</option>
             <option value="ANO_ATUAL">ESTE ANO</option>
             <option value="ANO_ANTERIOR">ANO ANTERIOR</option>
@@ -1406,7 +1419,22 @@
             if(!pg) return;
             document.getElementById('edit-title').innerText = "EDITAR RECEBIMENTO";
             document.getElementById('edit-label-desc').innerText = "ANOTAÇÃO DO RECEBIMENTO";
-            document.getElementById('edit-desc').value = pg.desc || 'Recebimento';
+            
+            let matchParc = (pg.desc||'').match(/\((\d+)\/(\d+)\)/);
+            
+            if (pg.isAssinatura) {
+                document.getElementById('edit-desc').value = pg.desc;
+                document.getElementById('edit-parc-original-key').value = getGroupKey(pg);
+            } else if (matchParc) {
+                document.getElementById('edit-desc').value = pg.desc.replace(matchParc[0], '').trim();
+                document.getElementById('box-edit-parcelas').style.display = 'grid';
+                document.getElementById('edit-parc-atual').value = matchParc[1];
+                document.getElementById('edit-parc-total').value = matchParc[2];
+                document.getElementById('edit-parc-original-key').value = getGroupKey(pg);
+            } else {
+                document.getElementById('edit-desc').value = pg.desc || 'Recebimento';
+            }
+
             document.getElementById('edit-valor').value = pg.valor;
             document.getElementById('edit-pessoa').value = pg.pessoa;
             document.getElementById('edit-data-real').value = pg.data;
@@ -1459,15 +1487,12 @@
                 }
 
                 if (propagaFuturo) {
-                    // Limpa todas as cobranças deste grupo que estão no futuro
                     let idsToDelete = db.despesas.filter(x => getGroupKey(x) === origKey && x.dataRef > d.dataRef).map(x => x.id);
                     db.despesas = db.despesas.filter(x => !idsToDelete.includes(x.id));
                     
-                    // Atualiza a transação atual que está na tela
                     d.desc = isParc ? `${descBase} (${nAtual}/${nTotal})` : descBase;
                     d.valor = valor; d.categoria = cat; d.cartao = cartao; d.pessoa = pessoa; d.dataCompra = dataReal; d.dataRef = dataRef;
 
-                    // Cria as novas pro futuro
                     let extra = isParc ? (nTotal - nAtual) : 36;
                     let currRef = d.dataRef;
                     let baseId = Date.now();
@@ -1495,11 +1520,57 @@
         } else {
             let pg = db.pagamentos.find(x => x.id === id);
             if(pg) {
-                pg.desc = document.getElementById('edit-desc').value.trim() || 'Recebimento';
-                pg.valor = valor;
-                pg.pessoa = document.getElementById('edit-pessoa').value;
-                pg.data = document.getElementById('edit-data-real').value;
-                pg.dataRef = document.getElementById('edit-data-ref').value;
+                let isParc = document.getElementById('box-edit-parcelas').style.display !== 'none';
+                let isAssin = pg.isAssinatura;
+                let origKey = document.getElementById('edit-parc-original-key').value;
+                let descBase = document.getElementById('edit-desc').value.trim() || 'Recebimento';
+                
+                let pessoa = document.getElementById('edit-pessoa').value;
+                let dataReal = document.getElementById('edit-data-real').value;
+                let dataRef = document.getElementById('edit-data-ref').value;
+                
+                let nAtual = isParc ? parseInt(document.getElementById('edit-parc-atual').value) : null;
+                let nTotal = isParc ? parseInt(document.getElementById('edit-parc-total').value) : null;
+
+                let propagaFuturo = false;
+                if (isParc || isAssin) {
+                    propagaFuturo = confirm("Deseja aplicar essa alteração (Valor/Parcelas/Nome) para os recebimentos/abatimentos dos meses seguintes também?");
+                }
+
+                if (propagaFuturo) {
+                    let pgRef = pg.dataRef || pg.data.substring(0,7);
+                    let idsToDelete = db.pagamentos.filter(x => getGroupKey(x) === origKey && (x.dataRef || x.data.substring(0,7)) > pgRef).map(x => x.id);
+                    db.pagamentos = db.pagamentos.filter(x => !idsToDelete.includes(x.id));
+                    
+                    pg.desc = isParc ? `${descBase} (${nAtual}/${nTotal})` : descBase;
+                    pg.valor = valor; pg.pessoa = pessoa; pg.data = dataReal; pg.dataRef = dataRef;
+                    
+                    let extra = isParc ? (nTotal - nAtual) : 36;
+                    let currRef = pg.dataRef || pg.data.substring(0,7);
+                    let baseId = Date.now();
+                    
+                    for(let i=1; i<=extra; i++){
+                        let [y, m] = currRef.split('-');
+                        let dObj = new Date(parseInt(y), parseInt(m)-1, 1);
+                        dObj.setMonth(dObj.getMonth() + 1);
+                        currRef = `${dObj.getFullYear()}-${String(dObj.getMonth()+1).padStart(2,'0')}`;
+                        
+                        db.pagamentos.push({
+                            id: baseId + i,
+                            desc: isParc ? `${descBase} (${nAtual + i}/${nTotal})` : descBase,
+                            valor: pg.valor, pessoa: pg.pessoa, data: pg.data, dataRef: currRef,
+                            comprovante: pg.comprovante || null,
+                            isAssinatura: pg.isAssinatura || false,
+                            assinaturaId: pg.assinaturaId || null
+                        });
+                    }
+                } else {
+                    pg.desc = isParc ? `${descBase} (${nAtual}/${nTotal})` : descBase;
+                    pg.valor = valor;
+                    pg.pessoa = pessoa;
+                    pg.data = dataReal;
+                    pg.dataRef = dataRef;
+                }
             }
         }
         salvarDB(); fecharModais(); atualizarTodasTelas();
@@ -1524,7 +1595,19 @@
                 if(confirm("Deseja apagar este registo?")) db.despesas = db.despesas.filter(x => x.id !== id);
             }
         } else {
-            if(confirm("Deseja apagar este recebimento?")) db.pagamentos = db.pagamentos.filter(x => x.id !== id);
+            let pg = db.pagamentos.find(x => x.id === id);
+            if (pg && ((pg.desc||'').match(/\(\d+\/\d+\)/) || pg.isAssinatura)) {
+                if(confirm("ATENÇÃO!\n\nDeseja usar a tesoura e apagar TODOS OS RECEBIMENTOS/ABATIMENTOS FUTUROS atrelados a este também?")) {
+                    let origKey = getGroupKey(pg);
+                    let pgRef = pg.dataRef || pg.data.substring(0,7);
+                    let idsToDelete = db.pagamentos.filter(x => getGroupKey(x) === origKey && (x.dataRef || x.data.substring(0,7)) >= pgRef).map(x => x.id);
+                    db.pagamentos = db.pagamentos.filter(x => !idsToDelete.includes(x.id));
+                } else {
+                    db.pagamentos = db.pagamentos.filter(x => x.id !== id);
+                }
+            } else {
+                if(confirm("Deseja apagar este recebimento?")) db.pagamentos = db.pagamentos.filter(x => x.id !== id);
+            }
         }
         salvarDB(); fecharModais(); atualizarTodasTelas();
         backupParaDrive(false);
@@ -1671,20 +1754,45 @@
     }
 
     function registrarBaixa() {
-        const desc = document.getElementById('pag-desc').value.trim() || 'Recebimento';
+        const descGlobal = document.getElementById('pag-desc').value.trim() || 'Recebimento/Abatimento';
         const p = document.getElementById('pag-pessoa').value;
-        const v = parseFloat(document.getElementById('pag-valor').value.replace(',','.'));
+        const vStr = document.getElementById('pag-valor').value.replace(',','.');
+        const v = parseFloat(vStr);
         const d = document.getElementById('pag-data').value;
         const dRef = document.getElementById('pag-data-ref').value;
         
-        if(!p || isNaN(v) || v<=0 || !d || !dRef) return toast('Selecione a pessoa e preencha o valor do recebimento.', 'erro');
+        let tipo = document.getElementById('pag-tipo').value;
+        let isAssinatura = (tipo === 'A');
+        let parc = 1;
+        if (tipo === 'P') parc = parseInt(document.getElementById('pag-parcelas').value) || 2;
+        if (tipo === 'A') parc = 36;
 
-        db.pagamentos.push({ 
-            id: Date.now(), desc: desc, pessoa: p, valor: v, data: d, dataRef: dRef,
-            comprovante: base64Pag
-        });
-        salvarDB(); fecharModais(); document.getElementById('pag-valor').value=''; atualizarTodasTelas(); 
-        backupParaDrive(false); toast('✅ Recebimento registrado!');
+        if(!p || isNaN(v) || v<=0 || !d || !dRef) return toast('Selecione a pessoa e preencha o valor.', 'erro');
+
+        let idBase = Date.now();
+        let vFormatado = v.toFixed(2);
+        let transacoes = [];
+
+        for(let i=1; i<=parc; i++) {
+            let mesRef = gerarMesVencimentoBase(dRef, i);
+            let descToSave = (tipo === 'P' && parc > 1) ? `${descGlobal} (${i}/${parc})` : descGlobal;
+            
+            transacoes.push({ 
+                id: idBase + i, desc: descToSave, pessoa: p, valor: parseFloat(vFormatado), 
+                data: d, dataRef: mesRef,
+                comprovante: base64Pag,
+                isAssinatura: isAssinatura,
+                assinaturaId: isAssinatura ? 'ass_pag_' + idBase + '_' + p : null
+            });
+        }
+
+        db.pagamentos.push(...transacoes);
+        salvarDB(); fecharModais(); 
+        document.getElementById('pag-valor').value=''; 
+        document.getElementById('pag-desc').value=''; 
+        atualizarTodasTelas(); 
+        backupParaDrive(false); 
+        toast('✅ Recebimento registrado!');
     }
 
     function brl(v) { return (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
@@ -1721,26 +1829,33 @@
         atualizarSaldos();
     }
 
-    function formatarInfoItem(d) {
-        let cat = d.categoria && d.categoria !== "📌 Migrado do Antigo" ? `<div class="cat-badge">${d.categoria}</div>` : '';
+    function formatarInfoItem(d, isPag = false) {
+        let cat = (d.categoria && d.categoria !== "📌 Migrado do Antigo") ? `<div class="cat-badge">${d.categoria}</div>` : '';
         let badgeP = '';
-        let descLimp = d.desc;
+        let descLimp = d.desc || 'Recebimento';
 
         if (d.isAssinatura) {
             badgeP = `<div class="parc-badge" style="background: #3b82f6; color: #fff;">🔁 MENSAL</div>`;
         } else {
-            let matchParc = d.desc.match(/\((\d+)\/(\d+)\)/);
+            let matchParc = descLimp.match(/\((\d+)\/(\d+)\)/);
             if(matchParc) {
                 let isLast = matchParc[1] === matchParc[2];
                 let style = isLast ? 'background: var(--success); color: #fff;' : '';
+                if(isPag && !isLast) style = 'background: var(--success); color: #fff; opacity: 0.8;';
                 let icon = isLast ? ' 🏁' : '';
                 badgeP = `<div class="parc-badge" style="${style}">${matchParc[1]}/${matchParc[2]}${icon}</div>`;
-                descLimp = d.desc.replace(/\(\d+\/\d+\)/, '').trim();
+                descLimp = descLimp.replace(/\(\d+\/\d+\)/, '').trim();
             }
         }
 
-        let textData = d.dataCompra ? d.dataCompra.split('-').reverse().join('/') : `${String(db.cartoes.find(c => (c.nome||c) === d.cartao)?.vencimento||10).padStart(2,'0')}/${d.dataRef.split('-').reverse().join('/')}`;
-        let compIcon = d.comprovante ? `<span class="material-icons-outlined" style="font-size:0.8rem; color:var(--primary); margin-left:4px;" title="Tem comprovante">image</span>` : '';
+        let textData = "";
+        if(!isPag) {
+            textData = d.dataCompra ? d.dataCompra.split('-').reverse().join('/') : `${String(db.cartoes.find(c => (c.nome||c) === d.cartao)?.vencimento||10).padStart(2,'0')}/${d.dataRef.split('-').reverse().join('/')}`;
+        } else {
+            textData = d.data ? d.data.split('-').reverse().join('/') : '--/--/----';
+        }
+        let compIcon = d.comprovante ? `<span class="material-icons-outlined" style="font-size:0.8rem; color:${isPag ? 'var(--success)' : 'var(--primary)'}; margin-left:4px;" title="Tem comprovante">image</span>` : '';
+        
         return { descLimp, badgeP, textData, cat, compIcon };
     }
 
@@ -1786,7 +1901,7 @@
                     let idC = idP + '_' + Math.random().toString(36).substr(2, 9);
                     
                     let itensHtml = dc.map(d => {
-                        let i = formatarInfoItem(d);
+                        let i = formatarInfoItem(d, false);
                         return `<div class="t-row" onclick="abrirEdicao(${d.id}, 'desp')"><div class="t-desc"><strong>${i.descLimp} ${i.badgeP} ${i.compIcon}</strong><span>📅 ${i.textData} | ${formatarMesAno(d.dataRef)} ${i.cat}</span></div><div class="t-val desp">R$ ${d.valor.toFixed(2)}</div></div>`;
                     }).join('');
 
@@ -1795,8 +1910,8 @@
 
                 if(sumPag > 0) {
                     let pagHtml = pp.map(pg => {
-                        let compIcon = pg.comprovante ? `<span class="material-icons-outlined" style="font-size:0.9rem; color:var(--success); margin-left:4px;">image</span>` : '';
-                        return `<div class="t-row" onclick="abrirEdicao(${pg.id}, 'pag')"><div class="t-desc"><strong>${pg.desc || 'Recebimento'} ${compIcon}</strong><span>📅 Recebido: ${pg.data.split('-').reverse().join('/')} | Ref: ${formatarMesAno(pg.dataRef || pg.data.substring(0,7))}</span></div><div class="t-val pag">- R$ ${pg.valor.toFixed(2)}</div></div>`;
+                        let i = formatarInfoItem(pg, true);
+                        return `<div class="t-row" onclick="abrirEdicao(${pg.id}, 'pag')"><div class="t-desc"><strong>${i.descLimp} ${i.badgeP} ${i.compIcon}</strong><span>📅 Recebido: ${i.textData} | Ref: ${formatarMesAno(pg.dataRef || pg.data.substring(0,7))}</span></div><div class="t-val pag">- R$ ${pg.valor.toFixed(2)}</div></div>`;
                     }).join('');
                     subHtml += `<div class="sub-tree-card" id="${idP}_pags" style="border-color: var(--success);"><div class="sub-tree-header" style="color: var(--success);" onclick="document.getElementById('${idP}_pags').classList.toggle('open')"><span>💰 Pagamentos</span><span>- R$ ${sumPag.toFixed(2)}</span></div><div class="sub-tree-body">${pagHtml}</div></div>`;
                 }
@@ -1826,7 +1941,7 @@
                     let idP = idC + '_' + Math.random().toString(36).substr(2, 9);
 
                     let itensHtml = dp.map(d => {
-                        let i = formatarInfoItem(d);
+                        let i = formatarInfoItem(d, false);
                         return `<div class="t-row" onclick="abrirEdicao(${d.id}, 'desp')"><div class="t-desc"><strong>${i.descLimp} ${i.badgeP} ${i.compIcon}</strong><span>📅 ${i.textData} | ${formatarMesAno(d.dataRef)} ${i.cat}</span></div><div class="t-val desp">R$ ${d.valor.toFixed(2)}</div></div>`;
                     }).join('');
 
@@ -1959,7 +2074,7 @@
             let diaStr = String(item.sortDia).padStart(2, '0');
             
             if(item.tipo === 'desp') {
-                let parcInfo = formatarInfoItem(item);
+                let parcInfo = formatarInfoItem(item, false);
                 htmlListaGeral += `<div class="t-row" onclick="abrirEdicao(${item.id}, 'desp')">
                     <div style="margin-right:12px; text-align:center; min-width:30px; border-right:1px solid var(--border); padding-right:10px;">
                         <div style="font-size:0.7rem; color:var(--text-light); text-transform:uppercase;">Dia</div>
@@ -1969,13 +2084,13 @@
                     <div class="t-val desp">R$ ${item.valor.toFixed(2)}</div>
                 </div>`;
             } else {
-                let compIcon = item.comprovante ? `<span class="material-icons-outlined" style="font-size:0.9rem; color:var(--success); margin-left:4px;">image</span>` : '';
+                let info = formatarInfoItem(item, true);
                 htmlListaGeral += `<div class="t-row" onclick="abrirEdicao(${item.id}, 'pag')">
                     <div style="margin-right:12px; text-align:center; min-width:30px; border-right:1px solid var(--border); padding-right:10px;">
                         <div style="font-size:0.7rem; color:var(--text-light); text-transform:uppercase;">Dia</div>
                         <div style="font-weight:bold; font-size:1.1rem; color:var(--primary);">${diaStr}</div>
                     </div>
-                    <div class="t-desc"><strong style="font-size:0.85rem;">${item.desc || 'Recebimento'} ${compIcon}</strong><span>👤 ${item.pessoa} | 💰 Recebido</span></div>
+                    <div class="t-desc"><strong style="font-size:0.85rem;">${info.descLimp} ${info.badgeP} ${info.compIcon}</strong><span>👤 ${item.pessoa} | 💰 Recebido</span></div>
                     <div class="t-val pag">+ R$ ${item.valor.toFixed(2)}</div>
                 </div>`;
             }
@@ -2037,14 +2152,14 @@
         
         despDia.forEach(d => {
             subTotD += d.valor;
-            let parcInfo = formatarInfoItem(d);
+            let parcInfo = formatarInfoItem(d, false);
             html += `<div class="t-row" onclick="abrirEdicao(${d.id}, 'desp')"><div class="t-desc"><strong style="font-size:0.85rem;">${parcInfo.descLimp} ${parcInfo.badgeP} ${parcInfo.compIcon}</strong><span>👤 ${d.pessoa} | 💳 ${d.cartao}</span></div><div class="t-val desp">R$ ${d.valor.toFixed(2)}</div></div>`;
         });
         
         pagDia.forEach(pg => {
             subTotP += pg.valor;
-            let compIcon = pg.comprovante ? `<span class="material-icons-outlined" style="font-size:0.9rem; color:var(--success); margin-left:4px;">image</span>` : '';
-            html += `<div class="t-row" onclick="abrirEdicao(${pg.id}, 'pag')"><div class="t-desc"><strong style="font-size:0.85rem;">${pg.desc || 'Recebimento'} ${compIcon}</strong><span>👤 ${pg.pessoa} | 💰 Recebido</span></div><div class="t-val pag">+ R$ ${pg.valor.toFixed(2)}</div></div>`;
+            let info = formatarInfoItem(pg, true);
+            html += `<div class="t-row" onclick="abrirEdicao(${pg.id}, 'pag')"><div class="t-desc"><strong style="font-size:0.85rem;">${info.descLimp} ${info.badgeP} ${info.compIcon}</strong><span>👤 ${pg.pessoa} | 💰 Recebido</span></div><div class="t-val pag">+ R$ ${pg.valor.toFixed(2)}</div></div>`;
         });
 
         if(subTotD > 0 || subTotP > 0) {
@@ -2093,15 +2208,15 @@
         let html = filtradas.map(d => {
             let valStr, corVal, iconeCartao, descFinal, dataExib;
             if(d._tipo === 'desp') {
-                let i = formatarInfoItem(d);
+                let i = formatarInfoItem(d, false);
                 descFinal = i.descLimp + ' ' + i.badgeP + ' ' + i.compIcon;
                 valStr = `R$ ${d.valor.toFixed(2)}`;
                 corVal = '';
                 iconeCartao = `💳 ${d.cartao}`;
                 dataExib = formatarMesAno(d.dataRef);
             } else {
-                let compIcon = d.comprovante ? `<span class="material-icons-outlined" style="font-size:0.9rem; color:var(--success); margin-left:4px;">image</span>` : '';
-                descFinal = (d.desc || 'Recebimento') + ' ' + compIcon;
+                let i = formatarInfoItem(d, true);
+                descFinal = i.descLimp + ' ' + i.badgeP + ' ' + i.compIcon;
                 valStr = `+ R$ ${d.valor.toFixed(2)}`;
                 corVal = 'color: var(--success);';
                 iconeCartao = `💰 Recebido`;
@@ -2180,7 +2295,10 @@
         if(selPag.length > 0){
             texto += `\n💰 *Abatimentos / Recebidos:*\n`;
             selPag.forEach((pg, idx) => {
-                texto += `${idx+1}. ${pg.desc || 'Recebimento'} - R$ ${pg.valor.toFixed(2)}\n`; 
+                let pLimp = (pg.desc||'Recebimento').replace(/\(\d+\/\d+\)/, '').trim();
+                let pMatch = (pg.desc||'').match(/\(\d+\/\d+\)/);
+                let pBadge = pMatch ? ` ${pMatch[0]}` : '';
+                texto += `${idx+1}. ${pLimp}${pBadge} - R$ ${pg.valor.toFixed(2)}\n`; 
             });
         }
 
@@ -2193,7 +2311,10 @@
 
     function renderizarListaParcelamentos() {
         const p = document.getElementById('parc-pessoa').value;
-        let filtradas = db.despesas.filter(d => d.pessoa === p && (d.desc.match(/\(\d+\/\d+\)/) || d.isAssinatura));
+        let despFiltradas = db.despesas.filter(d => d.pessoa === p && (d.desc.match(/\(\d+\/\d+\)/) || d.isAssinatura)).map(d => ({...d, _tipo: 'desp'}));
+        let pagFiltrados = db.pagamentos.filter(pg => pg.pessoa === p && ((pg.desc||'').match(/\(\d+\/\d+\)/) || pg.isAssinatura)).map(pg => ({...pg, _tipo: 'pag'}));
+        
+        let filtradas = [...despFiltradas, ...pagFiltrados];
         
         let grupos = {};
         filtradas.forEach(d => {
@@ -2208,26 +2329,34 @@
         let html = '';
         for(let key in grupos) {
             let g = grupos[key];
-            g.sort((a,b) => a.dataRef.localeCompare(b.dataRef));
+            g.sort((a,b) => (a.dataRef||'').localeCompare(b.dataRef||''));
             
-            if(g[g.length - 1].dataRef < mesAtualStr) continue;
+            let ultimaRef = g[g.length - 1].dataRef || g[g.length - 1].data.substring(0,7);
+            if(ultimaRef < mesAtualStr) continue;
 
             let totalParc = g.length;
             let isAssin = g[0].isAssinatura;
-            let descBase = isAssin ? g[0].desc : g[0].desc.replace(/\(\d+\/\d+\)/, '').trim();
-            let dataCriacao = g[0].dataCompra ? g[0].dataCompra.split('-').reverse().join('/') : '--/--/----';
+            let isReceb = g[0]._tipo === 'pag';
+            let descBase = isAssin ? g[0].desc : (g[0].desc||'').replace(/\(\d+\/\d+\)/, '').trim();
+            let dataCriacao = (g[0].dataCompra || g[0].data) ? (g[0].dataCompra || g[0].data).split('-').reverse().join('/') : '--/--/----';
 
-            let mainClick = `abrirEdicao(${g.find(d => d.dataRef >= mesAtualStr) ? g.find(d => d.dataRef >= mesAtualStr).id : g[g.length-1].id}, 'desp')`;
+            let targetD = g.find(d => (d.dataRef || d.data.substring(0,7)) >= mesAtualStr) || g[g.length-1];
+            let mainClick = `abrirEdicao(${targetD.id}, '${g[0]._tipo}')`;
+
+            let corBadge = isReceb ? 'var(--success)' : 'var(--primary)';
+            let corLetra = isReceb ? '#fff' : '#000';
 
             let badgeHtml = isAssin ? 
                 `<div style="background:#3b82f6; color:#fff; padding:4px 8px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="${mainClick}">🔁 MENSAL</div>` : 
-                `<div style="background:var(--primary); color:#000; padding:4px 8px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="${mainClick}">${totalParc}x</div>`;
+                `<div style="background:${corBadge}; color:${corLetra}; padding:4px 8px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="${mainClick}">${totalParc}x</div>`;
+
+            let subTxt = isReceb ? `💰 Recebimento/Abatimento | R$ ${g[0].valor.toFixed(2)} /mês` : `💳 ${g[0].cartao} | R$ ${g[0].valor.toFixed(2)} /mês`;
 
             html += `<div class="check-item" style="display:flex; justify-content:space-between; align-items:center;">
                 <div style="flex:1;" onclick="${mainClick}">
-                    <strong style="font-size:0.95rem;">${descBase}</strong><br>
-                    <span style="font-size:0.75rem; color:var(--text-light); margin-top:2px; display:inline-block;">📅 Comprado em: ${dataCriacao}</span><br>
-                    <span style="font-size:0.75rem; color:var(--text-light)">💳 ${g[0].cartao} | R$ ${g[0].valor.toFixed(2)} /mês</span>
+                    <strong style="font-size:0.95rem; color:${isReceb ? 'var(--success)' : 'var(--text)'};">${descBase}</strong><br>
+                    <span style="font-size:0.75rem; color:var(--text-light); margin-top:2px; display:inline-block;">📅 Início em: ${dataCriacao}</span><br>
+                    <span style="font-size:0.75rem; color:var(--text-light)">${subTxt}</span>
                 </div>
                 <div style="display:flex; gap:8px; align-items:center;">
                     ${badgeHtml}
@@ -2507,7 +2636,7 @@
 
         if (confirm(`Isto apagará lançamentos anteriores a ${mesCorte}.\n\nRecomendado para aliviar o peso de fotos antigas. Continuar?`)) {
             db.despesas = db.despesas.filter(d => d.dataRef >= mesCorte);
-            db.pagamentos = db.pagamentos.filter(pg => pg.data.substring(0,7) >= mesCorte);
+            db.pagamentos = db.pagamentos.filter(pg => (pg.dataRef || pg.data.substring(0,7)) >= mesCorte);
             
             if(!db.pessoasInativas) db.pessoasInativas = [];
             if(!db.cartoesInativos) db.cartoesInativos = [];
