@@ -8,11 +8,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#f59e0b">
-    <link id="pwa-manifest" rel="manifest" href="manifest.json?v=7">
-    <link rel="apple-touch-icon" href="icon-192.png?v=7">
+    <link id="pwa-manifest" rel="manifest" href="manifest.json?v=8">
+    <link rel="apple-touch-icon" href="icon-192.png?v=8">
     <link rel="icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f59e0b' rx='20'/%3E%3Ctext x='50' y='65' font-size='45' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'%3ECC%3C/text%3E%3C/svg%3E">
     
-    <title>ControlCard - v1.9.5</title>
+    <title>ControlCard - v1.9.6</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
     <style>
         /* TEMAS COM CORES SUAVES */
@@ -77,7 +77,7 @@
         .helper { font-size:0.75rem; color:var(--text-light); line-height:1.3; margin-top: 0; margin-bottom: 10px;}
         
         .metric-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:10px; }
-        .metric { min-height:40px; display:flex; flex-direction:column; justify-content:center; border-radius:10px; background:var(--surface); border:1px solid var(--border); padding:6px 8px; }
+        .metric { min-height:40px; display:flex; flex-direction:column; justify-content:center; border-radius:10px; background:var(--surface); border:1px solid var(--border); padding:6px 8px; text-align: center; }
         .metric small { text-transform:uppercase; letter-spacing:.05em; font-size:0.55rem; font-weight:800; color:var(--text-light); margin-bottom:2px;}
         .metric strong { font-size:0.9rem; }
         .metric:first-child { border-top:2px solid var(--primary); }
@@ -457,7 +457,7 @@
         <div class="page-header">
             <div class="brand-line" style="margin-bottom: 0;">
                 <div class="brand-mark">CC</div>
-                <span class="brand-name">ControlCard <span class="v-badge" id="app-versao-badge">v1.9.5</span>
+                <span class="brand-name">ControlCard <span class="v-badge" id="app-versao-badge">v1.9.6</span>
                     <span id="cloud-status-icon" class="material-icons-outlined cloud-status" title="Sincronização">cloud_off</span>
                 </span>
             </div>
@@ -512,9 +512,11 @@
                 
                 <div id="cal-cartoes-chips" class="chip-container"></div>
 
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; margin-bottom: 10px; padding: 8px; border-radius: 8px; background: var(--bg); border: 1px solid var(--primary);">
-                    <span style="font-size: 0.65rem; color: var(--text-light); text-transform: uppercase; font-weight: 800;">RESULTADO LÍQUIDO DO MÊS:</span>
-                    <div id="cal-total-mes" style="font-size: 1rem; font-weight: 900; color: var(--primary); margin: 0; text-align: center;">R$ 0,00</div>
+                <!-- CARDS MÉTRICOS NO MESMO PADRÃO DA TELA VISÃO -->
+                <div class="metric-grid" style="margin-bottom: 10px;">
+                    <div class="metric"><small>Cobrado</small><strong id="cal-metric-cobrado" style="color:var(--danger)">R$ 0,00</strong></div>
+                    <div class="metric"><small>Recebido</small><strong id="cal-metric-recebido" style="color:var(--success)">R$ 0,00</strong></div>
+                    <div class="metric"><small>Saldo Mês</small><strong id="cal-metric-saldo">R$ 0,00</strong></div>
                 </div>
 
                 <div class="calendar-grid">
@@ -674,7 +676,7 @@
 
 <script>
     /* ================= TEMAS E FORMATADORES ================= */
-    const APP_VERSION = '1.9.5';
+    const APP_VERSION = '1.9.6';
     const DB_NOME_FIXO = 'ControlCard_v1_DB'; 
     let db = JSON.parse(localStorage.getItem(DB_NOME_FIXO)) || { pessoas: [], cartoes: [], categorias: [], despesas: [], pagamentos: [] };
     if(!db.pessoasInativas) db.pessoasInativas = [];
@@ -2033,9 +2035,13 @@
 
         let saldoLiquido = totalDespMes - totalPagMes;
 
-        let elTotalMes = document.getElementById('cal-total-mes');
-        if(elTotalMes) {
-            elTotalMes.innerHTML = `Líquido: <strong style="color:${saldoLiquido <= 0 ? 'var(--success)' : 'var(--danger)'}">R$ ${saldoLiquido.toFixed(2)}</strong> <span style="font-size:0.75rem; color:var(--text-light); font-weight:normal;">(Cobrança: R$ ${totalDespMes.toFixed(2)} | Recebido: R$ ${totalPagMes.toFixed(2)})</span>`;
+        // Atualização dos Cards Métricos no padrão da aba Visão
+        document.getElementById('cal-metric-cobrado').innerText = brl(totalDespMes);
+        document.getElementById('cal-metric-recebido').innerText = brl(totalPagMes);
+        let elSaldoCal = document.getElementById('cal-metric-saldo');
+        if(elSaldoCal) {
+            elSaldoCal.innerText = brl(Math.abs(saldoLiquido));
+            elSaldoCal.style.color = saldoLiquido > 0 ? 'var(--danger)' : 'var(--success)';
         }
 
         let primeiroDiaDaSemana = new Date(ano, mes, 1).getDay();
