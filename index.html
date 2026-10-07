@@ -8,11 +8,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#f59e0b">
-    <link id="pwa-manifest" rel="manifest" href="manifest.json?v=6">
-    <link rel="apple-touch-icon" href="icon-192.png?v=6">
+    <link id="pwa-manifest" rel="manifest" href="manifest.json?v=7">
+    <link rel="apple-touch-icon" href="icon-192.png?v=7">
     <link rel="icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f59e0b' rx='20'/%3E%3Ctext x='50' y='65' font-size='45' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'%3ECC%3C/text%3E%3C/svg%3E">
     
-    <title>ControlCard MAX - v1.9.4</title>
+    <title>ControlCard - v1.9.5</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
     <style>
         /* TEMAS COM CORES SUAVES */
@@ -59,9 +59,9 @@
         
         .theme-btn { position: absolute; top: 10px; right: 10px; width: 32px; height: 32px; border-radius: 8px; background: var(--surface); color: var(--primary); display: flex; justify-content: center; align-items: center; cursor: pointer; border: 1px solid var(--border); z-index: 100; }
         
-        .brand-line { display:flex; align-items:center; gap:8px; margin-bottom:4px; }
+        .brand-line { display:flex; align-items:center; gap:8px; margin-bottom:2px; }
         .brand-mark { width:26px; height:26px; border-radius:6px; background:var(--primary); color:var(--bg); display:flex; align-items:center; justify-content:center; font-weight: bold; font-size: 0.8rem;}
-        .brand-name { font-size:0.7rem; letter-spacing:.1em; text-transform:uppercase; color:var(--text-light); font-weight:800; display: flex; align-items: center; gap: 6px;}
+        .brand-name { font-size:0.75rem; letter-spacing:.08em; text-transform:uppercase; color:var(--text-light); font-weight:800; display: flex; align-items: center; gap: 6px;}
         .v-badge { font-size: 0.55rem; background: var(--surface); border: 1px solid var(--border); padding: 2px 6px; border-radius: 4px; color: var(--text-light); font-weight: normal;}
         
         .cloud-status { display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 11px; font-size: 1rem; color: var(--text-light); transition: 0.3s; }
@@ -457,11 +457,11 @@
         <div class="page-header">
             <div class="brand-line" style="margin-bottom: 0;">
                 <div class="brand-mark">CC</div>
-                <span class="brand-name">ControlCard <span class="v-badge" id="app-versao-badge">v1.9.4</span>
+                <span class="brand-name">ControlCard <span class="v-badge" id="app-versao-badge">v1.9.5</span>
                     <span id="cloud-status-icon" class="material-icons-outlined cloud-status" title="Sincronização">cloud_off</span>
                 </span>
             </div>
-            <div style="font-size: 0.55rem; color: var(--text-light); margin-left: 34px; margin-bottom: 8px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;">By <span style="color: var(--primary);">@waldomironetto</span></div>
+            <div style="font-size: 0.65rem; color: var(--text-light); margin-left: 34px; margin-bottom: 8px; font-weight: 800; letter-spacing: 0.05em; text-transform: lowercase; font-family: inherit;">by @waldomironetto</div>
             <h2 id="page-title">Visão Geral</h2>
             <p id="page-subtitle">Acompanhe quem deve e faturas abertas</p>
         </div>
@@ -512,9 +512,9 @@
                 
                 <div id="cal-cartoes-chips" class="chip-container"></div>
 
-                <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 10px; padding: 8px; border-radius: 8px; background: var(--bg); border: 1px solid var(--primary);">
-                    <span style="font-size: 0.7rem; color: var(--text-light); text-transform: uppercase; font-weight: 800;">TOTAL DESTE MÊS:</span>
-                    <div id="cal-total-mes" style="font-size: 1.1rem; font-weight: 900; color: var(--primary); margin: 0;">R$ 0,00</div>
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; margin-bottom: 10px; padding: 8px; border-radius: 8px; background: var(--bg); border: 1px solid var(--primary);">
+                    <span style="font-size: 0.65rem; color: var(--text-light); text-transform: uppercase; font-weight: 800;">RESULTADO LÍQUIDO DO MÊS:</span>
+                    <div id="cal-total-mes" style="font-size: 1rem; font-weight: 900; color: var(--primary); margin: 0; text-align: center;">R$ 0,00</div>
                 </div>
 
                 <div class="calendar-grid">
@@ -674,7 +674,7 @@
 
 <script>
     /* ================= TEMAS E FORMATADORES ================= */
-    const APP_VERSION = '1.9.4';
+    const APP_VERSION = '1.9.5';
     const DB_NOME_FIXO = 'ControlCard_v1_DB'; 
     let db = JSON.parse(localStorage.getItem(DB_NOME_FIXO)) || { pessoas: [], cartoes: [], categorias: [], despesas: [], pagamentos: [] };
     if(!db.pessoasInativas) db.pessoasInativas = [];
@@ -1017,7 +1017,6 @@
         return Math.max(m1, m2);
     }
 
-    // 💡 O RADAR INTELIGENTE (VERIFICA A NUVEM AO ABRIR)
     async function verificarNuvemNaInicializacao() {
         if(!navigator.onLine) return; 
         let url = localStorage.getItem('cc_drive_webhook');
@@ -1055,7 +1054,6 @@
         }
     }
 
-    // O BOTÃO DE PUXAR MANUAL
     function puxarDoDrive() {
         if(!navigator.onLine) return toast("Você está offline!", "erro");
         let url = localStorage.getItem('cc_drive_webhook');
@@ -1193,9 +1191,7 @@
     function getGroupKey(d) {
         if(d.isAssinatura) return d.assinaturaId;
         let baseDesc = (d.desc||'').replace(/\(\d+\/\d+\)/, '').trim();
-        // Se for despesa
         if(d.cartao) return `${baseDesc}_${d.cartao}_${d.dataCompra}`;
-        // Se for pagamento/recebimento
         return `PAG_${baseDesc}_${d.pessoa}_${d.data}`;
     }
 
@@ -1288,7 +1284,7 @@
         let selectOptions = `
             <option value="MES_ATUAL">MÊS ATUAL</option>
             <option value="MES_ANTERIOR">MÊS ANTERIOR</option>
-            <option value="ULTIMOS_3">ÚLTIMOS 3 বহুমЕСES</option>
+            <option value="ULTIMOS_3">ÚLTIMOS 3 MESES</option>
             <option value="ULTIMOS_6">ÚLTIMOS 6 MESES</option>
             <option value="ANO_ATUAL">ESTE ANO</option>
             <option value="ANO_ANTERIOR">ANO ANTERIOR</option>
@@ -1330,6 +1326,12 @@
         }
     }
 
+    function dentroDoPeriodo(obj, range) {
+        if (!range) return true;
+        let dataStr = calcularDataVirtual(obj);
+        return dataStr >= range.ini && dataStr <= range.fim;
+    }
+
     function getFiltroRange(idSelect, idIni, idFim) {
         let val = document.getElementById(idSelect).value;
         let hj = new Date();
@@ -1362,13 +1364,7 @@
         return null;
     }
 
-    function dentroDoPeriodo(obj, range) {
-        if (!range) return true;
-        let dataStr = calcularDataVirtual(obj);
-        return dataStr >= range.ini && dataStr <= range.fim;
-    }
-
-    // --- MÓDULO UNIFICADO DE EDIÇÃO ---
+    /* ================= EDIÇÃO DIRETA ================= */
     function abrirEdicao(id, tipo) {
         document.getElementById('edit-id').value = id;
         document.getElementById('edit-tipo').value = tipo;
@@ -1483,7 +1479,7 @@
 
                 let propagaFuturo = false;
                 if (isParc || isAssin) {
-                    propagaFuturo = confirm("Deseja aplicar essa alteração (Valor/Parcelas/Nome) para os meses seguintes também?\n\n(O histórico passado ficará congelado e não será alterado).");
+                    propagaFuturo = confirm("Deseja aplicar essa alteração para os meses seguintes também?");
                 }
 
                 if (propagaFuturo) {
@@ -1534,7 +1530,7 @@
 
                 let propagaFuturo = false;
                 if (isParc || isAssin) {
-                    propagaFuturo = confirm("Deseja aplicar essa alteração (Valor/Parcelas/Nome) para os recebimentos/abatimentos dos meses seguintes também?");
+                    propagaFuturo = confirm("Deseja aplicar essa alteração para os recebimentos/abatimentos dos meses seguintes também?");
                 }
 
                 if (propagaFuturo) {
@@ -1584,7 +1580,7 @@
         if (tipo === 'desp') {
             let d = db.despesas.find(x => x.id === id);
             if (d && (d.desc.match(/\(\d+\/\d+\)/) || d.isAssinatura)) {
-                if(confirm("ATENÇÃO!\n\nDeseja usar a tesoura e apagar TODAS AS COBRANÇAS FUTURAS desta compra também? (Isso cancela a assinatura ou finaliza o parcelamento)")) {
+                if(confirm("ATENÇÃO!\n\nDeseja apagar TODAS AS COBRANÇAS FUTURAS desta compra também?")) {
                     let origKey = getGroupKey(d);
                     let idsToDelete = db.despesas.filter(x => getGroupKey(x) === origKey && x.dataRef >= d.dataRef).map(x => x.id);
                     db.despesas = db.despesas.filter(x => !idsToDelete.includes(x.id));
@@ -1597,7 +1593,7 @@
         } else {
             let pg = db.pagamentos.find(x => x.id === id);
             if (pg && ((pg.desc||'').match(/\(\d+\/\d+\)/) || pg.isAssinatura)) {
-                if(confirm("ATENÇÃO!\n\nDeseja usar a tesoura e apagar TODOS OS RECEBIMENTOS/ABATIMENTOS FUTUROS atrelados a este também?")) {
+                if(confirm("ATENÇÃO!\n\nDeseja apagar TODOS OS RECEBIMENTOS/ABATIMENTOS FUTUROS atrelados a este também?")) {
                     let origKey = getGroupKey(pg);
                     let pgRef = pg.dataRef || pg.data.substring(0,7);
                     let idsToDelete = db.pagamentos.filter(x => getGroupKey(x) === origKey && (x.dataRef || x.data.substring(0,7)) >= pgRef).map(x => x.id);
@@ -1993,14 +1989,15 @@
         });
 
         let pagFiltrados = db.pagamentos.filter(pg => {
-            let ref = pg.dataRef || pg.data.substring(0,7);
+            let ref = pg.dataRef || (pg.data ? pg.data.substring(0,7) : "");
             if(ref !== mesStr) return false;
             if(fP !== 'TODOS' && pg.pessoa !== fP) return false;
             return true;
         });
 
         let mapaDias = {}; 
-        let totalMes = 0;
+        let totalDespMes = 0;
+        let totalPagMes = 0;
         let diasNoMesAtual = new Date(ano, mes + 1, 0).getDate();
         
         despFiltradas.forEach(d => {
@@ -2017,20 +2014,29 @@
             if(!mapaDias[dia]) mapaDias[dia] = { desp: [], pag: [], totD: 0, totP: 0 };
             mapaDias[dia].desp.push(d);
             mapaDias[dia].totD += d.valor;
-            totalMes += d.valor;
+            totalDespMes += d.valor;
         });
 
         pagFiltrados.forEach(pg => {
-            let dia = parseInt(pg.data.split('-')[2]);
+            let dia = 1;
+            if(pg.data && pg.data.includes('-')) {
+                dia = parseInt(pg.data.split('-')[2]);
+            }
             if(dia > diasNoMesAtual) dia = diasNoMesAtual;
             if(dia < 1 || isNaN(dia)) dia = 1;
 
             if(!mapaDias[dia]) mapaDias[dia] = { desp: [], pag: [], totD: 0, totP: 0 };
             mapaDias[dia].pag.push(pg);
             mapaDias[dia].totP += pg.valor;
+            totalPagMes += pg.valor;
         });
 
-        document.getElementById('cal-total-mes').innerText = `R$ ${totalMes.toFixed(2)}`;
+        let saldoLiquido = totalDespMes - totalPagMes;
+
+        let elTotalMes = document.getElementById('cal-total-mes');
+        if(elTotalMes) {
+            elTotalMes.innerHTML = `Líquido: <strong style="color:${saldoLiquido <= 0 ? 'var(--success)' : 'var(--danger)'}">R$ ${saldoLiquido.toFixed(2)}</strong> <span style="font-size:0.75rem; color:var(--text-light); font-weight:normal;">(Cobrança: R$ ${totalDespMes.toFixed(2)} | Recebido: R$ ${totalPagMes.toFixed(2)})</span>`;
+        }
 
         let primeiroDiaDaSemana = new Date(ano, mes, 1).getDay();
 
@@ -2064,7 +2070,7 @@
         });
         
         pagFiltrados.forEach(pg => {
-            let dia = parseInt(pg.data.split('-')[2]);
+            let dia = pg.data && pg.data.includes('-') ? parseInt(pg.data.split('-')[2]) : 1;
             itensGerais.push({ ...pg, tipo: 'pag', sortDia: dia });
         });
 
@@ -2088,13 +2094,27 @@
                 htmlListaGeral += `<div class="t-row" onclick="abrirEdicao(${item.id}, 'pag')">
                     <div style="margin-right:12px; text-align:center; min-width:30px; border-right:1px solid var(--border); padding-right:10px;">
                         <div style="font-size:0.7rem; color:var(--text-light); text-transform:uppercase;">Dia</div>
-                        <div style="font-weight:bold; font-size:1.1rem; color:var(--primary);">${diaStr}</div>
+                        <div style="font-weight:bold; font-size:1.1rem; color:var(--success);">${diaStr}</div>
                     </div>
                     <div class="t-desc"><strong style="font-size:0.85rem;">${info.descLimp} ${info.badgeP} ${info.compIcon}</strong><span>👤 ${item.pessoa} | 💰 Recebido</span></div>
                     <div class="t-val pag">+ R$ ${item.valor.toFixed(2)}</div>
                 </div>`;
             }
         });
+
+        if (totalDespMes > 0 || totalPagMes > 0) {
+            htmlListaGeral += `
+            <div style="margin-top: 15px; padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; font-weight: 800;">
+                <div>
+                    <span style="color:var(--text-light); display:block; font-size:0.65rem; text-transform:uppercase;">Cobrado / Recebido</span>
+                    <span style="color:var(--danger)">R$ ${totalDespMes.toFixed(2)}</span> / <span style="color:var(--success)">R$ ${totalPagMes.toFixed(2)}</span>
+                </div>
+                <div style="text-align: right;">
+                    <span style="color:var(--text-light); display:block; font-size:0.65rem; text-transform:uppercase;">Saldo no Mês</span>
+                    <span style="color:${saldoLiquido <= 0 ? 'var(--success)' : 'var(--danger)'}; font-size: 1rem;">R$ ${saldoLiquido.toFixed(2)}</span>
+                </div>
+            </div>`;
+        }
         
         document.getElementById('cal-dia-titulo').innerText = `MOVIMENTOS DO MÊS`;
         document.getElementById('cal-dia-lista').innerHTML = htmlListaGeral || '<p style="color:var(--text-light); text-align:center;">Sem movimentos no mês.</p>';
@@ -2136,9 +2156,12 @@
         });
 
         let pagDia = db.pagamentos.filter(pg => {
-            let ref = pg.dataRef || pg.data.substring(0,7);
+            let ref = pg.dataRef || (pg.data ? pg.data.substring(0,7) : "");
             if(ref !== mesStr) return false;
-            let targetDia = parseInt(pg.data.split('-')[2]);
+            let targetDia = 1;
+            if(pg.data && pg.data.includes('-')) {
+                targetDia = parseInt(pg.data.split('-')[2]);
+            }
             if(targetDia > diasNoMesAtual) targetDia = diasNoMesAtual;
             if(targetDia < 1 || isNaN(targetDia)) targetDia = 1;
             
@@ -2162,17 +2185,19 @@
             html += `<div class="t-row" onclick="abrirEdicao(${pg.id}, 'pag')"><div class="t-desc"><strong style="font-size:0.85rem;">${info.descLimp} ${info.badgeP} ${info.compIcon}</strong><span>👤 ${pg.pessoa} | 💰 Recebido</span></div><div class="t-val pag">+ R$ ${pg.valor.toFixed(2)}</div></div>`;
         });
 
+        let saldoDia = subTotD - subTotP;
         if(subTotD > 0 || subTotP > 0) {
-            html += `<div style="display:flex; justify-content:space-between; margin:10px 0; font-size:0.85rem; font-weight:bold;">
-                <span style="color:var(--text-light);">TOTAL DO DIA:</span>
+            html += `<div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; padding:8px; background:var(--bg); border-radius:6px; font-size:0.85rem; font-weight:bold;">
+                <span style="color:var(--text-light);">SALDO DO DIA:</span>
                 <span>
-                    ${subTotD > 0 ? `<span style="color:var(--danger); margin-right:8px;">- R$ ${subTotD.toFixed(2)}</span>` : ''}
-                    ${subTotP > 0 ? `<span style="color:var(--success);">+ R$ ${subTotP.toFixed(2)}</span>` : ''}
+                    ${subTotD > 0 ? `<span style="color:var(--danger); margin-right:6px;">Cobrança: R$ ${subTotD.toFixed(2)}</span>` : ''}
+                    ${subTotP > 0 ? `<span style="color:var(--success); margin-right:6px;">Recebido: R$ ${subTotP.toFixed(2)}</span>` : ''}
+                    <span style="color:${saldoDia <= 0 ? 'var(--success)' : 'var(--danger)'}; border-left:1px solid var(--border); padding-left:6px;">Líquido: R$ ${saldoDia.toFixed(2)}</span>
                 </span>
             </div>`;
         }
 
-        document.getElementById('cal-dia-lista').innerHTML = html || '<p style="color:var(--text-light); text-align:center;">Sem movimentos registados.</p>';
+        document.getElementById('cal-dia-lista').innerHTML = html || '<p style="color:var(--text-light); text-align:center;">Sem movimentos registrados.</p>';
         document.getElementById('cal-dia-detalhe').classList.add('open');
         document.getElementById('cal-dia-detalhe').scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
@@ -2306,8 +2331,6 @@
         
         window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
     }
-
-    // --- FERRAMENTAS EXTRAS E EDIÇÕES --- //
 
     function renderizarListaParcelamentos() {
         const p = document.getElementById('parc-pessoa').value;
@@ -2451,7 +2474,6 @@
         alert(`${countAfe} lançamentos corrigidos.`);
     }
 
-    // --- CADASTROS ATIVOS (EDIÇÃO) ---
     function carregarEdicaoPessoas() {
         let html = '';
         db.pessoas.sort().forEach(p => {
@@ -2710,10 +2732,9 @@
         });
 
         const b = document.getElementById('app-versao-badge'); if (b) b.textContent = 'v' + APP_VERSION;
-        document.title = 'ControlCard MAX - v' + APP_VERSION;
+        document.title = 'ControlCard - v' + APP_VERSION;
         try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
         
-        // Verifica o cofre de segurança e depois puxa o Radar do Google!
         verificarEspelho().then(() => {
             verificarNuvemNaInicializacao();
         });
