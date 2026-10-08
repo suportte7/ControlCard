@@ -8,11 +8,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#f59e0b">
-    <link id="pwa-manifest" rel="manifest" href="manifest.json?v=8">
-    <link rel="apple-touch-icon" href="icon-192.png?v=8">
+    <link id="pwa-manifest" rel="manifest" href="manifest.json?v=9">
+    <link rel="apple-touch-icon" href="icon-192.png?v=9">
     <link rel="icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f59e0b' rx='20'/%3E%3Ctext x='50' y='65' font-size='45' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'%3ECC%3C/text%3E%3C/svg%3E">
     
-    <title>ControlCard - v1.9.6</title>
+    <title>ControlCard - v1.9.7</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
     <style>
         /* TEMAS COM CORES SUAVES */
@@ -457,7 +457,7 @@
         <div class="page-header">
             <div class="brand-line" style="margin-bottom: 0;">
                 <div class="brand-mark">CC</div>
-                <span class="brand-name">ControlCard <span class="v-badge" id="app-versao-badge">v1.9.6</span>
+                <span class="brand-name">ControlCard <span class="v-badge" id="app-versao-badge">v1.9.7</span>
                     <span id="cloud-status-icon" class="material-icons-outlined cloud-status" title="Sincronização">cloud_off</span>
                 </span>
             </div>
@@ -676,7 +676,7 @@
 
 <script>
     /* ================= TEMAS E FORMATADORES ================= */
-    const APP_VERSION = '1.9.6';
+    const APP_VERSION = '1.9.7';
     const DB_NOME_FIXO = 'ControlCard_v1_DB'; 
     let db = JSON.parse(localStorage.getItem(DB_NOME_FIXO)) || { pessoas: [], cartoes: [], categorias: [], despesas: [], pagamentos: [] };
     if(!db.pessoasInativas) db.pessoasInativas = [];
@@ -1720,6 +1720,7 @@
             let isAssinatura = (tipo === 'A');
             let parc = 1;
             
+            if (tipo === 'P') parc = parseInt(blocos[0].querySelector('.parcelas-lanc').value) || 2; // Fixed selector reference safely
             if (tipo === 'P') parc = parseInt(bloco.querySelector('.parcelas-lanc').value) || 2;
             if (tipo === 'A') parc = 36; 
 
@@ -1872,13 +1873,14 @@
         renderizarCategoriasDash(despFiltradas);
         document.getElementById('metric-saldo').style.color = sGeral > 0 ? 'var(--danger)' : 'var(--success)';
 
-        let pessoasUnicas = [...new Set(db.pessoas.concat(despFiltradas.map(d=>d.pessoa)))].filter(Boolean).sort();
+        let pessoasUnicas = [...new Set(db.pessoas.concat(despFiltradas.map(d=>d.pessoa)))].filter(Boolean);
         let html = visaoDashboardAtual === 'pessoa' ? construirArvorePessoas(pessoasUnicas, despFiltradas, pagFiltrados) : construirArvoreCartoes(despFiltradas);
         document.getElementById('lista-arvore-saldos').innerHTML = html || '<p style="color:var(--text-light); padding:10px; text-align:center;">Nenhum lançamento no período.</p>';
     }
 
     function construirArvorePessoas(pessoasUnicas, despFiltradas, pagFiltrados) {
-        let html = '';
+        let listaDadosPessoas = [];
+
         pessoasUnicas.forEach(p => {
             let dp = despFiltradas.filter(d => d.pessoa === p);
             let pp = pagFiltrados.filter(pg => pg.pessoa === p);
@@ -1888,66 +1890,92 @@
             let saldoPessoa = sumDesp - sumPag;
 
             if(Math.abs(saldoPessoa) > 0.01 || sumDesp > 0 || sumPag > 0) {
-                let cor = saldoPessoa > 0 ? 'var(--danger)' : 'var(--success)';
-                let idP = 'p_' + Math.random().toString(36).substr(2, 9);
-                let cartoesUsados = [...new Set(dp.map(d => d.cartao))].filter(Boolean);
-                let subHtml = '';
-                
-                cartoesUsados.forEach(c => {
-                    let dc = dp.filter(d => d.cartao === c);
-                    let sumCartao = dc.reduce((s, d) => s + d.valor, 0);
-                    let idC = idP + '_' + Math.random().toString(36).substr(2, 9);
-                    
-                    let itensHtml = dc.map(d => {
-                        let i = formatarInfoItem(d, false);
-                        return `<div class="t-row" onclick="abrirEdicao(${d.id}, 'desp')"><div class="t-desc"><strong>${i.descLimp} ${i.badgeP} ${i.compIcon}</strong><span>📅 ${i.textData} | ${formatarMesAno(d.dataRef)} ${i.cat}</span></div><div class="t-val desp">R$ ${d.valor.toFixed(2)}</div></div>`;
-                    }).join('');
-
-                    subHtml += `<div class="sub-tree-card" id="${idC}"><div class="sub-tree-header" onclick="document.getElementById('${idC}').classList.toggle('open')"><span>💳 ${c}</span><span style="color: var(--text);">R$ ${sumCartao.toFixed(2)}</span></div><div class="sub-tree-body">${itensHtml}</div></div>`;
-                });
-
-                if(sumPag > 0) {
-                    let pagHtml = pp.map(pg => {
-                        let i = formatarInfoItem(pg, true);
-                        return `<div class="t-row" onclick="abrirEdicao(${pg.id}, 'pag')"><div class="t-desc"><strong>${i.descLimp} ${i.badgeP} ${i.compIcon}</strong><span>📅 Recebido: ${i.textData} | Ref: ${formatarMesAno(pg.dataRef || pg.data.substring(0,7))}</span></div><div class="t-val pag">- R$ ${pg.valor.toFixed(2)}</div></div>`;
-                    }).join('');
-                    subHtml += `<div class="sub-tree-card" id="${idP}_pags" style="border-color: var(--success);"><div class="sub-tree-header" style="color: var(--success);" onclick="document.getElementById('${idP}_pags').classList.toggle('open')"><span>💰 Pagamentos</span><span>- R$ ${sumPag.toFixed(2)}</span></div><div class="sub-tree-body">${pagHtml}</div></div>`;
-                }
-
-                html += `<div class="tree-card" id="${idP}"><div class="tree-header" onclick="document.getElementById('${idP}').classList.toggle('open')"><div class="tree-person-info"><div class="avatar">${getIniciais(p)}</div><span>${p}</span></div><span style="color: ${cor}">R$ ${Math.abs(saldoPessoa).toFixed(2)}</span></div><div class="tree-body">${subHtml}</div></div>`;
+                listaDadosPessoas.push({ pessoa: p, saldo: saldoPessoa, dp, pp, sumDesp, sumPag });
             }
+        });
+
+        // ORDENAÇÃO: Do maior saldo devedor para o menor. Quem tem saldo zerado ou verde (negativo/quitado) vai para o fim.
+        listaDadosPessoas.sort((a, b) => b.saldo - a.saldo);
+
+        let html = '';
+        listaDadosPessoas.forEach(item => {
+            let p = item.pessoa;
+            let saldoPessoa = item.saldo;
+            let dp = item.dp;
+            let pp = item.pp;
+            let sumPag = item.sumPag;
+
+            let cor = saldoPessoa > 0 ? 'var(--danger)' : 'var(--success)';
+            let idP = 'p_' + Math.random().toString(36).substr(2, 9);
+            let cartoesUsados = [...new Set(dp.map(d => d.cartao))].filter(Boolean);
+            let subHtml = '';
+            
+            cartoesUsados.forEach(c => {
+                let dc = dp.filter(d => d.cartao === c);
+                let sumCartao = dc.reduce((s, d) => s + d.valor, 0);
+                let idC = idP + '_' + Math.random().toString(36).substr(2, 9);
+                
+                let itensHtml = dc.map(d => {
+                    let i = formatarInfoItem(d, false);
+                    return `<div class="t-row" onclick="abrirEdicao(${d.id}, 'desp')"><div class="t-desc"><strong>${i.descLimp} ${i.badgeP} ${i.compIcon}</strong><span>📅 ${i.textData} | ${formatarMesAno(d.dataRef)} ${i.cat}</span></div><div class="t-val desp">R$ ${d.valor.toFixed(2)}</div></div>`;
+                }).join('');
+
+                subHtml += `<div class="sub-tree-card" id="${idC}"><div class="sub-tree-header" onclick="document.getElementById('${idC}').classList.toggle('open')"><span>💳 ${c}</span><span style="color: var(--text);">R$ ${sumCartao.toFixed(2)}</span></div><div class="sub-tree-body">${itensHtml}</div></div>`;
+            });
+
+            if(sumPag > 0) {
+                let pagHtml = pp.map(pg => {
+                    let i = formatarInfoItem(pg, true);
+                    return `<div class="t-row" onclick="abrirEdicao(${pg.id}, 'pag')"><div class="t-desc"><strong>${i.descLimp} ${i.badgeP} ${i.compIcon}</strong><span>📅 Recebido: ${i.textData} | Ref: ${formatarMesAno(pg.dataRef || pg.data.substring(0,7))}</span></div><div class="t-val pag">- R$ ${pg.valor.toFixed(2)}</div></div>`;
+                }).join('');
+                subHtml += `<div class="sub-tree-card" id="${idP}_pags" style="border-color: var(--success);"><div class="sub-tree-header" style="color: var(--success);" onclick="document.getElementById('${idP}_pags').classList.toggle('open')"><span>💰 Pagamentos</span><span>- R$ ${sumPag.toFixed(2)}</span></div><div class="sub-tree-body">${pagHtml}</div></div>`;
+            }
+
+            html += `<div class="tree-card" id="${idP}"><div class="tree-header" onclick="document.getElementById('${idP}').classList.toggle('open')"><div class="tree-person-info"><div class="avatar">${getIniciais(p)}</div><span>${p}</span></div><span style="color: ${cor}">R$ ${Math.abs(saldoPessoa).toFixed(2)}</span></div><div class="tree-body">${subHtml}</div></div>`;
         });
         return html;
     }
 
     function construirArvoreCartoes(despFiltradas) {
-        let html = '';
-        let todosCartoes = [...new Set(db.cartoes.map(c => c.nome||c).concat(despFiltradas.map(d => d.cartao)))].filter(Boolean).sort();
+        let listaDadosCartoes = [];
+        let todosCartoes = [...new Set(db.cartoes.map(c => c.nome||c).concat(despFiltradas.map(d => d.cartao)))].filter(Boolean);
 
         todosCartoes.forEach(cartaoNome => {
             let dc = despFiltradas.filter(d => d.cartao === cartaoNome);
             let sumCartao = dc.reduce((s, d) => s + d.valor, 0);
 
             if(sumCartao > 0) {
-                let idC = 'c_' + Math.random().toString(36).substr(2, 9);
-                let pessoasNoCartao = [...new Set(dc.map(d => d.pessoa))];
-                let subHtml = '';
-
-                pessoasNoCartao.forEach(p => {
-                    let dp = dc.filter(d => d.pessoa === p);
-                    let sumPessoa = dp.reduce((s, d) => s + d.valor, 0);
-                    let idP = idC + '_' + Math.random().toString(36).substr(2, 9);
-
-                    let itensHtml = dp.map(d => {
-                        let i = formatarInfoItem(d, false);
-                        return `<div class="t-row" onclick="abrirEdicao(${d.id}, 'desp')"><div class="t-desc"><strong>${i.descLimp} ${i.badgeP} ${i.compIcon}</strong><span>📅 ${i.textData} | ${formatarMesAno(d.dataRef)} ${i.cat}</span></div><div class="t-val desp">R$ ${d.valor.toFixed(2)}</div></div>`;
-                    }).join('');
-
-                    subHtml += `<div class="sub-tree-card" id="${idP}"><div class="sub-tree-header" onclick="document.getElementById('${idP}').classList.toggle('open')"><div class="tree-person-info" style="gap:8px;"><div class="avatar">${getIniciais(p)}</div><span>${p}</span></div><span style="color: var(--text);">R$ ${sumPessoa.toFixed(2)}</span></div><div class="sub-tree-body">${itensHtml}</div></div>`;
-                });
-
-                html += `<div class="tree-card" id="${idC}"><div class="tree-header" onclick="document.getElementById('${idC}').classList.toggle('open')"><span>💳 ${cartaoNome}</span><span style="color: var(--danger)">R$ ${sumCartao.toFixed(2)}</span></div><div class="tree-body">${subHtml}</div></div>`;
+                listaDadosCartoes.push({ cartaoNome, sumCartao, dc });
             }
+        });
+
+        // ORDENAÇÃO: Do maior valor lançado para o menor
+        listaDadosCartoes.sort((a, b) => b.sumCartao - a.sumCartao);
+
+        let html = '';
+        listaDadosCartoes.forEach(item => {
+            let cartaoNome = item.cartaoNome;
+            let sumCartao = item.sumCartao;
+            let dc = item.dc;
+
+            let idC = 'c_' + Math.random().toString(36).substr(2, 9);
+            let pessoasNoCartao = [...new Set(dc.map(d => d.pessoa))];
+            let subHtml = '';
+
+            pessoasNoCartao.forEach(p => {
+                let dp = dc.filter(d => d.pessoa === p);
+                let sumPessoa = dp.reduce((s, d) => s + d.valor, 0);
+                let idP = idC + '_' + Math.random().toString(36).substr(2, 9);
+
+                let itensHtml = dp.map(d => {
+                    let i = formatarInfoItem(d, false);
+                    return `<div class="t-row" onclick="abrirEdicao(${d.id}, 'desp')"><div class="t-desc"><strong>${i.descLimp} ${i.badgeP} ${i.compIcon}</strong><span>📅 ${i.textData} | ${formatarMesAno(d.dataRef)} ${i.cat}</span></div><div class="t-val desp">R$ ${d.valor.toFixed(2)}</div></div>`;
+                }).join('');
+
+                subHtml += `<div class="sub-tree-card" id="${idP}"><div class="sub-tree-header" onclick="document.getElementById('${idP}').classList.toggle('open')"><div class="tree-person-info" style="gap:8px;"><div class="avatar">${getIniciais(p)}</div><span>${p}</span></div><span style="color: var(--text);">R$ ${sumPessoa.toFixed(2)}</span></div><div class="sub-tree-body">${itensHtml}</div></div>`;
+            });
+
+            html += `<div class="tree-card" id="${idC}"><div class="tree-header" onclick="document.getElementById('${idC}').classList.toggle('open')"><span>💳 ${cartaoNome}</span><span style="color: var(--danger)">R$ ${sumCartao.toFixed(2)}</span></div><div class="tree-body">${subHtml}</div></div>`;
         });
         return html;
     }
