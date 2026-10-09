@@ -8,11 +8,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#f59e0b">
-    <link id="pwa-manifest" rel="manifest" href="manifest.json?v=9">
-    <link rel="apple-touch-icon" href="icon-192.png?v=9">
+    <link id="pwa-manifest" rel="manifest" href="manifest.json?v=2">
+    <link rel="apple-touch-icon" href="icon-192.png?v=2">
     <link rel="icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f59e0b' rx='20'/%3E%3Ctext x='50' y='65' font-size='45' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'%3ECC%3C/text%3E%3C/svg%3E">
     
-    <title>ControlCard - v1.9.9</title>
+    <title>ControlCard - v2</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
     <style>
         /* TEMAS COM CORES SUAVES */
@@ -529,7 +529,7 @@
         <div class="page-header">
             <div class="brand-line" style="margin-bottom: 0;">
                 <div class="brand-mark">CC</div>
-                <span class="brand-name">ControlCard <span class="v-badge" id="app-versao-badge">v1.9.9</span>
+                <span class="brand-name">ControlCard <span class="v-badge" id="app-versao-badge">v2</span>
                     <span id="cloud-status-icon" class="material-icons-outlined cloud-status" title="Sincronização">cloud_off</span>
                 </span>
             </div>
@@ -651,6 +651,22 @@
                 <div id="box-seguranca" style="text-align: center;"></div>
             </div>
 
+            <div class="section-label" style="color: var(--primary);">🔔 Notificações & Alertas Diários</div>
+            <div class="card" style="border-color: var(--primary);">
+                <h3 style="font-size:0.9rem; color: var(--primary);"><span class="material-icons-outlined">notifications_active</span> Push Diário de Compras</h3>
+                <p class="helper">Configure um horário fixo para receber um aviso lembrando de registrar as compras do dia.</p>
+                <div class="edicao-field-row">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>Horário do Alerta</label>
+                        <input type="time" id="push-horario" class="form-input" value="20:00" style="padding:10px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0; display:flex; align-items:flex-end;">
+                        <button class="btn btn-primary" style="padding: 11px;" onclick="salvarConfigPush()">SALVAR HORÁRIO</button>
+                    </div>
+                </div>
+                <button class="btn btn-outline" style="margin-top: 10px; border-color: var(--success); color: var(--success); padding: 8px;" onclick="testarPushAgora()">🧪 TESTAR ALERTA AGORA</button>
+            </div>
+
             <div class="section-label" style="color: var(--primary);">🛠 Ferramentas Extras</div>
             <div class="card" style="border-color: var(--primary);">
                 <h3 style="color: var(--primary); font-size:0.9rem;"><span class="material-icons-outlined">layers</span> Gestão de Assinaturas e Parcelas</h3>
@@ -684,7 +700,7 @@
                 </div>
                 <button class="btn btn-danger" style="padding:10px;" onclick="executarCorrecaoLadoALado()">APLICAR CORREÇÃO</button>
             </div>
-            <div class="section-label">Sistema & Backup Nuvem</div>
+            <div class="section-label">Sistema & Backup Nuvem v2</div>
             <div class="card">
                 <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">cloud_sync</span> Sincronizar Google Drive</h3>
                 <p class="helper">Use os botões abaixo para enviar ou puxar do Google Drive. O sistema detectará atualizações automaticamente ao abrir.</p>
@@ -698,7 +714,8 @@
                 <hr style="border: 1px solid var(--border); margin: 12px 0;">
                 <button class="btn btn-outline" style="margin-bottom: 8px; padding:10px;" onclick="document.getElementById('import-file').click()"><span class="material-icons-outlined">file_upload</span> Importar Backup Manual</button>
                 <input type="file" id="import-file" accept=".json" onchange="importarBackup(event)" style="display:none;">
-                <button class="btn btn-outline" style="margin-bottom: 12px; padding:10px;" onclick="exportarBackup(false)"><span class="material-icons-outlined">download</span> Baixar Backup Manual</button>
+                <button class="btn btn-outline" style="margin-bottom: 8px; padding:10px;" onclick="exportarBackup(false)"><span class="material-icons-outlined">download</span> Baixar Backup JSON</button>
+                <button class="btn btn-primary" style="margin-bottom: 12px; padding:10px;" onclick="exportarBackupHtml()"><span class="material-icons-outlined">code</span> Baixar Cópia HTML (App)</button>
                 <hr style="border: 1px solid var(--border); margin: 12px 0;">
                 <button class="btn btn-danger" style="padding:10px;" onclick="zerarApp()"><span class="material-icons-outlined">delete_forever</span> ZERAR BASE COMPLETA</button>
             </div>
@@ -748,7 +765,7 @@
 
 <script>
     /* ================= TEMAS E FORMATADORES ================= */
-    const APP_VERSION = '1.9.9';
+    const APP_VERSION = '2';
     const DB_NOME_FIXO = 'ControlCard_v1_DB'; 
     let db = JSON.parse(localStorage.getItem(DB_NOME_FIXO)) || { pessoas: [], cartoes: [], categorias: [], despesas: [], pagamentos: [], emprestimos: [] };
     if(!db.emprestimos) db.emprestimos = [];
@@ -787,6 +804,69 @@
         t.textContent = msg;
         clearTimeout(t._h);
         t._h = setTimeout(() => t.className = '', 3500);
+    }
+
+    /* ================= PUSH NOTIFICATIONS / ALERTA DIÁRIO ================= */
+    function iniciarPushDiario() {
+        if (!("Notification" in window)) return;
+        if (Notification.permission !== "granted") {
+            Notification.requestPermission();
+        }
+        
+        let horarioSalvo = localStorage.getItem('cc_push_horario') || '20:00';
+        let inputTime = document.getElementById('push-horario');
+        if(inputTime) inputTime.value = horarioSalvo;
+
+        // Verifica a cada minuto se atingiu o horário configurado
+        setInterval(() => {
+            let agora = new Date();
+            let horaMin = String(agora.getHours()).padStart(2,'0') + ':' + String(agora.getMinutes()).padStart(2,'0');
+            let horarioConfig = localStorage.getItem('cc_push_horario') || '20:00';
+            let ultimoDisparo = localStorage.getItem('cc_push_ultimo') || '';
+            let hojeStr = getLocalToday();
+
+            if (horaMin === horarioConfig && ultimoDisparo !== hojeStr) {
+                dispararPushNotificacao("🛒 Hora de lançar!", "Não se esqueça de registrar as compras e despesas de hoje no ControlCard.");
+                localStorage.setItem('cc_push_ultimo', hojeStr);
+            }
+        }, 30000);
+    }
+
+    function salvarConfigPush() {
+        let h = document.getElementById('push-horario').value;
+        if(!h) return alert("Selecione um horário válido.");
+        localStorage.setItem('cc_push_horario', h);
+        if ("Notification" in window && Notification.permission !== "granted") {
+            Notification.requestPermission();
+        }
+        toast("✅ Horário do alerta salvo para as " + h + "!");
+    }
+
+    function testarPushAgora() {
+        if (!("Notification" in window)) return alert("Seu navegador não suporta notificações.");
+        if (Notification.permission !== "granted") {
+            Notification.requestPermission().then(perm => {
+                if (perm === "granted") dispararPushNotificacao("🧪 Teste ControlCard v2", "As notificações estão funcionando perfeitamente!");
+                else alert("Permissão de notificação negada pelo navegador.");
+            });
+        } else {
+            dispararPushNotificacao("🧪 Teste ControlCard v2", "As notificações estão funcionando perfeitamente!");
+        }
+    }
+
+    function dispararPushNotificacao(titulo, corpo) {
+        if (Notification.permission === "granted") {
+            try {
+                navigator.serviceWorker.ready.then(reg => {
+                    reg.showNotification(titulo, { body: corpo, icon: 'icon-192.png' });
+                }).catch(e => {
+                    new Notification(titulo, { body: corpo });
+                });
+            } catch(e) {
+                new Notification(titulo, { body: corpo });
+            }
+        }
+        toast(titulo + " - " + corpo);
     }
 
     /* ================= TELA DE BLOQUEIO (COFRE PIN) ================= */
@@ -1250,6 +1330,19 @@
         document.body.removeChild(a);
     }
 
+    function exportarBackupHtml() {
+        let htmlContent = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+        const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        let dateStr = new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
+        a.download = `ControlCard_AppBackup_v2_${dateStr}.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        toast("✅ Cópia HTML do aplicativo baixada com sucesso!");
+    }
+
     function importarBackup(e) {
         const f = e.target.files[0]; if(!f) return;
         const r = new FileReader();
@@ -1474,7 +1567,6 @@
 
         if(diffDias > toler) {
             let diasAtraso = diffDias - toler;
-            // Quantos ciclos completos passou após a tolerância
             let ciclosAtraso = Math.floor(diasAtraso / ciclo) + 1;
             let acrescimo = 0;
             if(d.jurosRegra.tipo === 'val') {
@@ -2948,6 +3040,7 @@
         carregarSelects(); 
         montarFiltrosGlobais();
         atualizarSaldos(); 
+        iniciarPushDiario();
 
         window.addEventListener('online', () => {
             toast('🌐 Conexão restaurada!', 'ok');
