@@ -1,6 +1,6 @@
 // sw.js - Service Worker com Suporte a Notificações e Cache Offline
 
-const CACHE_NAME = 'controlcard-multiuser-v3';
+const CACHE_NAME = 'controlcardmult-v1';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -46,7 +46,7 @@ self.addEventListener('fetch', (event) => {
 });
 
 self.addEventListener('push', (event) => {
-  let title = 'ControlCard Aviso';
+  let title = 'ControlCardMult Aviso';
   let options = {
     body: 'Você tem um lembrete de cartão ou vencimento hoje!',
     icon: './icon-192.png',
