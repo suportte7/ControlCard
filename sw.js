@@ -1,37 +1,98 @@
-// Service Worker do ControlCard — mantenha VERSAO igual a APP_VERSION do index.html
-const VERSAO = '1.9.1';
-const CACHE = 'controlcard-' + VERSAO;
-const SHELL = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png'];;
+// sw.js - Service Worker do ControlCard v2
 
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
-});
+const CACHE_NAME = 'controlcard-v2-cache-v1';
+const ASSETS_TO_CACHE = [
+  './',
+  './index.html',
+  './manifest.json',
+  './icon-192.png'
+];
 
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k.startsWith('controlcard-')).map(k => caches.delete(k))))
-      .then(() => self.clients.claim())
+// 1. Instalação: Salva os arquivos essenciais no cache
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(ASSETS_TO_CACHE);
+    }).then(() => self.skipWaiting())
   );
 });
 
-self.addEventListener('fetch', e => {
-  const req = e.request;
-  if (req.method !== 'GET') return; 
-  const url = new URL(req.url);
+// 2. Ativação: Limpa caches antigos de versões anteriores
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) => {
+      return Promise.all(
+        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+      );
+    }).then(() => self.clients.claim())
+  );
+});
 
-  if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
-    e.respondWith(caches.open(CACHE).then(async c => {
-      const cached = await c.match(req);
-      const rede = fetch(req).then(r => { c.put(req, r.clone()); return r; }).catch(() => cached);
-      return cached || rede;
-    }));
-    return;
+// 3. Interceptação de Rede: Garante que o app abra mesmo sem internet
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      return fetch(event.request).then((response) => {
+        // Se a resposta for válida, faz uma cópia para o cache dinâmico
+        if (!response || response.status !== 200 || response.type !== 'basic') {
+          return response;
+        }
+        const responseToCache = response.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, responseToCache);
+        });
+        return response;
+      });
+    }).catch(() => {
+      return caches.match('./index.html');
+    })
+  );
+});
+
+// 4. Recebimento de Notificação Push
+self.addEventListener('push', (event) => {
+  let title = 'ControlCard v2';
+  let options = {
+    body: 'Lembrete: Não se esqueça de registrar suas compras e despesas de hoje!',
+    icon: './icon-192.png',
+    badge: './icon-192.png',
+    vibrate: [200, 100, 200],
+    data: { dateOfArrival: Date.now() }
+  };
+
+  if (event.data) {
+    try {
+      const data = event.data.json();
+      title = data.title || title;
+      options.body = data.body || options.body;
+    } catch (e) {
+      options.body = event.data.text();
+    }
   }
 
-  if (url.origin === location.origin) {
-    e.respondWith(
-      fetch(req).then(r => { const copia = r.clone(); caches.open(CACHE).then(c => c.put(req, copia)); return r; })
-        .catch(() => caches.match(req).then(r => r || caches.match('index.html')))
-    );
-  }
+  event.waitUntil(
+    self.registration.showNotification(title, options)
+  );
+});
+
+// 5. Clique na Notificação: Abre ou foca a janela do aplicativo
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (let i = 0; i < clientList.length; i++) {
+        let client = clientList[i];
+        if ('focus' in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow('./index.html');
+      }
+    })
+  );
 });
