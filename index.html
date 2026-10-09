@@ -7,10 +7,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#f59e0b">
-    <link id="pwa-manifest" rel="manifest" href="manifest.json?v=6">
-    <link rel="apple-touch-icon" href="icon-192.png?v=6">
+    <link id="pwa-manifest" rel="manifest" href="manifest.json?v=1">
+    <link rel="apple-touch-icon" href="icon-192.png?v=1">
     
-    <title>ControlCard MultiUser</title>
+    <title>ControlCardMult</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
@@ -83,7 +83,7 @@
 <div id="bloqueio-overlay" style="display: flex;">
     <div style="max-width: 380px; background: var(--surface); border: 2px solid var(--primary); padding: 25px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
         <span class="material-icons-outlined" style="font-size: 3.5rem; color: var(--primary);">lock_person</span>
-        <h2 style="color: var(--primary); margin: 10px 0 5px; font-size: 1.3rem;">CONTROLCARD ACESSO</h2>
+        <h2 style="color: var(--primary); margin: 10px 0 5px; font-size: 1.3rem;">CONTROLCARDMULT</h2>
         <p id="bloqueio-msg" style="color: var(--text-light); font-size: 0.85rem; line-height: 1.4;">Digite seu e-mail para entrar no sistema.</p>
         <div class="form-group" style="margin-top: 15px;">
             <label>SEU E-MAIL</label>
@@ -130,7 +130,7 @@
         <div class="page-header">
             <div class="brand-line">
                 <div class="brand-mark">CC</div>
-                <span class="brand-name">ControlCard <span class="v-badge" id="app-user-type">PWA</span></span>
+                <span class="brand-name">ControlCardMult <span class="v-badge" id="app-user-type">PWA</span></span>
             </div>
             <h2 id="page-title">Visão Geral</h2>
             <p id="page-subtitle">Acompanhamento e faturas do seu usuário</p>
@@ -184,6 +184,13 @@
                 </div>
             </div>
 
+            <div class="section-label">⚙️ BACKUP E RESTAURAÇÃO</div>
+            <div class="card">
+                <button class="btn btn-success" style="margin-bottom: 8px;" onclick="fazerBackup()">📥 SALVAR BACKUP (DRIVE)</button>
+                <button class="btn btn-outline" style="margin-bottom: 8px;" onclick="restaurarBackup()">📤 RESTAURAR DADOS</button>
+                <button class="btn btn-danger" onclick="sairDoSistema()">🚪 SAIR (LOGOUT)</button>
+            </div>
+
             <div class="section-label">💳 MEUS CARTÕES & VENCIMENTOS</div>
             <div class="card">
                 <div class="form-group"><label>NOME DO CARTÃO</label><input type="text" id="nc-nome" class="form-input" placeholder="Ex: NUBANK"></div>
@@ -201,7 +208,7 @@
 <div id="toast-app"></div>
 
 <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyM36c_ymaegNX_0zWwkdrkqwIx9XJz-oQ5Vp9lkdECJGZ7DmH4i0EGG2qK8EraOz7oGA/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyZ62qYfrA9yWvLTyypxKIrsK0YhF0bThkkEawn8vsLTMmMQI8M6Qws5tr07TC89Gxbpw/exec";
 
     let currentUser = {
         email: localStorage.getItem('cc_user_email') || '',
@@ -240,25 +247,27 @@
         dbKey = 'ControlCard_DB_' + currentUser.email;
         db = JSON.parse(localStorage.getItem(dbKey)) || { cartoes: [], despesas: [] };
 
-        try {
-            let res = await fetch(`${WEB_APP_URL}?acao=validar&email=${encodeURIComponent(currentUser.email)}`);
-            let data = await res.json();
-            
-            if (data && data.autorizado) {
-                currentUser.tipo = data.tipo || 'ADMIN';
-                currentUser.nome = data.nome || 'Administrador';
-                
-                localStorage.setItem('cc_user_tipo', currentUser.tipo);
-                localStorage.setItem('cc_user_nome', currentUser.nome);
+        // Simulando a lógica de validação: Se você é o admin, libera como ADMIN.
+        if (currentUser.email === "SEU_EMAIL_ADMIN_AQUI@gmail.com") { // **COLOQUE SEU EMAIL DE ADMIN AQUI**
+             currentUser.tipo = 'ADMIN';
+             currentUser.nome = 'Administrador (Neto)';
+        } else {
+             currentUser.tipo = 'USER';
+             currentUser.nome = 'Usuário (' + currentUser.email.split('@')[0] + ')';
+        }
 
-                liberarAppComSucesso();
-            } else {
-                // Liberação de segurança local se a planilha retornar bloqueio mas o usuário for o dono
-                liberarAppComSucesso();
-            }
-        } catch(e) {
-            // Modo offline robusto: se a rede falhar, deixa entrar para não trancar o usuário
-            liberarAppComSucesso();
+        localStorage.setItem('cc_user_tipo', currentUser.tipo);
+        localStorage.setItem('cc_user_nome', currentUser.nome);
+        
+        liberarAppComSucesso();
+    }
+
+    function sairDoSistema() {
+        if(confirm("Tem certeza que deseja sair?")) {
+            localStorage.removeItem('cc_user_email');
+            localStorage.removeItem('cc_user_nome');
+            localStorage.removeItem('cc_user_tipo');
+            window.location.reload();
         }
     }
 
@@ -270,9 +279,57 @@
             document.getElementById('painel-admin-box').style.display = 'block';
         }
         
-        atualizarTodasTelas();
-        toast("✅ Acesso liberado com sucesso!");
+        restaurarBackup(); // Força a atualização dos dados logo no login
+        toast("✅ Acesso liberado!");
     }
+
+    async function fazerBackup() {
+        toast("Sincronizando com a nuvem...", "ok");
+        try {
+            // Se for ADMIN, faz o backup completo. Se for USER, apenas envia suas próprias despesas (pode precisar de ajuste no backend para mesclar)
+            const payload = {
+                tabela: "despesas",
+                dados: db.despesas.map(d => ({...d, pessoa: currentUser.email})) // Injeta quem fez a despesa
+            };
+
+            await fetch(WEB_APP_URL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            });
+            toast("Backup realizado com sucesso!");
+        } catch (e) {
+            toast("Erro no backup offline. Tente depois.", "erro");
+        }
+    }
+
+    async function restaurarBackup() {
+        try {
+            toast("Buscando dados da nuvem...", "ok");
+            let res = await fetch(WEB_APP_URL + "?action=export");
+            let dadosRemotos = await res.json();
+            
+            if (dadosRemotos && dadosRemotos.despesas) {
+                if (currentUser.tipo === 'ADMIN') {
+                    // Admin pega tudo
+                    db.despesas = dadosRemotos.despesas;
+                } else {
+                    // Usuário normal pega só o dele
+                    db.despesas = dadosRemotos.despesas.filter(d => d.pessoa === currentUser.email);
+                }
+                
+                // Pega os cartões (pode ser global ou filtrado também, dependendo da sua regra)
+                if (dadosRemotos.cartoes) db.cartoes = dadosRemotos.cartoes;
+
+                salvarDB();
+                atualizarTodasTelas();
+                toast("Dados atualizados com sucesso!");
+            }
+        } catch (e) {
+            toast("Modo offline: usando dados locais.", "erro");
+            atualizarTodasTelas();
+        }
+    }
+
 
     async function gerenciarUsuarioAdmin(statusDesejado) {
         let email = document.getElementById('adm-new-email').value.trim();
@@ -282,7 +339,6 @@
         try {
             await fetch(WEB_APP_URL, {
                 method: "POST",
-                mode: "no-cors",
                 body: JSON.stringify({ acao: "gerenciar_usuario", email, nome, status: statusDesejado })
             });
             alert("Ação enviada com sucesso!");
@@ -344,22 +400,23 @@
         let hojeStr = new Date().toISOString().split('T')[0];
         let mesRef = hojeStr.substring(0,7);
 
-        db.despesas.push({ id: Date.now(), desc, valor: val, cartao, dataCompra: hojeStr, dataRef: mesRef });
+        db.despesas.push({ id: Date.now(), desc, valor: val, cartao, dataCompra: hojeStr, dataRef: mesRef, pessoa: currentUser.email });
         salvarDB();
         fecharModais();
         atualizarTodasTelas();
+        fazerBackup(); // Auto-salva após compra
         toast("Compra salva!");
     }
 
     function atualizarTodasTelas() {
         renderizarMeusCartoes();
-        let totalD = db.despesas.reduce((s, d) => s + d.valor, 0);
+        let totalD = db.despesas.reduce((s, d) => s + (parseFloat(d.valor) || 0), 0);
         document.getElementById('metric-despesas').innerText = `R$ ${totalD.toFixed(2)}`;
         
         let htmlD = db.despesas.map(d => `
             <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border);">
-                <div><strong>${d.desc}</strong><br><small style="color:var(--text-light);">${d.cartao} • Ref: ${d.dataRef}</small></div>
-                <div style="color:var(--danger); font-weight:bold;">R$ ${d.valor.toFixed(2)}</div>
+                <div><strong>${d.desc}</strong><br><small style="color:var(--text-light);">${d.cartao} • Ref: ${d.dataRef} ${currentUser.tipo === 'ADMIN' ? '• ' + (d.pessoa || 'Sem Dono') : ''}</small></div>
+                <div style="color:var(--danger); font-weight:bold;">R$ ${parseFloat(d.valor).toFixed(2)}</div>
             </div>
         `).join('');
         document.getElementById('lista-transacoes-container').innerHTML = htmlD || '<p style="color:var(--text-light); text-align:center;">Sem compras ativas.</p>';
@@ -368,7 +425,6 @@
     window.onload = () => {
         if(currentUser.email) {
             document.getElementById('input-login-email').value = currentUser.email;
-            // Se já tiver e-mail salvo, libera automaticamente
             liberarAppComSucesso();
         }
     };
