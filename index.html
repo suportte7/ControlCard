@@ -12,7 +12,7 @@
     <link rel="apple-touch-icon" href="icon-192.png?v=9">
     <link rel="icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f59e0b' rx='20'/%3E%3Ctext x='50' y='65' font-size='45' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'%3ECC%3C/text%3E%3C/svg%3E">
     
-    <title>ControlCard - v1.9.7</title>
+    <title>ControlCard - v1.9.8</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
     <style>
         /* TEMAS COM CORES SUAVES */
@@ -178,7 +178,7 @@
         .modal-drag { width: 44px; height: 5px; background: var(--border); border-radius: 3px; margin: 0 auto 12px; }
         .modal-close-btn { position: absolute; top: 12px; right: 12px; width: 30px; height: 30px; border-radius: 15px; background: var(--bg); border: 1px solid var(--border); color: var(--text); display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 10;}
         .modal-tabs { display: flex; gap: 8px; margin-bottom: 20px; background: var(--bg); padding: 6px; border-radius: 14px; position: sticky; top: 0; z-index: 2;}
-        .tab-btn { flex: 1; padding: 12px; border: none; background: transparent; color: var(--text-light); font-weight: 800; text-transform: uppercase; border-radius: 10px; cursor: pointer; font-size:0.85rem;}
+        .tab-btn { flex: 1; padding: 12px 6px; border: none; background: transparent; color: var(--text-light); font-weight: 800; text-transform: uppercase; border-radius: 10px; cursor: pointer; font-size:0.75rem; text-align: center;}
         .tab-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 4px 20px rgba(0,0,0,.10); }
 
         .check-item { display: flex; align-items: center; gap: 10px; padding: 8px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 4px; background: var(--bg); cursor: pointer; user-select: none;}
@@ -217,7 +217,7 @@
 </head>
 <body>
 
-<!-- TELA DE BLOQUEIO (COFRE) -->
+<!-- TELA DE BLOQUEIO (COFRE PIN) -->
 <div id="tela-lock" style="display: none;">
     <div style="text-align: center; margin-bottom: 30px;">
         <div class="brand-mark" style="width: 50px; height: 50px; font-size: 1.5rem; margin: 0 auto 15px;">CC</div>
@@ -283,11 +283,12 @@
 
     <!-- MODAL LANÇAMENTO -->
     <div class="modal" id="modal-lancamento">
-        <button class="modal-close-btn" onclick="fecharModais()"><span class="material-icons-outlined" style="font-size:1.2rem;">close</span></button>
+        <button class="modal-close-btn" onclick="fecharModais()"><span class="material-icons-outlined" style="font-size:1.1rem;">close</span></button>
         <div class="modal-drag"></div>
         <div class="modal-tabs" style="margin-right: 30px;">
-            <button class="tab-btn active" id="tab-desp" onclick="trocarAbaModal('desp')">🛒 NOVA COMPRA</button>
-            <button class="tab-btn" id="tab-rec" onclick="trocarAbaModal('rec')">💰 RECEBIMENTO</button>
+            <button class="tab-btn active" id="tab-desp" onclick="trocarAbaModal('desp')">🛒 COMPRA</button>
+            <button class="tab-btn" id="tab-rec" onclick="trocarAbaModal('rec')">💰 RECEB.</button>
+            <button class="tab-btn" id="tab-emp" onclick="trocarAbaModal('emp')">🤝 EMPRÉST.</button>
         </div>
 
         <!-- ABA DESPESA -->
@@ -398,6 +399,71 @@
 
             <button class="btn btn-success" style="padding: 16px; font-size: 1.1rem; margin-top: 20px;" onclick="registrarBaixa()"><span class="material-icons-outlined">price_check</span> CONFIRMAR RECEBIMENTO</button>
         </div>
+
+        <!-- ABA EMPRÉSTIMO -->
+        <div id="form-emp" style="display: none;">
+            <div class="form-group">
+                <label>Quem está pegando emprestado?</label>
+                <select id="emp-pessoa" class="form-input up-text" style="font-size: 1.2rem; color: var(--primary); border-color: var(--primary);"></select>
+            </div>
+            
+            <div class="form-group">
+                <label>Descrição do Empréstimo</label>
+                <input type="text" id="emp-desc" class="form-input" placeholder="Ex: Empréstimo Pessoal Dinheiro">
+            </div>
+
+            <div class="edicao-field-row">
+                <div class="form-group">
+                    <label>Valor Total (R$)</label>
+                    <input type="number" id="emp-val-total" class="form-input input-destaque-despesa" step="0.01" placeholder="Ex: 1800.00" oninput="calcularParcelaEmpPorTotal()">
+                </div>
+                <div class="form-group">
+                    <label>Nº Parcelas</label>
+                    <input type="number" id="emp-qtd-parc" class="form-input" value="4" style="font-size: 1.2rem; font-weight: 900;" oninput="calcularParcelaEmpPorTotal()">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Valor de Cada Parcela (R$) <small style="font-weight:normal; color:var(--text-light);">(Calculado ou digite direto)</small></label>
+                <input type="number" id="emp-val-parc" class="form-input" step="0.01" placeholder="Ex: 450.00" style="font-size: 1.3rem; font-weight: 900; color: var(--danger);">
+            </div>
+
+            <div class="edicao-field-row">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>Data do Empréstimo</label>
+                    <input type="date" id="emp-data" class="form-input">
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>1º Vencimento (Mês)</label>
+                    <input type="month" id="emp-data-ref" class="form-input">
+                </div>
+            </div>
+
+            <div style="margin: 15px 0; border-top: 2px dashed var(--border); padding-top: 15px;">
+                <label style="font-size: 0.8rem; font-weight: 900; color: var(--primary); text-transform: uppercase; text-align: center; display: block; margin-bottom: 8px;">⚙️ Regra de Juros / Multa por Atraso (Opcional)</label>
+            </div>
+
+            <div class="edicao-field-row">
+                <div class="form-group">
+                    <label>Tolerância (Dias)</label>
+                    <input type="number" id="emp-juros-dias" class="form-input" value="30" placeholder="Ex: 30 (1 mês)">
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Acréscimo</label>
+                    <select id="emp-juros-tipo" class="form-input up-text" style="font-size: 0.9rem;">
+                        <option value="val">VALOR FIXO (R$)</option>
+                        <option value="perc">PORCENTAGEM (%)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Valor do Acréscimo por Período em Atraso</label>
+                <input type="number" id="emp-juros-valor" class="form-input" step="0.01" placeholder="Ex: 50.00 ou 10">
+            </div>
+
+            <button class="btn btn-primary" style="padding: 16px; font-size: 1.1rem; margin-top: 15px;" onclick="registrarEmprestimo()"><span class="material-icons-outlined">handshake</span> REGISTRAR EMPRÉSTIMO</button>
+        </div>
     </div>
 
     <!-- MODAL EDIÇÃO DIRETA -->
@@ -457,7 +523,7 @@
         <div class="page-header">
             <div class="brand-line" style="margin-bottom: 0;">
                 <div class="brand-mark">CC</div>
-                <span class="brand-name">ControlCard <span class="v-badge" id="app-versao-badge">v1.9.7</span>
+                <span class="brand-name">ControlCard <span class="v-badge" id="app-versao-badge">v1.9.8</span>
                     <span id="cloud-status-icon" class="material-icons-outlined cloud-status" title="Sincronização">cloud_off</span>
                 </span>
             </div>
@@ -647,7 +713,7 @@
             <div class="card">
                 <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">category</span> Categorias</h3>
                 <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                    <div style="display:flex; flex:1; gap:4px;"><input type="text" id="nova-categoria" class="form-input up-text" placeholder="Ex: 🍔 ALIMENTAÇÃO" style="margin-bottom:0; padding:10px;"><button class="btn-small" onclick="inserirEmoji(this, 'nova-categoria')">😀</button></div>
+                    <div style="display:flex; flex:1; gap:4px;"><input type="text" id="nova-categoria" class="form-input up-text" placeholder="Ex: 🛍 ALIMENTAÇÃO" style="margin-bottom:0; padding:10px;"><button class="btn-small" onclick="inserirEmoji(this, 'nova-categoria')">😀</button></div>
                     <button class="btn btn-primary" style="width: auto; padding: 0 12px;" onclick="addCategoria()">SALVAR</button>
                 </div>
                 <div id="lista-edit-categorias"></div>
@@ -676,9 +742,10 @@
 
 <script>
     /* ================= TEMAS E FORMATADORES ================= */
-    const APP_VERSION = '1.9.7';
+    const APP_VERSION = '1.9.8';
     const DB_NOME_FIXO = 'ControlCard_v1_DB'; 
-    let db = JSON.parse(localStorage.getItem(DB_NOME_FIXO)) || { pessoas: [], cartoes: [], categorias: [], despesas: [], pagamentos: [] };
+    let db = JSON.parse(localStorage.getItem(DB_NOME_FIXO)) || { pessoas: [], cartoes: [], categorias: [], despesas: [], pagamentos: [], emprestimos: [] };
+    if(!db.emprestimos) db.emprestimos = [];
     if(!db.pessoasInativas) db.pessoasInativas = [];
     if(!db.cartoesInativos) db.cartoesInativos = [];
     if(!db.categoriasInativas) db.categoriasInativas = [];
@@ -917,8 +984,15 @@
         document.getElementById('data-compra-ref').value = hoje.substring(0, 7);
         document.getElementById('pag-data').value = hoje;
         document.getElementById('pag-data-ref').value = hoje.substring(0, 7);
+        document.getElementById('emp-data').value = hoje;
+        document.getElementById('emp-data-ref').value = hoje.substring(0, 7);
+        
         document.getElementById('desc').value = '';
         document.getElementById('pag-desc').value = '';
+        document.getElementById('emp-desc').value = 'Empréstimo Pessoal';
+        document.getElementById('emp-val-total').value = '';
+        document.getElementById('emp-val-parc').value = '';
+        document.getElementById('emp-juros-valor').value = '';
         
         removerImagem('preview-desp', 'file-desp', 'btn-rm-desp', 'base64Desp');
         removerImagem('preview-pag', 'file-pag', 'btn-rm-pag', 'base64Pag');
@@ -926,6 +1000,7 @@
         document.getElementById('cartao').value = "";
         document.getElementById('categoria-compra').value = "";
         document.getElementById('pag-pessoa').value = "";
+        document.getElementById('emp-pessoa').value = "";
 
         if(document.getElementById('pagadores-container').children.length === 0) addPagador();
         document.getElementById('modal-overlay').classList.add('open');
@@ -933,20 +1008,29 @@
     }
     
     function trocarAbaModal(aba) {
-        if(aba === 'desp') {
-            document.getElementById('form-desp').style.display = 'block'; document.getElementById('form-rec').style.display = 'none';
-            document.getElementById('tab-desp').classList.add('active'); document.getElementById('tab-rec').classList.remove('active');
-            if(document.getElementById('pagadores-container').children.length === 0) addPagador();
-        } else {
-            document.getElementById('form-desp').style.display = 'none'; document.getElementById('form-rec').style.display = 'block';
-            document.getElementById('tab-rec').classList.add('active'); document.getElementById('tab-desp').classList.remove('active');
-        }
+        document.getElementById('form-desp').style.display = aba === 'desp' ? 'block' : 'none';
+        document.getElementById('form-rec').style.display = aba === 'rec' ? 'block' : 'none';
+        document.getElementById('form-emp').style.display = aba === 'emp' ? 'block' : 'none';
+        
+        document.getElementById('tab-desp').classList.toggle('active', aba === 'desp');
+        document.getElementById('tab-rec').classList.toggle('active', aba === 'rec');
+        document.getElementById('tab-emp').classList.toggle('active', aba === 'emp');
+
+        if(aba === 'desp' && document.getElementById('pagadores-container').children.length === 0) addPagador();
     }
 
     function mudarTipoPagamento(sel) {
         let box = document.querySelector('.box-parcelas-pag');
         if(sel.value === 'P') box.style.display = 'block';
         else box.style.display = 'none';
+    }
+
+    function calcularParcelaEmpPorTotal() {
+        let tot = parseFloat(document.getElementById('emp-val-total').value) || 0;
+        let q = parseInt(document.getElementById('emp-qtd-parc').value) || 1;
+        if(tot > 0 && q > 0) {
+            document.getElementById('emp-val-parc').value = (tot / q).toFixed(2);
+        }
     }
 
     /* ================= CALCULADORA FLUTUANTE ================= */
@@ -1016,7 +1100,8 @@
     function getMaxId(obj) {
         let m1 = (obj.despesas||[]).reduce((max, d) => Math.max(max, d.id), 0);
         let m2 = (obj.pagamentos||[]).reduce((max, p) => Math.max(max, p.id), 0);
-        return Math.max(m1, m2);
+        let m3 = (obj.emprestimos||[]).reduce((max, e) => Math.max(max, e.id), 0);
+        return Math.max(m1, m2, m3);
     }
 
     async function verificarNuvemNaInicializacao() {
@@ -1034,7 +1119,7 @@
 
             if (maxNuvem > maxLocal) {
                 if(confirm("🔔 ATENÇÃO: Detectamos dados mais novos no seu Google Drive (feitos em outro aparelho).\n\nDeseja PUXAR esses dados e atualizar esta tela agora?")) {
-                    ['pessoas','cartoes','categorias','pessoasInativas','cartoesInativos','categoriasInativas'].forEach(k => { if (!Array.isArray(nuvem[k])) nuvem[k] = []; });
+                    ['pessoas','cartoes','categorias','pessoasInativas','cartoesInativos','categoriasInativas','emprestimos'].forEach(k => { if (!Array.isArray(nuvem[k])) nuvem[k] = []; });
                     try { exportarBackup(true); } catch (err) {} 
                     db = nuvem;
                     salvarDB();
@@ -1076,7 +1161,7 @@
             if (!novo.despesas || !novo.pagamentos) return alert("Nenhum dado encontrado na nuvem.");
 
             try { exportarBackup(true); } catch (err) {} 
-            ['pessoas','cartoes','categorias','pessoasInativas','cartoesInativos','categoriasInativas'].forEach(k => { if (!Array.isArray(novo[k])) novo[k] = []; });
+            ['pessoas','cartoes','categorias','pessoasInativas','cartoesInativos','categoriasInativas','emprestimos'].forEach(k => { if (!Array.isArray(novo[k])) novo[k] = []; });
 
             db = novo; 
             salvarDB();
@@ -1173,7 +1258,7 @@
             const resumo = `${novo.despesas.length} despesas, ${novo.pagamentos.length} recebimentos`;
             if (!confirm(`Substituir os dados atuais por este backup (${resumo})?\n\nUm backup de segurança dos dados atuais será baixado antes.`)) { e.target.value = ''; return; }
             try { exportarBackup(true); } catch (err) { console.warn('backup prévio falhou', err); }
-            ['pessoas','cartoes','categorias','pessoasInativas','cartoesInativos','categoriasInativas'].forEach(k => { if (!Array.isArray(novo[k])) novo[k] = []; });
+            ['pessoas','cartoes','categorias','pessoasInativas','cartoesInativos','categoriasInativas','emprestimos'].forEach(k => { if (!Array.isArray(novo[k])) novo[k] = []; });
             db = novo;
             salvarDB(); atualizarTodasTelas(); preencherListasCorrecao();
             toast('✅ Dados importados: ' + resumo);
@@ -1192,6 +1277,7 @@
 
     function getGroupKey(d) {
         if(d.isAssinatura) return d.assinaturaId;
+        if(d.isEmprestimo) return d.emprestimoId;
         let baseDesc = (d.desc||'').replace(/\(\d+\/\d+\)/, '').trim();
         if(d.cartao) return `${baseDesc}_${d.cartao}_${d.dataCompra}`;
         return `PAG_${baseDesc}_${d.pessoa}_${d.data}`;
@@ -1209,6 +1295,7 @@
         const pSelectFiltro = `<option value="TODOS" selected>TODAS PESSOAS</option>` + pessoasAtivas.map(p => `<option value="${p.replace(/"/g, '&quot;')}">${p}</option>`).join('');
         
         document.getElementById('pag-pessoa').innerHTML = pSelect;
+        document.getElementById('emp-pessoa').innerHTML = pSelect;
         document.getElementById('transf-de').innerHTML = pSelect;
         document.getElementById('transf-para').innerHTML = pSelect;
         document.getElementById('parc-pessoa').innerHTML = pSelect; 
@@ -1366,6 +1453,32 @@
         return null;
     }
 
+    /* ================= CÁLCULO DINÂMICO DE JUROS DE EMPRÉSTIMO ================= */
+    function getValorAjustadoEmprestimo(d) {
+        if(!d.isEmprestimo || !d.jurosRegra) return d.valor;
+        let hoje = new Date();
+        let [anoRef, mesRef] = d.dataRef.split('-').map(Number);
+        // Vencimento considerado no dia 10 ou na data da parcela
+        let vencimento = new Date(anoRef, mesRef - 1, 10);
+        
+        let diffTime = hoje - vencimento;
+        let diffDias = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        
+        let toler = d.jurosRegra.dias || 30;
+        if(diffDias > toler) {
+            let diasAtraso = diffDias - toler;
+            let periodosAtraso = Math.floor(diasAtraso / toler) + 1;
+            let acrescimo = 0;
+            if(d.jurosRegra.tipo === 'val') {
+                acrescimo = d.jurosRegra.valor * periodosAtraso;
+            } else {
+                acrescimo = (d.valor * (d.jurosRegra.valor / 100)) * periodosAtraso;
+            }
+            return d.valor + acrescimo;
+        }
+        return d.valor;
+    }
+
     /* ================= EDIÇÃO DIRETA ================= */
     function abrirEdicao(id, tipo) {
         document.getElementById('edit-id').value = id;
@@ -1377,12 +1490,12 @@
         if (tipo === 'desp') {
             let d = db.despesas.find(x => x.id === id);
             if(!d) return;
-            document.getElementById('edit-title').innerText = "EDITAR COMPRA";
-            document.getElementById('edit-label-desc').innerText = "DESCRIÇÃO DA COMPRA";
+            document.getElementById('edit-title').innerText = d.isEmprestimo ? "EDITAR EMPRÉSTIMO" : "EDITAR COMPRA";
+            document.getElementById('edit-label-desc').innerText = "DESCRIÇÃO";
             
             let matchParc = d.desc.match(/\((\d+)\/(\d+)\)/);
             
-            if (d.isAssinatura) {
+            if (d.isAssinatura || d.isEmprestimo) {
                 document.getElementById('edit-desc').value = d.desc;
                 document.getElementById('edit-parc-original-key').value = getGroupKey(d);
             } else if (matchParc) {
@@ -1397,13 +1510,13 @@
 
             document.getElementById('edit-valor').value = d.valor;
             document.getElementById('edit-cat').value = d.categoria || '';
-            document.getElementById('edit-cartao').value = d.cartao;
+            document.getElementById('edit-cartao').value = d.cartao || '';
             document.getElementById('edit-pessoa').value = d.pessoa;
             document.getElementById('edit-data-real').value = d.dataCompra || '';
             document.getElementById('edit-data-ref').value = d.dataRef;
             
-            document.getElementById('box-edit-cat').style.display = 'block';
-            document.getElementById('box-edit-cartao').style.display = 'block';
+            document.getElementById('box-edit-cat').style.display = d.isEmprestimo ? 'none' : 'block';
+            document.getElementById('box-edit-cartao').style.display = d.isEmprestimo ? 'none' : 'block';
             document.getElementById('box-edit-fatura').style.display = 'block';
             document.getElementById('edit-label-data-real').innerText = "DATA EXATA";
             
@@ -1467,8 +1580,9 @@
             if(d) {
                 let isParc = document.getElementById('box-edit-parcelas').style.display !== 'none';
                 let isAssin = d.isAssinatura;
+                let isEmp = d.isEmprestimo;
                 let origKey = document.getElementById('edit-parc-original-key').value;
-                let descBase = document.getElementById('edit-desc').value.trim() || 'COMPRA DIVERSA';
+                let descBase = document.getElementById('edit-desc').value.trim() || 'LANÇAMENTO';
 
                 let cat = document.getElementById('edit-cat').value;
                 let cartao = document.getElementById('edit-cartao').value;
@@ -1480,7 +1594,7 @@
                 let nTotal = isParc ? parseInt(document.getElementById('edit-parc-total').value) : null;
 
                 let propagaFuturo = false;
-                if (isParc || isAssin) {
+                if (isParc || isAssin || isEmp) {
                     propagaFuturo = confirm("Deseja aplicar essa alteração para os meses seguintes também?");
                 }
 
@@ -1488,7 +1602,7 @@
                     let idsToDelete = db.despesas.filter(x => getGroupKey(x) === origKey && x.dataRef > d.dataRef).map(x => x.id);
                     db.despesas = db.despesas.filter(x => !idsToDelete.includes(x.id));
                     
-                    d.desc = isParc ? `${descBase} (${nAtual}/${nTotal})` : descBase;
+                    d.desc = (isParc || isEmp) ? `${descBase} (${nAtual}/${nTotal})` : descBase;
                     d.valor = valor; d.categoria = cat; d.cartao = cartao; d.pessoa = pessoa; d.dataCompra = dataReal; d.dataRef = dataRef;
 
                     let extra = isParc ? (nTotal - nAtual) : 36;
@@ -1503,15 +1617,17 @@
                         
                         db.despesas.push({
                             id: baseId + i,
-                            desc: isParc ? `${descBase} (${nAtual + i}/${nTotal})` : descBase,
+                            desc: (isParc || isEmp) ? `${descBase} (${nAtual + i}/${nTotal})` : descBase,
                             valor: d.valor, cartao: d.cartao, pessoa: d.pessoa, categoria: d.categoria, dataCompra: d.dataCompra, dataRef: currRef,
                             comprovante: d.comprovante || null,
                             isAssinatura: d.isAssinatura || false,
-                            assinaturaId: d.assinaturaId || null
+                            isEmprestimo: d.isEmprestimo || false,
+                            emprestimoId: d.emprestimoId || null,
+                            jurosRegra: d.jurosRegra || null
                         });
                     }
                 } else {
-                    d.desc = isParc ? `${descBase} (${nAtual}/${nTotal})` : descBase;
+                    d.desc = (isParc || isEmp) ? `${descBase} (${nAtual}/${nTotal})` : descBase;
                     d.valor = valor; d.categoria = cat; d.cartao = cartao; d.pessoa = pessoa; d.dataCompra = dataReal; d.dataRef = dataRef;
                 }
             }
@@ -1581,8 +1697,8 @@
         
         if (tipo === 'desp') {
             let d = db.despesas.find(x => x.id === id);
-            if (d && (d.desc.match(/\(\d+\/\d+\)/) || d.isAssinatura)) {
-                if(confirm("ATENÇÃO!\n\nDeseja apagar TODAS AS COBRANÇAS FUTURAS desta compra também?")) {
+            if (d && (d.desc.match(/\(\d+\/\d+\)/) || d.isAssinatura || d.isEmprestimo)) {
+                if(confirm("ATENÇÃO!\n\nDeseja apagar TODAS AS COBRANÇAS FUTURAS deste empréstimo/parcelamento também?")) {
                     let origKey = getGroupKey(d);
                     let idsToDelete = db.despesas.filter(x => getGroupKey(x) === origKey && x.dataRef >= d.dataRef).map(x => x.id);
                     db.despesas = db.despesas.filter(x => !idsToDelete.includes(x.id));
@@ -1720,7 +1836,6 @@
             let isAssinatura = (tipo === 'A');
             let parc = 1;
             
-            if (tipo === 'P') parc = parseInt(blocos[0].querySelector('.parcelas-lanc').value) || 2; // Fixed selector reference safely
             if (tipo === 'P') parc = parseInt(bloco.querySelector('.parcelas-lanc').value) || 2;
             if (tipo === 'A') parc = 36; 
 
@@ -1750,6 +1865,53 @@
         atualizarTodasTelas();
         backupParaDrive(false);
         toast('✅ Compra lançada com sucesso!');
+    }
+
+    function registrarEmprestimo() {
+        const pessoa = document.getElementById('emp-pessoa').value;
+        const descBase = document.getElementById('emp-desc').value.trim() || 'Empréstimo Pessoal';
+        const vParcStr = document.getElementById('emp-val-parc').value.replace(',', '.');
+        const vParc = parseFloat(vParcStr);
+        const qtdParc = parseInt(document.getElementById('emp-qtd-parc').value) || 1;
+        const dataReal = document.getElementById('emp-data').value;
+        const dataRef = document.getElementById('emp-data-ref').value;
+
+        const jurosDias = parseInt(document.getElementById('emp-juros-dias').value) || 30;
+        const jurosTipo = document.getElementById('emp-juros-tipo').value;
+        const jurosValor = parseFloat(document.getElementById('emp-juros-valor').value.replace(',', '.')) || 0;
+
+        if(!pessoa || isNaN(vParc) || vParc <= 0 || !dataReal || !dataRef) {
+            return toast('Preencha a pessoa, o valor e as datas do empréstimo.', 'erro');
+        }
+
+        let idBase = Date.now();
+        let emprestimoId = 'emp_' + idBase + '_' + pessoa;
+        let transacoes = [];
+        let jurosRegra = jurosValor > 0 ? { dias: jurosDias, tipo: jurosTipo, valor: jurosValor } : null;
+
+        for(let i=1; i<=qtdParc; i++) {
+            let mesRef = gerarMesVencimentoBase(dataRef, i);
+            let descToSave = qtdParc > 1 ? `${descBase} (${i}/${qtdParc})` : descBase;
+
+            transacoes.push({
+                id: idBase + i,
+                desc: descToSave,
+                valor: parseFloat(vParc.toFixed(2)),
+                pessoa: pessoa,
+                cartao: null,
+                categoria: "💸 Empréstimo",
+                dataCompra: dataReal,
+                dataRef: mesRef,
+                isEmprestimo: true,
+                emprestimoId: emprestimoId,
+                jurosRegra: jurosRegra
+            });
+        }
+
+        db.despesas.push(...transacoes);
+        salvarDB(); fecharModais(); atualizarTodasTelas();
+        backupParaDrive(false);
+        toast('🤝 Empréstimo registrado com sucesso!');
     }
 
     function registrarBaixa() {
@@ -1801,7 +1963,11 @@
         const box = document.getElementById('dash-categorias');
         if (!card || !box) return;
         const tot = {};
-        despesas.forEach(d => { const c = d.categoria || 'Sem categoria'; tot[c] = (tot[c] || 0) + d.valor; });
+        despesas.forEach(d => { 
+            const c = d.categoria || 'Sem categoria'; 
+            let valReal = getValorAjustadoEmprestimo(d);
+            tot[c] = (tot[c] || 0) + valReal; 
+        });
         const lista = Object.entries(tot).sort((a, b) => b[1] - a[1]);
         if (!lista.length) { card.style.display = 'none'; return; }
         const soma = lista.reduce((s, x) => s + x[1], 0);
@@ -1835,6 +2001,8 @@
 
         if (d.isAssinatura) {
             badgeP = `<div class="parc-badge" style="background: #3b82f6; color: #fff;">🔁 MENSAL</div>`;
+        } else if (d.isEmprestimo) {
+            badgeP = `<div class="parc-badge" style="background: var(--primary); color: #000;">🤝 EMPRÉSTIMO</div>`;
         } else {
             let matchParc = descLimp.match(/\((\d+)\/(\d+)\)/);
             if(matchParc) {
@@ -1863,7 +2031,7 @@
         let despFiltradas = db.despesas.filter(d => dentroDoPeriodo(d, range));
         let pagFiltrados = db.pagamentos.filter(pg => dentroDoPeriodo(pg, range));
 
-        let totalD = despFiltradas.reduce((s, d) => s + d.valor, 0);
+        let totalD = despFiltradas.reduce((s, d) => s + getValorAjustadoEmprestimo(d), 0);
         let totalP = pagFiltrados.reduce((s, pg) => s + pg.valor, 0);
         
         document.getElementById('metric-despesas').innerText = brl(totalD);
@@ -1885,7 +2053,7 @@
             let dp = despFiltradas.filter(d => d.pessoa === p);
             let pp = pagFiltrados.filter(pg => pg.pessoa === p);
             
-            let sumDesp = dp.reduce((s, d) => s + d.valor, 0);
+            let sumDesp = dp.reduce((s, d) => s + getValorAjustadoEmprestimo(d), 0);
             let sumPag = pp.reduce((s, pg) => s + pg.valor, 0);
             let saldoPessoa = sumDesp - sumPag;
 
@@ -1907,17 +2075,21 @@
 
             let cor = saldoPessoa > 0 ? 'var(--danger)' : 'var(--success)';
             let idP = 'p_' + Math.random().toString(36).substr(2, 9);
-            let cartoesUsados = [...new Set(dp.map(d => d.cartao))].filter(Boolean);
+            
+            // Agrupar por cartão ou "Empréstimos / Sem Cartão"
+            let gruposOrigem = [...new Set(dp.map(d => d.cartao || 'EMPRÉSTIMOS / OUTROS'))].filter(Boolean);
             let subHtml = '';
             
-            cartoesUsados.forEach(c => {
-                let dc = dp.filter(d => d.cartao === c);
-                let sumCartao = dc.reduce((s, d) => s + d.valor, 0);
+            gruposOrigem.forEach(c => {
+                let dc = dp.filter(d => (d.cartao || 'EMPRÉSTIMOS / OUTROS') === c);
+                let sumCartao = dc.reduce((s, d) => s + getValorAjustadoEmprestimo(d), 0);
                 let idC = idP + '_' + Math.random().toString(36).substr(2, 9);
                 
                 let itensHtml = dc.map(d => {
                     let i = formatarInfoItem(d, false);
-                    return `<div class="t-row" onclick="abrirEdicao(${d.id}, 'desp')"><div class="t-desc"><strong>${i.descLimp} ${i.badgeP} ${i.compIcon}</strong><span>📅 ${i.textData} | ${formatarMesAno(d.dataRef)} ${i.cat}</span></div><div class="t-val desp">R$ ${d.valor.toFixed(2)}</div></div>`;
+                    let valReal = getValorAjustadoEmprestimo(d);
+                    let avisoJuros = valReal > d.valor ? `<small style="color:var(--danger); display:block;">(Com Juros/Multa)</small>` : '';
+                    return `<div class="t-row" onclick="abrirEdicao(${d.id}, 'desp')"><div class="t-desc"><strong>${i.descLimp} ${i.badgeP} ${i.compIcon}</strong><span>📅 ${i.textData} | ${formatarMesAno(d.dataRef)} ${i.cat}</span>${avisoJuros}</div><div class="t-val desp">R$ ${valReal.toFixed(2)}</div></div>`;
                 }).join('');
 
                 subHtml += `<div class="sub-tree-card" id="${idC}"><div class="sub-tree-header" onclick="document.getElementById('${idC}').classList.toggle('open')"><span>💳 ${c}</span><span style="color: var(--text);">R$ ${sumCartao.toFixed(2)}</span></div><div class="sub-tree-body">${itensHtml}</div></div>`;
@@ -1942,7 +2114,7 @@
 
         todosCartoes.forEach(cartaoNome => {
             let dc = despFiltradas.filter(d => d.cartao === cartaoNome);
-            let sumCartao = dc.reduce((s, d) => s + d.valor, 0);
+            let sumCartao = dc.reduce((s, d) => s + getValorAjustadoEmprestimo(d), 0);
 
             if(sumCartao > 0) {
                 listaDadosCartoes.push({ cartaoNome, sumCartao, dc });
@@ -1964,12 +2136,13 @@
 
             pessoasNoCartao.forEach(p => {
                 let dp = dc.filter(d => d.pessoa === p);
-                let sumPessoa = dp.reduce((s, d) => s + d.valor, 0);
+                let sumPessoa = dp.reduce((s, d) => s + getValorAjustadoEmprestimo(d), 0);
                 let idP = idC + '_' + Math.random().toString(36).substr(2, 9);
 
                 let itensHtml = dp.map(d => {
                     let i = formatarInfoItem(d, false);
-                    return `<div class="t-row" onclick="abrirEdicao(${d.id}, 'desp')"><div class="t-desc"><strong>${i.descLimp} ${i.badgeP} ${i.compIcon}</strong><span>📅 ${i.textData} | ${formatarMesAno(d.dataRef)} ${i.cat}</span></div><div class="t-val desp">R$ ${d.valor.toFixed(2)}</div></div>`;
+                    let valReal = getValorAjustadoEmprestimo(d);
+                    return `<div class="t-row" onclick="abrirEdicao(${d.id}, 'desp')"><div class="t-desc"><strong>${i.descLimp} ${i.badgeP} ${i.compIcon}</strong><span>📅 ${i.textData} | ${formatarMesAno(d.dataRef)} ${i.cat}</span></div><div class="t-val desp">R$ ${valReal.toFixed(2)}</div></div>`;
                 }).join('');
 
                 subHtml += `<div class="sub-tree-card" id="${idP}"><div class="sub-tree-header" onclick="document.getElementById('${idP}').classList.toggle('open')"><div class="tree-person-info" style="gap:8px;"><div class="avatar">${getIniciais(p)}</div><span>${p}</span></div><span style="color: var(--text);">R$ ${sumPessoa.toFixed(2)}</span></div><div class="sub-tree-body">${itensHtml}</div></div>`;
@@ -2014,7 +2187,7 @@
         let despFiltradas = db.despesas.filter(d => {
             if(d.dataRef !== mesStr) return false;
             if(fP !== 'TODOS' && d.pessoa !== fP) return false;
-            if(cartoesSelCal.length > 0 && !cartoesSelCal.includes(d.cartao)) return false;
+            if(cartoesSelCal.length > 0 && d.cartao && !cartoesSelCal.includes(d.cartao)) return false;
             return true;
         });
 
@@ -2034,17 +2207,21 @@
             let dia = 1;
             if(d.dataCompra && d.dataCompra.includes('-')) {
                 dia = parseInt(d.dataCompra.split('-')[2]);
-            } else {
+            } else if(d.cartao) {
                 let cardInfo = db.cartoes.find(c => (c.nome||c) === d.cartao);
                 dia = cardInfo && cardInfo.vencimento ? cardInfo.vencimento : 10;
+            } else {
+                dia = 10;
             }
             if(dia > diasNoMesAtual) dia = diasNoMesAtual;
             if(dia < 1 || isNaN(dia)) dia = 1;
             
+            let valReal = getValorAjustadoEmprestimo(d);
+
             if(!mapaDias[dia]) mapaDias[dia] = { desp: [], pag: [], totD: 0, totP: 0 };
             mapaDias[dia].desp.push(d);
-            mapaDias[dia].totD += d.valor;
-            totalDespMes += d.valor;
+            mapaDias[dia].totD += valReal;
+            totalDespMes += valReal;
         });
 
         pagFiltrados.forEach(pg => {
@@ -2099,7 +2276,13 @@
         let itensGerais = [];
         
         despFiltradas.forEach(d => {
-            let dia = d.dataCompra && d.dataCompra.includes('-') ? parseInt(d.dataCompra.split('-')[2]) : 10;
+            let dia = 10;
+            if(d.dataCompra && d.dataCompra.includes('-')) {
+                dia = parseInt(d.dataCompra.split('-')[2]);
+            } else if(d.cartao) {
+                let cardInfo = db.cartoes.find(c => (c.nome||c) === d.cartao);
+                dia = cardInfo && cardInfo.vencimento ? cardInfo.vencimento : 10;
+            }
             itensGerais.push({ ...d, tipo: 'desp', sortDia: dia });
         });
         
@@ -2115,13 +2298,14 @@
             
             if(item.tipo === 'desp') {
                 let parcInfo = formatarInfoItem(item, false);
+                let valReal = getValorAjustadoEmprestimo(item);
                 htmlListaGeral += `<div class="t-row" onclick="abrirEdicao(${item.id}, 'desp')">
                     <div style="margin-right:12px; text-align:center; min-width:30px; border-right:1px solid var(--border); padding-right:10px;">
                         <div style="font-size:0.7rem; color:var(--text-light); text-transform:uppercase;">Dia</div>
                         <div style="font-weight:bold; font-size:1.1rem; color:var(--primary);">${diaStr}</div>
                     </div>
-                    <div class="t-desc"><strong style="font-size:0.85rem;">${parcInfo.descLimp} ${parcInfo.badgeP} ${parcInfo.compIcon}</strong><span>👤 ${item.pessoa} | 💳 ${item.cartao}</span></div>
-                    <div class="t-val desp">R$ ${item.valor.toFixed(2)}</div>
+                    <div class="t-desc"><strong style="font-size:0.85rem;">${parcInfo.descLimp} ${parcInfo.badgeP} ${parcInfo.compIcon}</strong><span>👤 ${item.pessoa} | 💳 ${item.cartao || 'Empréstimo'}</span></div>
+                    <div class="t-val desp">R$ ${valReal.toFixed(2)}</div>
                 </div>`;
             } else {
                 let info = formatarInfoItem(item, true);
@@ -2173,10 +2357,10 @@
 
         let despDia = db.despesas.filter(d => {
             if(d.dataRef !== mesStr) return false;
-            let targetDia = 1;
+            let targetDia = 10;
             if(d.dataCompra && d.dataCompra.includes('-')) {
                 targetDia = parseInt(d.dataCompra.split('-')[2]);
-            } else {
+            } else if(d.cartao) {
                 let cardInfo = db.cartoes.find(c => (c.nome||c) === d.cartao);
                 targetDia = cardInfo && cardInfo.vencimento ? cardInfo.vencimento : 10;
             }
@@ -2185,7 +2369,7 @@
             
             if(targetDia !== dia) return false;
             if(fP !== 'TODOS' && d.pessoa !== fP) return false;
-            if(cartoesSelCal.length > 0 && !cartoesSelCal.includes(d.cartao)) return false;
+            if(cartoesSelCal.length > 0 && d.cartao && !cartoesSelCal.includes(d.cartao)) return false;
             return true;
         });
 
@@ -2208,9 +2392,10 @@
         let html = ''; let subTotD = 0; let subTotP = 0;
         
         despDia.forEach(d => {
-            subTotD += d.valor;
+            let valReal = getValorAjustadoEmprestimo(d);
+            subTotD += valReal;
             let parcInfo = formatarInfoItem(d, false);
-            html += `<div class="t-row" onclick="abrirEdicao(${d.id}, 'desp')"><div class="t-desc"><strong style="font-size:0.85rem;">${parcInfo.descLimp} ${parcInfo.badgeP} ${parcInfo.compIcon}</strong><span>👤 ${d.pessoa} | 💳 ${d.cartao}</span></div><div class="t-val desp">R$ ${d.valor.toFixed(2)}</div></div>`;
+            html += `<div class="t-row" onclick="abrirEdicao(${d.id}, 'desp')"><div class="t-desc"><strong style="font-size:0.85rem;">${parcInfo.descLimp} ${parcInfo.badgeP} ${parcInfo.compIcon}</strong><span>👤 ${d.pessoa} | 💳 ${d.cartao || 'Empréstimo'}</span></div><div class="t-val desp">R$ ${valReal.toFixed(2)}</div></div>`;
         });
         
         pagDia.forEach(pg => {
@@ -2249,7 +2434,7 @@
         db.despesas.filter(d => {
             if (busca && !(d.desc||'').toLowerCase().includes(busca)) return false;
             if (fP !== "TODOS" && d.pessoa !== fP) return false;
-            if (cartoesSelExt.length > 0 && !cartoesSelExt.includes(d.cartao)) return false;
+            if (cartoesSelExt.length > 0 && d.cartao && !cartoesSelExt.includes(d.cartao)) return false;
             if (!dentroDoPeriodo(d, range)) return false;
             return true;
         }).forEach(d => filtradas.push({...d, _uid: 'desp_'+d.id, _tipo: 'desp'}));
@@ -2269,9 +2454,10 @@
             if(d._tipo === 'desp') {
                 let i = formatarInfoItem(d, false);
                 descFinal = i.descLimp + ' ' + i.badgeP + ' ' + i.compIcon;
-                valStr = `R$ ${d.valor.toFixed(2)}`;
+                let valReal = getValorAjustadoEmprestimo(d);
+                valStr = `R$ ${valReal.toFixed(2)}`;
                 corVal = '';
-                iconeCartao = `💳 ${d.cartao}`;
+                iconeCartao = `💳 ${d.cartao || 'Empréstimo'}`;
                 dataExib = formatarMesAno(d.dataRef);
             } else {
                 let i = formatarInfoItem(d, true);
@@ -2319,7 +2505,7 @@
 
     function atualizarContadorExt() { 
         let total = 0; 
-        db.despesas.forEach(d => { if(extSelecionados.has('desp_'+d.id)) total += d.valor; });
+        db.despesas.forEach(d => { if(extSelecionados.has('desp_'+d.id)) total += getValorAjustadoEmprestimo(d); });
         db.pagamentos.forEach(pg => { if(extSelecionados.has('pag_'+pg.id)) total -= pg.valor; });
         
         let prefix = total >= 0 ? '' : '- ';
@@ -2335,19 +2521,20 @@
         let selPag = db.pagamentos.filter(pg => extSelecionados.has('pag_'+pg.id));
         
         let pessoa = selDesp.length > 0 ? selDesp[0].pessoa : (selPag.length > 0 ? selPag[0].pessoa : 'Cliente');
-        let totalDesp = selDesp.reduce((a,b) => a + b.valor, 0);
+        let totalDesp = selDesp.reduce((a,b) => a + getValorAjustadoEmprestimo(b), 0);
         let totalPag = selPag.reduce((a,b) => a + b.valor, 0);
         let totalLiquido = totalDesp - totalPag;
 
         let texto = `📄 *Resumo de Fatura*\n👤 *${pessoa}*\n\n`;
         
         if(selDesp.length > 0){
-            texto += `🛒 *Compras:*\n`;
+            texto += `🛒 *Cobranças/Empréstimos:*\n`;
             selDesp.forEach((d, idx) => {
                 let dLimp = d.desc.replace(/\(\d+\/\d+\)/, '').trim();
                 let mParc = d.desc.match(/\(\d+\/\d+\)/);
                 let badge = mParc ? ` ${mParc[0]}` : '';
-                texto += `${idx+1}. ${dLimp}${badge} - R$ ${d.valor.toFixed(2)}\n`; 
+                let vReal = getValorAjustadoEmprestimo(d);
+                texto += `${idx+1}. ${dLimp}${badge} - R$ ${vReal.toFixed(2)}\n`; 
             });
         }
 
@@ -2368,7 +2555,7 @@
 
     function renderizarListaParcelamentos() {
         const p = document.getElementById('parc-pessoa').value;
-        let despFiltradas = db.despesas.filter(d => d.pessoa === p && (d.desc.match(/\(\d+\/\d+\)/) || d.isAssinatura)).map(d => ({...d, _tipo: 'desp'}));
+        let despFiltradas = db.despesas.filter(d => d.pessoa === p && (d.desc.match(/\(\d+\/\d+\)/) || d.isAssinatura || d.isEmprestimo)).map(d => ({...d, _tipo: 'desp'}));
         let pagFiltrados = db.pagamentos.filter(pg => pg.pessoa === p && ((pg.desc||'').match(/\(\d+\/\d+\)/) || pg.isAssinatura)).map(pg => ({...pg, _tipo: 'pag'}));
         
         let filtradas = [...despFiltradas, ...pagFiltrados];
@@ -2393,6 +2580,7 @@
 
             let totalParc = g.length;
             let isAssin = g[0].isAssinatura;
+            let isEmp = g[0].isEmprestimo;
             let isReceb = g[0]._tipo === 'pag';
             let descBase = isAssin ? g[0].desc : (g[0].desc||'').replace(/\(\d+\/\d+\)/, '').trim();
             let dataCriacao = (g[0].dataCompra || g[0].data) ? (g[0].dataCompra || g[0].data).split('-').reverse().join('/') : '--/--/----';
@@ -2400,14 +2588,15 @@
             let targetD = g.find(d => (d.dataRef || d.data.substring(0,7)) >= mesAtualStr) || g[g.length-1];
             let mainClick = `abrirEdicao(${targetD.id}, '${g[0]._tipo}')`;
 
-            let corBadge = isReceb ? 'var(--success)' : 'var(--primary)';
-            let corLetra = isReceb ? '#fff' : '#000';
+            let corBadge = isReceb ? 'var(--success)' : (isEmp ? 'var(--primary)' : 'var(--primary)');
+            let corLetra = isReceb ? '#fff' : (isEmp ? '#000' : '#000');
 
             let badgeHtml = isAssin ? 
                 `<div style="background:#3b82f6; color:#fff; padding:4px 8px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="${mainClick}">🔁 MENSAL</div>` : 
-                `<div style="background:${corBadge}; color:${corLetra}; padding:4px 8px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="${mainClick}">${totalParc}x</div>`;
+                (isEmp ? `<div style="background:var(--primary); color:#000; padding:4px 8px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="${mainClick}">🤝 ${totalParc}x</div>` :
+                `<div style="background:${corBadge}; color:${corLetra}; padding:4px 8px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="${mainClick}">${totalParc}x</div>`);
 
-            let subTxt = isReceb ? `💰 Recebimento/Abatimento | R$ ${g[0].valor.toFixed(2)} /mês` : `💳 ${g[0].cartao} | R$ ${g[0].valor.toFixed(2)} /mês`;
+            let subTxt = isReceb ? `💰 Recebimento/Abatimento | R$ ${g[0].valor.toFixed(2)} /mês` : (isEmp ? `🤝 Empréstimo | R$ ${g[0].valor.toFixed(2)} /mês` : `💳 ${g[0].cartao} | R$ ${g[0].valor.toFixed(2)} /mês`);
 
             html += `<div class="check-item" style="display:flex; justify-content:space-between; align-items:center;">
                 <div style="flex:1;" onclick="${mainClick}">
@@ -2433,7 +2622,7 @@
             html += `
             <div class="check-item" id="tr-item-${d.id}" onclick="toggleTransfSel(${d.id})">
                 <span class="material-icons-outlined check-mark" style="color: transparent; border: 2px solid var(--text-light); border-radius: 6px; width: 18px; height: 18px; display:flex; align-items:center; justify-content:center;">check</span>
-                <div class="t-desc"><strong style="font-size:0.85rem;">${d.desc}</strong><span>${d.cartao} • Ref: ${formatarMesAno(d.dataRef)}</span></div>
+                <div class="t-desc"><strong style="font-size:0.85rem;">${d.desc}</strong><span>${d.cartao || 'Empréstimo'} • Ref: ${formatarMesAno(d.dataRef)}</span></div>
                 <div class="t-val">R$ ${d.valor.toFixed(2)}</div>
             </div>`;
         });
@@ -2492,7 +2681,7 @@
             let achouC = (cOrig === "TODOS" || d.cartao === cOrig);
             if (achouP && achouC) {
                 if (pDest !== "") d.pessoa = pDest;
-                if (cDest !== "") d.cartao = cDest;
+                if (cDest !== "" && d.cartao) d.cartao = cDest;
                 countAfe++;
             }
         });
@@ -2676,8 +2865,8 @@
     }
 
     function limparOrfaos() {
-        let pessoasComUso = new Set(db.despesas.map(d => d.pessoa).concat(db.pagamentos.map(p => p.pessoa)));
-        let cartoesComUso = new Set(db.despesas.map(d => d.cartao));
+        let pessoasComUso = new Set(db.pessoas.map(d => d.pessoa).concat(db.pagamentos.map(p => p.pessoa)));
+        let cartoesComUso = new Set(db.despesas.map(d => d.cartao).filter(Boolean));
 
         db.pessoas = db.pessoas.filter(p => pessoasComUso.has(p) || p === "NETO (Eu)");
         db.cartoes = db.cartoes.filter(c => cartoesComUso.has(c.nome || c));
@@ -2705,7 +2894,7 @@
     
     function zerarApp() {
         if (prompt("Digite ZERAR para apagar TUDO:") === 'ZERAR') { 
-            db = { pessoas: [], cartoes: [], categorias: ["🛍 Mercado/Compras", "🚗 Transporte/Veículo", "💊 Saúde/Farmácia", "🍕 Lazer/Alimentação", "🏠 Casa/Contas", "💸 Repasse/Empréstimo", "📌 Outros"], despesas: [], pagamentos: [] };
+            db = { pessoas: [], cartoes: [], categorias: ["🛍 Mercado/Compras", "🚗 Transporte/Veículo", "💊 Saúde/Farmácia", "🍕 Lazer/Alimentação", "🏠 Casa/Contas", "💸 Repasse/Empréstimo", "📌 Outros"], despesas: [], pagamentos: [], emprestimos: [] };
             salvarDB(); atualizarTodasTelas(); alert("Base zerada com sucesso."); 
         }
     }
@@ -2743,7 +2932,7 @@
         const e = await lerEspelhoIDB();
         if (dbVazio(e)) return;
         if (confirm(`Seus dados locais estão vazios, mas existe uma cópia de segurança local com ${(e.despesas || []).length} despesas.\n\nRestaurar agora?`)) {
-            ['pessoas','cartoes','categorias','despesas','pagamentos','pessoasInativas','cartoesInativos','categoriasInativas'].forEach(k => { if (!Array.isArray(e[k])) e[k] = []; });
+            ['pessoas','cartoes','categorias','despesas','pagamentos','pessoasInativas','cartoesInativos','categoriasInativas','emprestimos'].forEach(k => { if (!Array.isArray(e[k])) e[k] = []; });
             db = e; salvarDB(); atualizarTodasTelas(); preencherListasCorrecao();
             toast('✅ Dados restaurados da cópia de segurança');
         }
