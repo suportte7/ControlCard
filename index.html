@@ -7,8 +7,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#f59e0b">
-    <link id="pwa-manifest" rel="manifest" href="manifest.json?v=4">
-    <link rel="apple-touch-icon" href="icon-192.png?v=4">
+    <link id="pwa-manifest" rel="manifest" href="manifest.json?v=5">
+    <link rel="apple-touch-icon" href="icon-192.png?v=5">
     <link rel="icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f59e0b' rx='20'/%3E%3Ctext x='50' y='65' font-size='45' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'%3ECC%3C/text%3E%3C/svg%3E">
     
     <title>ControlCard MultiUser</title>
@@ -86,9 +86,9 @@
     <div style="max-width: 380px; background: var(--surface); border: 2px solid var(--danger); padding: 25px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
         <span class="material-icons-outlined" style="font-size: 3.5rem; color: var(--danger);">block</span>
         <h2 style="color: var(--danger); margin: 10px 0 5px; font-size: 1.3rem;">ACESSO RESTRITO</h2>
-        <p id="bloqueio-msg" style="color: var(--text-light); font-size: 0.85rem; line-height: 1.4;">Digite seu e-mail cadastrado ou token de acesso.</p>
+        <p id="bloqueio-msg" style="color: var(--text-light); font-size: 0.85rem; line-height: 1.4;">Digite seu e-mail cadastrado para liberar o acesso.</p>
         <div class="form-group" style="margin-top: 15px;">
-            <label>E-MAIL OU TOKEN</label>
+            <label>E-MAIL CADASTRADO</label>
             <input type="text" id="input-login-token" class="form-input" placeholder="seu@email.com">
         </div>
         <button id="btn-tentar-login" class="btn btn-primary" onclick="tentarLoginManual()">TENTAR ACESSAR</button>
@@ -172,7 +172,7 @@
                 <div class="section-label" style="color: var(--danger);">👑 PAINEL DO ADMINISTRADOR</div>
                 <div class="card" style="border-color: var(--danger);">
                     <h3 style="font-size: 0.9rem; color: var(--danger); margin-top:0;">Gerenciar Usuários Cadastrados</h3>
-                    <p class="helper">Adicione ou Bloqueie novos usuários diretamente pela sua planilha.</p>
+                    <p class="helper">Adicione ou Bloqueie novos usuários diretamente na sua planilha.</p>
                     <div class="form-group">
                         <label>E-mail do Usuário</label>
                         <input type="email" id="adm-new-email" class="form-input" placeholder="usuario@email.com">
@@ -233,8 +233,8 @@
 <div id="toast-app"></div>
 
 <script>
-    // URL OFICIAL DO SEU GOOGLE APPS SCRIPT
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzIWDfDZ8KGqGqBR6wbcGnYfwGMHkAHS0xu_CwURvfEQ7Z4nBP7pkFwJrz2qRVbc6B27A/exec";
+    // SUA NOVA URL OFICIAL DO GOOGLE APPS SCRIPT
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwm5kz5KV2NPateg9QxfwMv3JZ-9bJVnyRI9iRMDZL3_NluFA7vO2e-bDVk4ntznXQucQ/exec";
 
     let currentUser = {
         token: localStorage.getItem('cc_user_token') || '',
@@ -259,30 +259,19 @@
     }
 
     async function validarAcessoServidor() {
-        if(!currentUser.token && !currentUser.email) {
+        if(!currentUser.email) {
             exibirBloqueio("Digite seu e-mail cadastrado para liberar o acesso.");
             return;
         }
 
         try {
-            let res = await fetch(WEB_APP_URL, {
-                method: "POST",
-                mode: "no-cors",
-                body: JSON.stringify({
-                    acao: "validar_usuario",
-                    email: currentUser.email,
-                    token: currentUser.token
-                })
-            });
-            
-            // Com mode no-cors, fazemos uma chamada GET paralela para ler o JSON de retorno com segurança
-            let checkRes = await fetch(`${WEB_APP_URL}?acao=validar&email=${encodeURIComponent(currentUser.email)}&token=${encodeURIComponent(currentUser.token)}`);
-            let data = await checkRes.json();
+            let res = await fetch(`${WEB_APP_URL}?acao=validar&email=${encodeURIComponent(currentUser.email)}`);
+            let data = await res.json();
             
             if (data && data.autorizado) {
                 currentUser.tipo = data.tipo || 'USER';
                 currentUser.nome = data.nome || 'Usuário';
-                currentUser.token = data.token || currentUser.token;
+                currentUser.token = data.token || '';
                 
                 localStorage.setItem('cc_user_tipo', currentUser.tipo);
                 localStorage.setItem('cc_user_nome', currentUser.nome);
@@ -305,7 +294,7 @@
                 document.getElementById('bloqueio-overlay').style.display = 'none';
                 atualizarTodasTelas();
             } else {
-                exibirBloqueio("Erro ao conectar com a planilha. Verifique o e-mail digitado.");
+                exibirBloqueio("Erro ao conectar com a planilha. Verifique se o e-mail está cadastrado.");
             }
         }
     }
@@ -330,18 +319,10 @@
             btn.disabled = true;
         }
 
-        if(val.includes('@')) {
-            currentUser.email = val;
-            currentUser.token = '';
-        } else {
-            currentUser.token = val;
-            currentUser.email = '';
-        }
-
+        currentUser.email = val;
         localStorage.setItem('cc_user_email', currentUser.email);
-        localStorage.setItem('cc_user_token', currentUser.token);
         
-        dbKey = 'ControlCard_DB_' + (currentUser.token || currentUser.email || 'LOCAL');
+        dbKey = 'ControlCard_DB_' + currentUser.email;
         db = JSON.parse(localStorage.getItem(dbKey)) || { cartoes: [], despesas: [], pagamentos: [] };
 
         await validarAcessoServidor();
