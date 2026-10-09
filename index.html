@@ -7,8 +7,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#f59e0b">
-    <link id="pwa-manifest" rel="manifest" href="manifest.json?v=1">
-    <link rel="apple-touch-icon" href="icon-192.png?v=1">
+    <link id="pwa-manifest" rel="manifest" href="manifest.json?v=2">
+    <link rel="apple-touch-icon" href="icon-192.png?v=2">
     
     <title>ControlCardMult</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
@@ -58,6 +58,7 @@
         .btn-success { background: var(--success); color: white; }
         .btn-danger { background: var(--danger); color: white; }
         .btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text); }
+        .btn-warning { background: #facc15; color: #000; }
         
         .dock-wrapper { position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; justify-content: center; pointer-events: none; width: 100%;}
         .dock { display: flex; align-items: center; justify-content: space-between; background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(10px); border-radius: 30px; padding: 4px 16px; width: min(420px, calc(100vw - 20px)); height: 56px; box-sizing: border-box; border: 1px solid rgba(255,255,255,0.1); pointer-events: all;}
@@ -75,6 +76,8 @@
         #toast-app.show { opacity: 1; transform: translate(-50%, 0); }
 
         #bloqueio-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 999999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+
+        .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -165,30 +168,35 @@
         <!-- TELA 4: CONFIGURAÇÕES -->
         <div id="tela-config" class="tela" style="display: none;">
             
+            <!-- FERRAMENTAS DO ADMIN -->
             <div id="painel-admin-box" style="display: none;">
-                <div class="section-label" style="color: var(--danger);">👑 PAINEL DO ADMINISTRADOR</div>
+                <div class="section-label" style="color: var(--danger);">👑 FERRAMENTAS DO ADMINISTRADOR</div>
                 <div class="card" style="border-color: var(--danger);">
-                    <h3 style="font-size: 0.9rem; color: var(--danger); margin-top:0;">Gerenciar Usuários Cadastrados</h3>
+                    
+                    <p class="helper">Use estas ferramentas com cuidado. Elas afetam a base de dados global.</p>
+                    <div class="tool-grid">
+                        <button class="btn btn-warning" onclick="baixarJSONLocal()"><span class="material-icons-outlined">download</span> Gerar JSON</button>
+                        <button class="btn btn-danger" onclick="limparBaseLocal()"><span class="material-icons-outlined">delete_forever</span> Limpar Local</button>
+                        <button class="btn btn-success" style="grid-column: span 2;" onclick="forcarSincronizacaoGlobal()"><span class="material-icons-outlined">cloud_upload</span> Forçar Upload Global</button>
+                    </div>
+
+                    <h3 style="font-size: 0.9rem; color: var(--danger); margin: 15px 0 5px;">Gerenciar Acesso (Planilha)</h3>
                     <div class="form-group">
-                        <label>E-mail do Usuário</label>
                         <input type="email" id="adm-new-email" class="form-input" placeholder="usuario@email.com">
                     </div>
-                    <div class="form-group">
-                        <label>Nome / Identificação</label>
-                        <input type="text" id="adm-new-nome" class="form-input" placeholder="Ex: João Silva">
-                    </div>
                     <div style="display: flex; gap: 8px;">
-                        <button class="btn btn-success" style="flex: 1;" onclick="gerenciarUsuarioAdmin('ATIVO')">LIBERAR</button>
-                        <button class="btn btn-danger" style="flex: 1;" onclick="gerenciarUsuarioAdmin('BLOQUEADO')">BLOQUEAR</button>
+                        <button class="btn btn-outline" style="flex: 1;" onclick="gerenciarUsuarioAdmin('ATIVO')">LIBERAR</button>
+                        <button class="btn btn-outline" style="flex: 1; border-color: var(--danger); color: var(--danger);" onclick="gerenciarUsuarioAdmin('BLOQUEADO')">BLOQUEAR</button>
                     </div>
                 </div>
             </div>
 
-            <div class="section-label">⚙️ BACKUP E RESTAURAÇÃO</div>
+            <!-- FERRAMENTAS DO USUÁRIO NORMAL -->
+            <div class="section-label">⚙️ MINHA CONTA E BACKUP</div>
             <div class="card">
-                <button class="btn btn-success" style="margin-bottom: 8px;" onclick="fazerBackup()">📥 SALVAR BACKUP (DRIVE)</button>
-                <button class="btn btn-outline" style="margin-bottom: 8px;" onclick="restaurarBackup()">📤 RESTAURAR DADOS</button>
-                <button class="btn btn-danger" onclick="sairDoSistema()">🚪 SAIR (LOGOUT)</button>
+                <button class="btn btn-success" style="margin-bottom: 8px;" onclick="fazerBackup()"><span class="material-icons-outlined">cloud_upload</span> ENVIAR MEUS DADOS</button>
+                <button class="btn btn-outline" style="margin-bottom: 8px;" onclick="restaurarBackup()"><span class="material-icons-outlined">cloud_download</span> PUXAR MEUS DADOS</button>
+                <button class="btn btn-danger" onclick="sairDoSistema()"><span class="material-icons-outlined">logout</span> SAIR (LOGOUT)</button>
             </div>
 
             <div class="section-label">💳 MEUS CARTÕES & VENCIMENTOS</div>
@@ -198,7 +206,7 @@
                     <div class="form-group"><label>FECHAMENTO (DIA)</label><input type="number" id="nc-fecha" class="form-input" placeholder="25"></div>
                     <div class="form-group"><label>VENCIMENTO (DIA)</label><input type="number" id="nc-vence" class="form-input" placeholder="5"></div>
                 </div>
-                <button class="btn btn-outline" onclick="addCartao()">ADICIONAR CARTÃO</button>
+                <button class="btn btn-outline" onclick="addCartao()"><span class="material-icons-outlined">add_card</span> ADICIONAR CARTÃO</button>
                 <div id="lista-meus-cartoes" style="margin-top: 10px;"></div>
             </div>
         </div>
@@ -208,7 +216,8 @@
 <div id="toast-app"></div>
 
 <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyZ62qYfrA9yWvLTyypxKIrsK0YhF0bThkkEawn8vsLTMmMQI8M6Qws5tr07TC89Gxbpw/exec";
+    // URL da Planilha Nova Autônoma gerada pelo Apps Script
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzENjgNBN8V6Pc-PF7cqX79roBMdtgQZW01rZxS5whqGPP4Acv2uZzbi61lgI9-uBhVJA/exec";
 
     let currentUser = {
         email: localStorage.getItem('cc_user_email') || '',
@@ -247,10 +256,12 @@
         dbKey = 'ControlCard_DB_' + currentUser.email;
         db = JSON.parse(localStorage.getItem(dbKey)) || { cartoes: [], despesas: [] };
 
-        // Simulando a lógica de validação: Se você é o admin, libera como ADMIN.
-        if (currentUser.email === "SEU_EMAIL_ADMIN_AQUI@gmail.com") { // **COLOQUE SEU EMAIL DE ADMIN AQUI**
+        // =========================================================
+        // ATENÇÃO ADMIN: COLOQUE SEU EMAIL EXATO NA LINHA ABAIXO
+        // =========================================================
+        if (currentUser.email === "SEU_EMAIL_AQUI@gmail.com") { 
              currentUser.tipo = 'ADMIN';
-             currentUser.nome = 'Administrador (Neto)';
+             currentUser.nome = 'Neto (Admin)';
         } else {
              currentUser.tipo = 'USER';
              currentUser.nome = 'Usuário (' + currentUser.email.split('@')[0] + ')';
@@ -263,7 +274,7 @@
     }
 
     function sairDoSistema() {
-        if(confirm("Tem certeza que deseja sair?")) {
+        if(confirm("Tem certeza que deseja sair do aplicativo?")) {
             localStorage.removeItem('cc_user_email');
             localStorage.removeItem('cc_user_nome');
             localStorage.removeItem('cc_user_tipo');
@@ -283,46 +294,65 @@
         toast("✅ Acesso liberado!");
     }
 
+    // ====================================================================
+    // FUNÇÕES DE SINCRONIZAÇÃO SEGURAS (Evita apagar conta de outros)
+    // ====================================================================
     async function fazerBackup() {
         toast("Sincronizando com a nuvem...", "ok");
         try {
-            // Se for ADMIN, faz o backup completo. Se for USER, apenas envia suas próprias despesas (pode precisar de ajuste no backend para mesclar)
+            let res = await fetch(WEB_APP_URL + "?action=export");
+            let dadosGlobais = await res.json();
+            let despesasGlobais = dadosGlobais.despesas || [];
+            
+            let despesasFinais = [];
+
+            if (currentUser.tipo === 'ADMIN') {
+                // Admin força a base de dados local dele inteira para a nuvem
+                despesasFinais = db.despesas;
+            } else {
+                // Usuário mistura a base: Tira as despesas antigas dele, mantém as dos outros, insere as atuais dele
+                let outrasDespesas = despesasGlobais.filter(d => d.pessoa !== currentUser.email);
+                despesasFinais = [...outrasDespesas, ...db.despesas];
+            }
+
             const payload = {
                 tabela: "despesas",
-                dados: db.despesas.map(d => ({...d, pessoa: currentUser.email})) // Injeta quem fez a despesa
+                dados: despesasFinais
             };
 
             await fetch(WEB_APP_URL, {
                 method: "POST",
                 body: JSON.stringify(payload)
             });
-            toast("Backup realizado com sucesso!");
+            toast("Sincronizado com sucesso!");
         } catch (e) {
-            toast("Erro no backup offline. Tente depois.", "erro");
+            toast("Erro no envio. Tente depois.", "erro");
         }
     }
 
     async function restaurarBackup() {
         try {
-            toast("Buscando dados da nuvem...", "ok");
+            toast("Buscando dados...", "ok");
             let res = await fetch(WEB_APP_URL + "?action=export");
             let dadosRemotos = await res.json();
             
             if (dadosRemotos && dadosRemotos.despesas) {
                 if (currentUser.tipo === 'ADMIN') {
-                    // Admin pega tudo
+                    // Admin vê TUDO
                     db.despesas = dadosRemotos.despesas;
                 } else {
-                    // Usuário normal pega só o dele
+                    // Usuário normal vê APENAS AS SUAS PRÓPRIAS DESPESAS
                     db.despesas = dadosRemotos.despesas.filter(d => d.pessoa === currentUser.email);
                 }
                 
-                // Pega os cartões (pode ser global ou filtrado também, dependendo da sua regra)
-                if (dadosRemotos.cartoes) db.cartoes = dadosRemotos.cartoes;
+                if (dadosRemotos.cartoes && currentUser.tipo === 'ADMIN') {
+                     // Por padrão, se quiser que os cartoes fiquem na nuvem pro admin
+                     db.cartoes = dadosRemotos.cartoes;
+                }
 
                 salvarDB();
                 atualizarTodasTelas();
-                toast("Dados atualizados com sucesso!");
+                toast("Dados atualizados com a Nuvem!");
             }
         } catch (e) {
             toast("Modo offline: usando dados locais.", "erro");
@@ -330,23 +360,44 @@
         }
     }
 
+    // ====================================================================
+    // FERRAMENTAS EXCLUSIVAS DO ADMIN
+    // ====================================================================
+    function baixarJSONLocal() {
+        let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db, null, 2));
+        let dlAnchorElem = document.createElement('a');
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", "ControlCard_Admin_Backup_" + new Date().toISOString().split('T')[0] + ".json");
+        document.body.appendChild(dlAnchorElem);
+        dlAnchorElem.click();
+        dlAnchorElem.remove();
+        toast("JSON Baixado no Dispositivo!");
+    }
 
-    async function gerenciarUsuarioAdmin(statusDesejado) {
-        let email = document.getElementById('adm-new-email').value.trim();
-        let nome = document.getElementById('adm-new-nome').value.trim();
-        if(!email) return alert("Digite o e-mail.");
-
-        try {
-            await fetch(WEB_APP_URL, {
-                method: "POST",
-                body: JSON.stringify({ acao: "gerenciar_usuario", email, nome, status: statusDesejado })
-            });
-            alert("Ação enviada com sucesso!");
-        } catch(e) {
-            alert("Erro ao conectar.");
+    function limparBaseLocal() {
+        if(confirm("CUIDADO: Isso apagará todos os dados armazenados neste aparelho. Continuar?")) {
+            db = { cartoes: [], despesas: [] };
+            salvarDB();
+            atualizarTodasTelas();
+            toast("Base de dados local apagada.");
         }
     }
 
+    async function forcarSincronizacaoGlobal() {
+        if(confirm("Você é o Admin. Isso vai reescrever a base inteira do Google Drive com o que você tem na tela agora. Tem certeza?")) {
+            fazerBackup();
+        }
+    }
+
+    async function gerenciarUsuarioAdmin(statusDesejado) {
+        let email = document.getElementById('adm-new-email').value.trim();
+        if(!email) return alert("Digite o e-mail.");
+        toast("Esta função requer painel completo. (Anotado para futuras versões)");
+    }
+
+    // ====================================================================
+    // NAVEGAÇÃO E LANÇAMENTOS
+    // ====================================================================
     function mudarTela(id, titulo) {
         document.querySelectorAll('.tela').forEach(t => t.style.display = 'none');
         document.getElementById('tela-' + id).style.display = 'block';
@@ -404,7 +455,7 @@
         salvarDB();
         fecharModais();
         atualizarTodasTelas();
-        fazerBackup(); // Auto-salva após compra
+        fazerBackup(); // Auto-salva após compra para segurança
         toast("Compra salva!");
     }
 
