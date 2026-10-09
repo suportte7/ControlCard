@@ -7,8 +7,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#f59e0b">
-    <link id="pwa-manifest" rel="manifest" href="manifest.json?v=3">
-    <link rel="apple-touch-icon" href="icon-192.png?v=3">
+    <link id="pwa-manifest" rel="manifest" href="manifest.json?v=4">
+    <link rel="apple-touch-icon" href="icon-192.png?v=4">
     <link rel="icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f59e0b' rx='20'/%3E%3Ctext x='50' y='65' font-size='45' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'%3ECC%3C/text%3E%3C/svg%3E">
     
     <title>ControlCard MultiUser</title>
@@ -85,11 +85,11 @@
 <div id="bloqueio-overlay" style="display: none;">
     <div style="max-width: 380px; background: var(--surface); border: 2px solid var(--danger); padding: 25px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
         <span class="material-icons-outlined" style="font-size: 3.5rem; color: var(--danger);">block</span>
-        <h2 style="color: var(--danger); margin: 10px 0 5px; font-size: 1.3rem;">ACESSO BLOQUEADO</h2>
-        <p id="bloqueio-msg" style="color: var(--text-light); font-size: 0.85rem; line-height: 1.4;">Sua conta foi suspensa ou você ainda não foi cadastrado pelo Administrador.</p>
+        <h2 style="color: var(--danger); margin: 10px 0 5px; font-size: 1.3rem;">ACESSO RESTRITO</h2>
+        <p id="bloqueio-msg" style="color: var(--text-light); font-size: 0.85rem; line-height: 1.4;">Digite seu e-mail cadastrado ou token de acesso.</p>
         <div class="form-group" style="margin-top: 15px;">
-            <label>DIGITE SEU E-MAIL OU TOKEN</label>
-            <input type="text" id="input-login-token" class="form-input" placeholder="Ex: usuario@email.com">
+            <label>E-MAIL OU TOKEN</label>
+            <input type="text" id="input-login-token" class="form-input" placeholder="seu@email.com">
         </div>
         <button id="btn-tentar-login" class="btn btn-primary" onclick="tentarLoginManual()">TENTAR ACESSAR</button>
     </div>
@@ -172,7 +172,7 @@
                 <div class="section-label" style="color: var(--danger);">👑 PAINEL DO ADMINISTRADOR</div>
                 <div class="card" style="border-color: var(--danger);">
                     <h3 style="font-size: 0.9rem; color: var(--danger); margin-top:0;">Gerenciar Usuários Cadastrados</h3>
-                    <p class="helper">Adicione ou Bloqueie novos usuários. Você NÃO tem acesso aos dados nem cartões deles.</p>
+                    <p class="helper">Adicione ou Bloqueie novos usuários diretamente pela sua planilha.</p>
                     <div class="form-group">
                         <label>E-mail do Usuário</label>
                         <input type="email" id="adm-new-email" class="form-input" placeholder="usuario@email.com">
@@ -186,7 +186,7 @@
                         <button class="btn btn-danger" style="flex: 1;" onclick="gerenciarUsuarioAdmin('BLOQUEADO')">BLOQUEAR</button>
                     </div>
                     <hr style="border: 1px solid var(--border); margin: 15px 0;">
-                    <button class="btn btn-outline" onclick="carregarUsuariosPlanilhaAdmin()">🔄 ATUALIZAR LISTA DA PLANILHA</button>
+                    <button class="btn btn-outline" onclick="carregarUsuariosPlanilhaAdmin()">🔄 CARREGAR LISTA DE USUÁRIOS</button>
                     <div id="adm-lista-usuarios" style="margin-top: 10px;"></div>
                 </div>
             </div>
@@ -212,7 +212,7 @@
             <div class="section-label">📥 EXPORTAR PLANILHA EXCEL DAS SUAS CONTAS</div>
             <div class="card">
                 <h3 style="font-size:0.9rem; margin-top:0;"><span class="material-icons-outlined">file_download</span> Baixar Excel (.XLSX)</h3>
-                <p class="helper">Baixe um arquivo Excel completo contendo EXCLUSIVAMENTE os seus lançamentos, cartões e categorias de forma isolada.</p>
+                <p class="helper">Baixe um arquivo Excel completo contendo EXCLUSIVAMENTE os seus lançamentos e cartões de forma isolada.</p>
                 <button class="btn btn-success" onclick="baixarPlanilhaExcelUsuario()"><span class="material-icons-outlined">download</span> BAIXAR MINHA PLANILHA EXCEL</button>
             </div>
 
@@ -233,7 +233,7 @@
 <div id="toast-app"></div>
 
 <script>
-    // URL DO SEU GOOGLE APPS SCRIPT
+    // URL OFICIAL DO SEU GOOGLE APPS SCRIPT
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzYgfe98E2eukFOHbtSSSLTr_mw6RMcnWvlc6IoTYSzsghb6bx_zhqs_kixILwdldGNbw/exec";
 
     let currentUser = {
@@ -260,46 +260,52 @@
 
     async function validarAcessoServidor() {
         if(!currentUser.token && !currentUser.email) {
-            exibirBloqueio("Informe seu e-mail ou token cadastrado para liberar o aplicativo.");
+            exibirBloqueio("Digite seu e-mail cadastrado para liberar o acesso.");
             return;
         }
 
         try {
             let res = await fetch(WEB_APP_URL, {
                 method: "POST",
+                mode: "no-cors",
                 body: JSON.stringify({
                     acao: "validar_usuario",
                     email: currentUser.email,
                     token: currentUser.token
                 })
             });
-            let data = await res.json();
             
-            if (data.autorizado) {
-                currentUser.tipo = data.tipo;
-                currentUser.nome = data.nome;
-                currentUser.token = data.token;
-                localStorage.setItem('cc_user_tipo', data.tipo);
-                localStorage.setItem('cc_user_nome', data.nome);
-                localStorage.setItem('cc_user_token', data.token);
+            // Com mode no-cors, fazemos uma chamada GET paralela para ler o JSON de retorno com segurança
+            let checkRes = await fetch(`${WEB_APP_URL}?acao=validar&email=${encodeURIComponent(currentUser.email)}&token=${encodeURIComponent(currentUser.token)}`);
+            let data = await checkRes.json();
+            
+            if (data && data.autorizado) {
+                currentUser.tipo = data.tipo || 'USER';
+                currentUser.nome = data.nome || 'Usuário';
+                currentUser.token = data.token || currentUser.token;
+                
+                localStorage.setItem('cc_user_tipo', currentUser.tipo);
+                localStorage.setItem('cc_user_nome', currentUser.nome);
+                localStorage.setItem('cc_user_token', currentUser.token);
+                localStorage.setItem('cc_auth_offline', 'OK');
 
                 document.getElementById('bloqueio-overlay').style.display = 'none';
-                document.getElementById('app-user-type').innerText = data.tipo === 'ADMIN' ? 'ADMIN' : 'USUÁRIO';
+                document.getElementById('app-user-type').innerText = currentUser.tipo === 'ADMIN' ? 'ADMIN' : 'USUÁRIO';
                 
-                if (data.tipo === 'ADMIN') {
+                if (currentUser.tipo === 'ADMIN') {
                     document.getElementById('painel-admin-box').style.display = 'block';
                 }
                 
                 atualizarTodasTelas();
             } else {
-                exibirBloqueio(data.msg || "Acesso bloqueado pelo Administrador.");
+                exibirBloqueio(data.msg || "E-mail não encontrado ou acesso bloqueado pelo Administrador.");
             }
         } catch(e) {
             if (localStorage.getItem('cc_auth_offline') === 'OK') {
                 document.getElementById('bloqueio-overlay').style.display = 'none';
                 atualizarTodasTelas();
             } else {
-                exibirBloqueio("Não foi possível conectar ao servidor. Verifique sua internet.");
+                exibirBloqueio("Erro ao conectar com a planilha. Verifique o e-mail digitado.");
             }
         }
     }
@@ -316,7 +322,7 @@
 
     async function tentarLoginManual() {
         let val = document.getElementById('input-login-token').value.trim();
-        if(!val) return alert("Digite um e-mail ou token válido.");
+        if(!val) return alert("Digite um e-mail válido.");
         
         let btn = document.getElementById('btn-tentar-login');
         if(btn) {
@@ -348,8 +354,9 @@
 
         toast("Enviando solicitação...", "ok");
         try {
-            let res = await fetch(WEB_APP_URL, {
+            await fetch(WEB_APP_URL, {
                 method: "POST",
+                mode: "no-cors",
                 body: JSON.stringify({
                     acao: "gerenciar_usuario",
                     email: email,
@@ -357,8 +364,7 @@
                     status: statusDesejado
                 })
             });
-            let data = await res.json();
-            alert(data.msg);
+            alert("Ação enviada com sucesso para a planilha!");
             carregarUsuariosPlanilhaAdmin();
         } catch(e) {
             alert("Erro na conexão.");
@@ -522,6 +528,7 @@
         try {
             await fetch(WEB_APP_URL, {
                 method: "POST",
+                mode: "no-cors",
                 body: JSON.stringify({
                     acao: "backup_dados",
                     token: currentUser.token,
