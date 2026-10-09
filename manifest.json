@@ -1,7 +1,7 @@
 {
   "short_name": "ControlCard",
-  "name": "ControlCard MultiUser",
-  "description": "Gerenciador Financeiro PWA com Controle Multi-Usuários e Pushs",
+  "name": "ControlCardMult",
+  "description": "Gerenciador Financeiro PWA com Controle Multi-Usuários",
   "icons": [
     {
       "src": "icon-192.png",
