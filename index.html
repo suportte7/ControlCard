@@ -12,7 +12,7 @@
     <link rel="apple-touch-icon" href="icon-192.png?v=9">
     <link rel="icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f59e0b' rx='20'/%3E%3Ctext x='50' y='65' font-size='45' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'%3ECC%3C/text%3E%3C/svg%3E">
     
-    <title>ControlCard - v1.9.8</title>
+    <title>ControlCard - v1.9.9</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
     <style>
         /* TEMAS COM CORES SUAVES */
@@ -288,7 +288,7 @@
         <div class="modal-tabs" style="margin-right: 30px;">
             <button class="tab-btn active" id="tab-desp" onclick="trocarAbaModal('desp')">🛒 COMPRA</button>
             <button class="tab-btn" id="tab-rec" onclick="trocarAbaModal('rec')">💰 RECEB.</button>
-            <button class="tab-btn" id="tab-emp" onclick="trocarAbaModal('emp')">🤝 EMPRÉST.</button>
+            <button class="tab-btn" id="tab-emp" onclick="trocarAbaModal('emp')">💲 $</button>
         </div>
 
         <!-- ABA DESPESA -->
@@ -400,16 +400,16 @@
             <button class="btn btn-success" style="padding: 16px; font-size: 1.1rem; margin-top: 20px;" onclick="registrarBaixa()"><span class="material-icons-outlined">price_check</span> CONFIRMAR RECEBIMENTO</button>
         </div>
 
-        <!-- ABA EMPRÉSTIMO -->
+        <!-- ABA DOLLAR ($) -->
         <div id="form-emp" style="display: none;">
             <div class="form-group">
-                <label>Quem está pegando emprestado?</label>
+                <label>Para Quem?</label>
                 <select id="emp-pessoa" class="form-input up-text" style="font-size: 1.2rem; color: var(--primary); border-color: var(--primary);"></select>
             </div>
             
             <div class="form-group">
-                <label>Descrição do Empréstimo</label>
-                <input type="text" id="emp-desc" class="form-input" placeholder="Ex: Empréstimo Pessoal Dinheiro">
+                <label>Descrição</label>
+                <input type="text" id="emp-desc" class="form-input" placeholder="Ex: Acordo em Dinheiro">
             </div>
 
             <div class="edicao-field-row">
@@ -430,7 +430,7 @@
 
             <div class="edicao-field-row">
                 <div class="form-group" style="margin-bottom:0;">
-                    <label>Data do Empréstimo</label>
+                    <label>Data Inicial</label>
                     <input type="date" id="emp-data" class="form-input">
                 </div>
                 <div class="form-group" style="margin-bottom:0;">
@@ -440,14 +440,21 @@
             </div>
 
             <div style="margin: 15px 0; border-top: 2px dashed var(--border); padding-top: 15px;">
-                <label style="font-size: 0.8rem; font-weight: 900; color: var(--primary); text-transform: uppercase; text-align: center; display: block; margin-bottom: 8px;">⚙️ Regra de Juros / Multa por Atraso (Opcional)</label>
+                <label style="font-size: 0.8rem; font-weight: 900; color: var(--primary); text-transform: uppercase; text-align: center; display: block; margin-bottom: 8px;">⚙️ Regra de Atraso Sucessivo</label>
             </div>
 
             <div class="edicao-field-row">
                 <div class="form-group">
-                    <label>Tolerância (Dias)</label>
+                    <label>Tolerância inicial (Dias)</label>
                     <input type="number" id="emp-juros-dias" class="form-input" value="30" placeholder="Ex: 30 (1 mês)">
                 </div>
+                <div class="form-group">
+                    <label>A cada + (Dias extras)</label>
+                    <input type="number" id="emp-juros-ciclo" class="form-input" value="7" placeholder="Ex: 7 dias">
+                </div>
+            </div>
+
+            <div class="edicao-field-row">
                 <div class="form-group">
                     <label>Tipo de Acréscimo</label>
                     <select id="emp-juros-tipo" class="form-input up-text" style="font-size: 0.9rem;">
@@ -455,14 +462,13 @@
                         <option value="perc">PORCENTAGEM (%)</option>
                     </select>
                 </div>
+                <div class="form-group">
+                    <label>Valor do Acréscimo (+ Y por ciclo)</label>
+                    <input type="number" id="emp-juros-valor" class="form-input" step="0.01" placeholder="Ex: 50.00 ou 10">
+                </div>
             </div>
 
-            <div class="form-group">
-                <label>Valor do Acréscimo por Período em Atraso</label>
-                <input type="number" id="emp-juros-valor" class="form-input" step="0.01" placeholder="Ex: 50.00 ou 10">
-            </div>
-
-            <button class="btn btn-primary" style="padding: 16px; font-size: 1.1rem; margin-top: 15px;" onclick="registrarEmprestimo()"><span class="material-icons-outlined">handshake</span> REGISTRAR EMPRÉSTIMO</button>
+            <button class="btn btn-primary" style="padding: 16px; font-size: 1.1rem; margin-top: 15px;" onclick="registrarEmprestimo()"><span class="material-icons-outlined">done_all</span> REGISTRAR</button>
         </div>
     </div>
 
@@ -523,7 +529,7 @@
         <div class="page-header">
             <div class="brand-line" style="margin-bottom: 0;">
                 <div class="brand-mark">CC</div>
-                <span class="brand-name">ControlCard <span class="v-badge" id="app-versao-badge">v1.9.8</span>
+                <span class="brand-name">ControlCard <span class="v-badge" id="app-versao-badge">v1.9.9</span>
                     <span id="cloud-status-icon" class="material-icons-outlined cloud-status" title="Sincronização">cloud_off</span>
                 </span>
             </div>
@@ -742,7 +748,7 @@
 
 <script>
     /* ================= TEMAS E FORMATADORES ================= */
-    const APP_VERSION = '1.9.8';
+    const APP_VERSION = '1.9.9';
     const DB_NOME_FIXO = 'ControlCard_v1_DB'; 
     let db = JSON.parse(localStorage.getItem(DB_NOME_FIXO)) || { pessoas: [], cartoes: [], categorias: [], despesas: [], pagamentos: [], emprestimos: [] };
     if(!db.emprestimos) db.emprestimos = [];
@@ -989,7 +995,7 @@
         
         document.getElementById('desc').value = '';
         document.getElementById('pag-desc').value = '';
-        document.getElementById('emp-desc').value = 'Empréstimo Pessoal';
+        document.getElementById('emp-desc').value = 'Acordo / Dinheiro';
         document.getElementById('emp-val-total').value = '';
         document.getElementById('emp-val-parc').value = '';
         document.getElementById('emp-juros-valor').value = '';
@@ -1319,7 +1325,7 @@
 
         renderizarChipsCartoes();
 
-        if(!db.categorias || db.categorias.length === 0) db.categorias = ["🛍 Mercado/Compras", "🚗 Transporte/Veículo", "💊 Saúde/Farmácia", "🍕 Lazer/Alimentação", "🏠 Casa/Contas", "💸 Repasse/Empréstimo", "📌 Outros"];
+        if(!db.categorias || db.categorias.length === 0) db.categorias = ["🛍 Mercado/Compras", "🚗 Transporte/Veículo", "💊 Saúde/Farmácia", "🍕 Lazer/Alimentação", "🏠 Casa/Contas", "💸 Repasse", "📌 Outros"];
         db.categorias.sort();
         let catAtivas = db.categorias.filter(c => !db.categoriasInativas.includes(c));
         
@@ -1453,26 +1459,28 @@
         return null;
     }
 
-    /* ================= CÁLCULO DINÂMICO DE JUROS DE EMPRÉSTIMO ================= */
+    /* ================= CÁLCULO DINÂMICO DE JUROS SUCESSIVO ($) ================= */
     function getValorAjustadoEmprestimo(d) {
         if(!d.isEmprestimo || !d.jurosRegra) return d.valor;
         let hoje = new Date();
         let [anoRef, mesRef] = d.dataRef.split('-').map(Number);
-        // Vencimento considerado no dia 10 ou na data da parcela
         let vencimento = new Date(anoRef, mesRef - 1, 10);
         
         let diffTime = hoje - vencimento;
         let diffDias = Math.floor(diffTime / (1000 * 60 * 60 * 24));
         
-        let toler = d.jurosRegra.dias || 30;
+        let toler = d.jurosRegra.tolerancia || 30;
+        let ciclo = d.jurosRegra.ciclo || 7;
+
         if(diffDias > toler) {
             let diasAtraso = diffDias - toler;
-            let periodosAtraso = Math.floor(diasAtraso / toler) + 1;
+            // Quantos ciclos completos passou após a tolerância
+            let ciclosAtraso = Math.floor(diasAtraso / ciclo) + 1;
             let acrescimo = 0;
             if(d.jurosRegra.tipo === 'val') {
-                acrescimo = d.jurosRegra.valor * periodosAtraso;
+                acrescimo = d.jurosRegra.valor * ciclosAtraso;
             } else {
-                acrescimo = (d.valor * (d.jurosRegra.valor / 100)) * periodosAtraso;
+                acrescimo = (d.valor * (d.jurosRegra.valor / 100)) * ciclosAtraso;
             }
             return d.valor + acrescimo;
         }
@@ -1490,7 +1498,7 @@
         if (tipo === 'desp') {
             let d = db.despesas.find(x => x.id === id);
             if(!d) return;
-            document.getElementById('edit-title').innerText = d.isEmprestimo ? "EDITAR EMPRÉSTIMO" : "EDITAR COMPRA";
+            document.getElementById('edit-title').innerText = d.isEmprestimo ? "EDITAR $ LANÇAMENTO" : "EDITAR COMPRA";
             document.getElementById('edit-label-desc').innerText = "DESCRIÇÃO";
             
             let matchParc = d.desc.match(/\((\d+)\/(\d+)\)/);
@@ -1698,7 +1706,7 @@
         if (tipo === 'desp') {
             let d = db.despesas.find(x => x.id === id);
             if (d && (d.desc.match(/\(\d+\/\d+\)/) || d.isAssinatura || d.isEmprestimo)) {
-                if(confirm("ATENÇÃO!\n\nDeseja apagar TODAS AS COBRANÇAS FUTURAS deste empréstimo/parcelamento também?")) {
+                if(confirm("ATENÇÃO!\n\nDeseja apagar TODAS AS COBRANÇAS FUTURAS deste lançamento também?")) {
                     let origKey = getGroupKey(d);
                     let idsToDelete = db.despesas.filter(x => getGroupKey(x) === origKey && x.dataRef >= d.dataRef).map(x => x.id);
                     db.despesas = db.despesas.filter(x => !idsToDelete.includes(x.id));
@@ -1869,7 +1877,7 @@
 
     function registrarEmprestimo() {
         const pessoa = document.getElementById('emp-pessoa').value;
-        const descBase = document.getElementById('emp-desc').value.trim() || 'Empréstimo Pessoal';
+        const descBase = document.getElementById('emp-desc').value.trim() || 'Acordo';
         const vParcStr = document.getElementById('emp-val-parc').value.replace(',', '.');
         const vParc = parseFloat(vParcStr);
         const qtdParc = parseInt(document.getElementById('emp-qtd-parc').value) || 1;
@@ -1877,17 +1885,18 @@
         const dataRef = document.getElementById('emp-data-ref').value;
 
         const jurosDias = parseInt(document.getElementById('emp-juros-dias').value) || 30;
+        const jurosCiclo = parseInt(document.getElementById('emp-juros-ciclo').value) || 7;
         const jurosTipo = document.getElementById('emp-juros-tipo').value;
         const jurosValor = parseFloat(document.getElementById('emp-juros-valor').value.replace(',', '.')) || 0;
 
         if(!pessoa || isNaN(vParc) || vParc <= 0 || !dataReal || !dataRef) {
-            return toast('Preencha a pessoa, o valor e as datas do empréstimo.', 'erro');
+            return toast('Preencha a pessoa, o valor e as datas.', 'erro');
         }
 
         let idBase = Date.now();
         let emprestimoId = 'emp_' + idBase + '_' + pessoa;
         let transacoes = [];
-        let jurosRegra = jurosValor > 0 ? { dias: jurosDias, tipo: jurosTipo, valor: jurosValor } : null;
+        let jurosRegra = jurosValor > 0 ? { tolerancia: jurosDias, ciclo: jurosCiclo, tipo: jurosTipo, valor: jurosValor } : null;
 
         for(let i=1; i<=qtdParc; i++) {
             let mesRef = gerarMesVencimentoBase(dataRef, i);
@@ -1899,7 +1908,7 @@
                 valor: parseFloat(vParc.toFixed(2)),
                 pessoa: pessoa,
                 cartao: null,
-                categoria: "💸 Empréstimo",
+                categoria: "💸 Dinheiro",
                 dataCompra: dataReal,
                 dataRef: mesRef,
                 isEmprestimo: true,
@@ -1911,7 +1920,7 @@
         db.despesas.push(...transacoes);
         salvarDB(); fecharModais(); atualizarTodasTelas();
         backupParaDrive(false);
-        toast('🤝 Empréstimo registrado com sucesso!');
+        toast('💲 Registrado com sucesso!');
     }
 
     function registrarBaixa() {
@@ -2002,7 +2011,7 @@
         if (d.isAssinatura) {
             badgeP = `<div class="parc-badge" style="background: #3b82f6; color: #fff;">🔁 MENSAL</div>`;
         } else if (d.isEmprestimo) {
-            badgeP = `<div class="parc-badge" style="background: var(--primary); color: #000;">🤝 EMPRÉSTIMO</div>`;
+            badgeP = `<div class="parc-badge" style="background: var(--primary); color: #000;" title="Modalidade Dinheiro / Acordo">💲</div>`;
         } else {
             let matchParc = descLimp.match(/\((\d+)\/(\d+)\)/);
             if(matchParc) {
@@ -2062,7 +2071,6 @@
             }
         });
 
-        // ORDENAÇÃO: Do maior saldo devedor para o menor. Quem tem saldo zerado ou verde (negativo/quitado) vai para o fim.
         listaDadosPessoas.sort((a, b) => b.saldo - a.saldo);
 
         let html = '';
@@ -2076,12 +2084,11 @@
             let cor = saldoPessoa > 0 ? 'var(--danger)' : 'var(--success)';
             let idP = 'p_' + Math.random().toString(36).substr(2, 9);
             
-            // Agrupar por cartão ou "Empréstimos / Sem Cartão"
-            let gruposOrigem = [...new Set(dp.map(d => d.cartao || 'EMPRÉSTIMOS / OUTROS'))].filter(Boolean);
+            let gruposOrigem = [...new Set(dp.map(d => d.cartao || '💲 ACORDOS / DINHEIRO'))].filter(Boolean);
             let subHtml = '';
             
             gruposOrigem.forEach(c => {
-                let dc = dp.filter(d => (d.cartao || 'EMPRÉSTIMOS / OUTROS') === c);
+                let dc = dp.filter(d => (d.cartao || '💲 ACORDOS / DINHEIRO') === c);
                 let sumCartao = dc.reduce((s, d) => s + getValorAjustadoEmprestimo(d), 0);
                 let idC = idP + '_' + Math.random().toString(36).substr(2, 9);
                 
@@ -2092,7 +2099,7 @@
                     return `<div class="t-row" onclick="abrirEdicao(${d.id}, 'desp')"><div class="t-desc"><strong>${i.descLimp} ${i.badgeP} ${i.compIcon}</strong><span>📅 ${i.textData} | ${formatarMesAno(d.dataRef)} ${i.cat}</span>${avisoJuros}</div><div class="t-val desp">R$ ${valReal.toFixed(2)}</div></div>`;
                 }).join('');
 
-                subHtml += `<div class="sub-tree-card" id="${idC}"><div class="sub-tree-header" onclick="document.getElementById('${idC}').classList.toggle('open')"><span>💳 ${c}</span><span style="color: var(--text);">R$ ${sumCartao.toFixed(2)}</span></div><div class="sub-tree-body">${itensHtml}</div></div>`;
+                subHtml += `<div class="sub-tree-card" id="${idC}"><div class="sub-tree-header" onclick="document.getElementById('${idC}').classList.toggle('open')"><span>${c.includes('💲') ? c : '💳 ' + c}</span><span style="color: var(--text);">R$ ${sumCartao.toFixed(2)}</span></div><div class="sub-tree-body">${itensHtml}</div></div>`;
             });
 
             if(sumPag > 0) {
@@ -2121,7 +2128,6 @@
             }
         });
 
-        // ORDENAÇÃO: Do maior valor lançado para o menor
         listaDadosCartoes.sort((a, b) => b.sumCartao - a.sumCartao);
 
         let html = '';
@@ -2240,7 +2246,6 @@
 
         let saldoLiquido = totalDespMes - totalPagMes;
 
-        // Atualização dos Cards Métricos no padrão da aba Visão
         document.getElementById('cal-metric-cobrado').innerText = brl(totalDespMes);
         document.getElementById('cal-metric-recebido').innerText = brl(totalPagMes);
         let elSaldoCal = document.getElementById('cal-metric-saldo');
@@ -2304,7 +2309,7 @@
                         <div style="font-size:0.7rem; color:var(--text-light); text-transform:uppercase;">Dia</div>
                         <div style="font-weight:bold; font-size:1.1rem; color:var(--primary);">${diaStr}</div>
                     </div>
-                    <div class="t-desc"><strong style="font-size:0.85rem;">${parcInfo.descLimp} ${parcInfo.badgeP} ${parcInfo.compIcon}</strong><span>👤 ${item.pessoa} | 💳 ${item.cartao || 'Empréstimo'}</span></div>
+                    <div class="t-desc"><strong style="font-size:0.85rem;">${parcInfo.descLimp} ${parcInfo.badgeP} ${parcInfo.compIcon}</strong><span>👤 ${item.pessoa} | 💳 ${item.cartao || '💲 Acordo/Dinheiro'}</span></div>
                     <div class="t-val desp">R$ ${valReal.toFixed(2)}</div>
                 </div>`;
             } else {
@@ -2395,7 +2400,7 @@
             let valReal = getValorAjustadoEmprestimo(d);
             subTotD += valReal;
             let parcInfo = formatarInfoItem(d, false);
-            html += `<div class="t-row" onclick="abrirEdicao(${d.id}, 'desp')"><div class="t-desc"><strong style="font-size:0.85rem;">${parcInfo.descLimp} ${parcInfo.badgeP} ${parcInfo.compIcon}</strong><span>👤 ${d.pessoa} | 💳 ${d.cartao || 'Empréstimo'}</span></div><div class="t-val desp">R$ ${valReal.toFixed(2)}</div></div>`;
+            html += `<div class="t-row" onclick="abrirEdicao(${d.id}, 'desp')"><div class="t-desc"><strong style="font-size:0.85rem;">${parcInfo.descLimp} ${parcInfo.badgeP} ${parcInfo.compIcon}</strong><span>👤 ${d.pessoa} | 💳 ${d.cartao || '💲 Acordo/Dinheiro'}</span></div><div class="t-val desp">R$ ${valReal.toFixed(2)}</div></div>`;
         });
         
         pagDia.forEach(pg => {
@@ -2457,7 +2462,7 @@
                 let valReal = getValorAjustadoEmprestimo(d);
                 valStr = `R$ ${valReal.toFixed(2)}`;
                 corVal = '';
-                iconeCartao = `💳 ${d.cartao || 'Empréstimo'}`;
+                iconeCartao = `💳 ${d.cartao || '💲 Acordo/Dinheiro'}`;
                 dataExib = formatarMesAno(d.dataRef);
             } else {
                 let i = formatarInfoItem(d, true);
@@ -2528,7 +2533,7 @@
         let texto = `📄 *Resumo de Fatura*\n👤 *${pessoa}*\n\n`;
         
         if(selDesp.length > 0){
-            texto += `🛒 *Cobranças/Empréstimos:*\n`;
+            texto += `🛒 *Cobranças:*\n`;
             selDesp.forEach((d, idx) => {
                 let dLimp = d.desc.replace(/\(\d+\/\d+\)/, '').trim();
                 let mParc = d.desc.match(/\(\d+\/\d+\)/);
@@ -2593,10 +2598,10 @@
 
             let badgeHtml = isAssin ? 
                 `<div style="background:#3b82f6; color:#fff; padding:4px 8px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="${mainClick}">🔁 MENSAL</div>` : 
-                (isEmp ? `<div style="background:var(--primary); color:#000; padding:4px 8px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="${mainClick}">🤝 ${totalParc}x</div>` :
+                (isEmp ? `<div style="background:var(--primary); color:#000; padding:4px 8px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="${mainClick}" title="Modalidade Dinheiro / Acordo">💲 ${totalParc}x</div>` :
                 `<div style="background:${corBadge}; color:${corLetra}; padding:4px 8px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="${mainClick}">${totalParc}x</div>`);
 
-            let subTxt = isReceb ? `💰 Recebimento/Abatimento | R$ ${g[0].valor.toFixed(2)} /mês` : (isEmp ? `🤝 Empréstimo | R$ ${g[0].valor.toFixed(2)} /mês` : `💳 ${g[0].cartao} | R$ ${g[0].valor.toFixed(2)} /mês`);
+            let subTxt = isReceb ? `💰 Recebimento/Abatimento | R$ ${g[0].valor.toFixed(2)} /mês` : (isEmp ? `💲 Acordo/Dinheiro | R$ ${g[0].valor.toFixed(2)} /mês` : `💳 ${g[0].cartao} | R$ ${g[0].valor.toFixed(2)} /mês`);
 
             html += `<div class="check-item" style="display:flex; justify-content:space-between; align-items:center;">
                 <div style="flex:1;" onclick="${mainClick}">
@@ -2622,7 +2627,7 @@
             html += `
             <div class="check-item" id="tr-item-${d.id}" onclick="toggleTransfSel(${d.id})">
                 <span class="material-icons-outlined check-mark" style="color: transparent; border: 2px solid var(--text-light); border-radius: 6px; width: 18px; height: 18px; display:flex; align-items:center; justify-content:center;">check</span>
-                <div class="t-desc"><strong style="font-size:0.85rem;">${d.desc}</strong><span>${d.cartao || 'Empréstimo'} • Ref: ${formatarMesAno(d.dataRef)}</span></div>
+                <div class="t-desc"><strong style="font-size:0.85rem;">${d.desc}</strong><span>${d.cartao || '💲 Acordo'} • Ref: ${formatarMesAno(d.dataRef)}</span></div>
                 <div class="t-val">R$ ${d.valor.toFixed(2)}</div>
             </div>`;
         });
@@ -2894,7 +2899,7 @@
     
     function zerarApp() {
         if (prompt("Digite ZERAR para apagar TUDO:") === 'ZERAR') { 
-            db = { pessoas: [], cartoes: [], categorias: ["🛍 Mercado/Compras", "🚗 Transporte/Veículo", "💊 Saúde/Farmácia", "🍕 Lazer/Alimentação", "🏠 Casa/Contas", "💸 Repasse/Empréstimo", "📌 Outros"], despesas: [], pagamentos: [], emprestimos: [] };
+            db = { pessoas: [], cartoes: [], categorias: ["🛍 Mercado/Compras", "🚗 Transporte/Veículo", "💊 Saúde/Farmácia", "🍕 Lazer/Alimentação", "🏠 Casa/Contas", "💸 Repasse", "📌 Outros"], despesas: [], pagamentos: [], emprestimos: [] };
             salvarDB(); atualizarTodasTelas(); alert("Base zerada com sucesso."); 
         }
     }
