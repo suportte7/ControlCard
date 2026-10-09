@@ -1,6 +1,6 @@
-// sw.js - Service Worker do ControlCard v2
+// sw.js - Service Worker com Suporte a Notificações e Cache Offline
 
-const CACHE_NAME = 'controlcard-v2-cache-v1';
+const CACHE_NAME = 'controlcard-multiuser-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -8,7 +8,6 @@ const ASSETS_TO_CACHE = [
   './icon-192.png'
 ];
 
-// 1. Instalação: Salva os arquivos essenciais no cache
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -17,7 +16,6 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// 2. Ativação: Limpa caches antigos de versões anteriores
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -28,15 +26,12 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// 3. Interceptação de Rede: Garante que o app abra mesmo sem internet
 self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
+      if (cachedResponse) return cachedResponse;
       return fetch(event.request).then((response) => {
-        // Se a resposta for válida, faz uma cópia para o cache dinâmico
         if (!response || response.status !== 200 || response.type !== 'basic') {
           return response;
         }
@@ -46,21 +41,17 @@ self.addEventListener('fetch', (event) => {
         });
         return response;
       });
-    }).catch(() => {
-      return caches.match('./index.html');
-    })
+    }).catch(() => caches.match('./index.html'))
   );
 });
 
-// 4. Recebimento de Notificação Push
 self.addEventListener('push', (event) => {
-  let title = 'ControlCard v2';
+  let title = 'ControlCard Aviso';
   let options = {
-    body: 'Lembrete: Não se esqueça de registrar suas compras e despesas de hoje!',
+    body: 'Você tem um lembrete de cartão ou vencimento hoje!',
     icon: './icon-192.png',
     badge: './icon-192.png',
-    vibrate: [200, 100, 200],
-    data: { dateOfArrival: Date.now() }
+    vibrate: [200, 100, 200]
   };
 
   if (event.data) {
@@ -73,26 +64,18 @@ self.addEventListener('push', (event) => {
     }
   }
 
-  event.waitUntil(
-    self.registration.showNotification(title, options)
-  );
+  event.waitUntil(self.registration.showNotification(title, options));
 });
 
-// 5. Clique na Notificação: Abre ou foca a janela do aplicativo
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       for (let i = 0; i < clientList.length; i++) {
         let client = clientList[i];
-        if ('focus' in client) {
-          return client.focus();
-        }
+        if ('focus' in client) return client.focus();
       }
-      if (clients.openWindow) {
-        return clients.openWindow('./index.html');
-      }
+      if (clients.openWindow) return clients.openWindow('./index.html');
     })
   );
 });
