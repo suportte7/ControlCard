@@ -13,7 +13,6 @@
     
     <title>ControlCard MultiUser</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
-    <!-- Biblioteca SheetJS para geração de planilhas Excel (.xlsx) isoladas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <style>
@@ -90,9 +89,9 @@
         <p id="bloqueio-msg" style="color: var(--text-light); font-size: 0.85rem; line-height: 1.4;">Sua conta foi suspensa ou você ainda não foi cadastrado pelo Administrador.</p>
         <div class="form-group" style="margin-top: 15px;">
             <label>DIGITE SEU E-MAIL OU TOKEN</label>
-            <input type="text" id="input-login-token" class="form-input" placeholder="Ex: usuario@email.com ou TK-123456">
+            <input type="text" id="input-login-token" class="form-input" placeholder="Ex: usuario@email.com">
         </div>
-        <button class="btn btn-primary" onclick="tentarLoginManual()">TENTAR ACESSAR</button>
+        <button id="btn-tentar-login" class="btn btn-primary" onclick="tentarLoginManual()">TENTAR ACESSAR</button>
     </div>
 </div>
 
@@ -234,7 +233,7 @@
 <div id="toast-app"></div>
 
 <script>
-    // CONFIGURAÇÃO DO GOOGLE APPS SCRIPT
+    // URL DO SEU GOOGLE APPS SCRIPT
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzYgfe98E2eukFOHbtSSSLTr_mw6RMcnWvlc6IoTYSzsghb6bx_zhqs_kixILwdldGNbw/exec";
 
     let currentUser = {
@@ -244,8 +243,7 @@
         tipo: localStorage.getItem('cc_user_tipo') || 'USER'
     };
 
-    // BANCO DE DADOS ISOLADO
-    let dbKey = 'ControlCard_DB_' + (currentUser.token || 'LOCAL');
+    let dbKey = 'ControlCard_DB_' + (currentUser.token || currentUser.email || 'LOCAL');
     let db = JSON.parse(localStorage.getItem(dbKey)) || { cartoes: [], despesas: [], pagamentos: [] };
 
     function salvarDB() {
@@ -260,10 +258,9 @@
         setTimeout(() => t.className = '', 3500);
     }
 
-    /* ================= SISTEMA MULTI-USUÁRIO & VALIDAÇÃO ================= */
     async function validarAcessoServidor() {
         if(!currentUser.token && !currentUser.email) {
-            exibirBloqueio("Informe seu e-mail ou token para liberar o aplicativo.");
+            exibirBloqueio("Informe seu e-mail ou token cadastrado para liberar o aplicativo.");
             return;
         }
 
@@ -298,12 +295,11 @@
                 exibirBloqueio(data.msg || "Acesso bloqueado pelo Administrador.");
             }
         } catch(e) {
-            // Se estiver offline, libera caso já tenha logado com sucesso antes
             if (localStorage.getItem('cc_auth_offline') === 'OK') {
                 document.getElementById('bloqueio-overlay').style.display = 'none';
                 atualizarTodasTelas();
             } else {
-                exibirBloqueio("Servidor de verificação offline.");
+                exibirBloqueio("Não foi possível conectar ao servidor. Verifique sua internet.");
             }
         }
     }
@@ -311,22 +307,40 @@
     function exibirBloqueio(msg) {
         document.getElementById('bloqueio-msg').innerText = msg;
         document.getElementById('bloqueio-overlay').style.display = 'flex';
+        let btn = document.getElementById('btn-tentar-login');
+        if(btn) {
+            btn.innerText = "TENTAR ACESSAR";
+            btn.disabled = false;
+        }
     }
 
-    function tentarLoginManual() {
+    async function tentarLoginManual() {
         let val = document.getElementById('input-login-token').value.trim();
         if(!val) return alert("Digite um e-mail ou token válido.");
         
-        if(val.includes('@')) currentUser.email = val;
-        else currentUser.token = val;
+        let btn = document.getElementById('btn-tentar-login');
+        if(btn) {
+            btn.innerText = "VALIDANDO...";
+            btn.disabled = true;
+        }
+
+        if(val.includes('@')) {
+            currentUser.email = val;
+            currentUser.token = '';
+        } else {
+            currentUser.token = val;
+            currentUser.email = '';
+        }
 
         localStorage.setItem('cc_user_email', currentUser.email);
         localStorage.setItem('cc_user_token', currentUser.token);
         
-        validarAcessoServidor();
+        dbKey = 'ControlCard_DB_' + (currentUser.token || currentUser.email || 'LOCAL');
+        db = JSON.parse(localStorage.getItem(dbKey)) || { cartoes: [], despesas: [], pagamentos: [] };
+
+        await validarAcessoServidor();
     }
 
-    /* ================= FUNÇÕES DE ADMINISTRADOR ================= */
     async function gerenciarUsuarioAdmin(statusDesejado) {
         let email = document.getElementById('adm-new-email').value.trim();
         let nome = document.getElementById('adm-new-nome').value.trim();
@@ -369,7 +383,6 @@
         } catch(e) {}
     }
 
-    /* ================= EXPORTAÇÃO EXCEL ISOLADA DO USUÁRIO ================= */
     function baixarPlanilhaExcelUsuario() {
         if(!db.despesas || db.despesas.length === 0) {
             return alert("Você não possui lançamentos cadastrados para baixar.");
@@ -392,7 +405,6 @@
         toast("✅ Planilha Excel baixada!");
     }
 
-    /* ================= ENGINE PUSH CUSTOMIZADA DO USUÁRIO ================= */
     function salvarConfigPush() {
         let h = document.getElementById('push-horario').value;
         let optVenc = document.getElementById('push-opt-vencimento').checked;
@@ -433,7 +445,6 @@
         }
     }
 
-    /* ================= NAVEGAÇÃO & INTERFACE ================= */
     function mudarTela(id, titulo) {
         document.querySelectorAll('.tela').forEach(t => t.style.display = 'none');
         document.getElementById('tela-' + id).style.display = 'block';
