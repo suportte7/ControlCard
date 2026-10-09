@@ -653,17 +653,23 @@
 
             <div class="section-label" style="color: var(--primary);">🔔 Notificações & Alertas Diários</div>
             <div class="card" style="border-color: var(--primary);">
-                <h3 style="font-size:0.9rem; color: var(--primary);"><span class="material-icons-outlined">notifications_active</span> Push Diário de Compras</h3>
-                <p class="helper">Configure um horário fixo para receber um aviso lembrando de registrar as compras do dia.</p>
+                <h3 style="font-size:0.9rem; color: var(--primary);"><span class="material-icons-outlined">notifications_active</span> Push Diário e Lembrete de Vencimento</h3>
+                <p class="helper">Configure o horário do alerta diário e com quantos dias de antecedência o app deve avisar sobre cobranças e juros.</p>
                 <div class="edicao-field-row">
                     <div class="form-group" style="margin-bottom:0;">
                         <label>Horário do Alerta</label>
                         <input type="time" id="push-horario" class="form-input" value="20:00" style="padding:10px;">
                     </div>
-                    <div class="form-group" style="margin-bottom:0; display:flex; align-items:flex-end;">
-                        <button class="btn btn-primary" style="padding: 11px;" onclick="salvarConfigPush()">SALVAR HORÁRIO</button>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>Antecedência</label>
+                        <select id="push-antecedencia" class="form-input up-text" style="font-size:0.8rem; padding:10px;">
+                            <option value="1">1 DIA ANTES (Recomendado)</option>
+                            <option value="0">NO PRÓPRIO DIA</option>
+                            <option value="2">2 DIAS ANTES</option>
+                        </select>
                     </div>
                 </div>
+                <button class="btn btn-primary" style="padding: 12px; margin-top: 10px;" onclick="salvarConfigPush()">SALVAR CONFIGURAÇÃO</button>
                 <button class="btn btn-outline" style="margin-top: 10px; border-color: var(--success); color: var(--success); padding: 8px;" onclick="testarPushAgora()">🧪 TESTAR ALERTA AGORA</button>
             </div>
 
@@ -773,6 +779,8 @@
     if(!db.cartoesInativos) db.cartoesInativos = [];
     if(!db.categoriasInativas) db.categoriasInativas = [];
 
+    const NOME_EMPRESTIMO_VIRTUAL = '💲 ACORDOS / DINHEIRO';
+
     const temas = ['lambo', 'nubank', 'dracula', 'ocean', 'nature', 'light', 'neon', 'coffee', 'midnight', 'hacker', 'synthwave', 'sunset', 'darkgold', 'barbie'];
     let idxTema = parseInt(localStorage.getItem('cc_v1_Theme')) || 0;
     if(idxTema >= temas.length) idxTema = 0;
@@ -806,7 +814,7 @@
         t._h = setTimeout(() => t.className = '', 3500);
     }
 
-    /* ================= PUSH NOTIFICATIONS / ALERTA DIÁRIO ================= */
+    /* ================= PUSH NOTIFICATIONS / ALERTA DIÁRIO E DE ANTECEDÊNCIA ================= */
     function iniciarPushDiario() {
         if (!("Notification" in window)) return;
         if (Notification.permission !== "granted") {
@@ -814,10 +822,14 @@
         }
         
         let horarioSalvo = localStorage.getItem('cc_push_horario') || '20:00';
+        let antecSalva = localStorage.getItem('cc_push_antecedencia') || '1';
+
         let inputTime = document.getElementById('push-horario');
         if(inputTime) inputTime.value = horarioSalvo;
 
-        // Verifica a cada minuto se atingiu o horário configurado
+        let inputAntec = document.getElementById('push-antecedencia');
+        if(inputAntec) inputAntec.value = antecSalva;
+
         setInterval(() => {
             let agora = new Date();
             let horaMin = String(agora.getHours()).padStart(2,'0') + ':' + String(agora.getMinutes()).padStart(2,'0');
@@ -826,7 +838,7 @@
             let hojeStr = getLocalToday();
 
             if (horaMin === horarioConfig && ultimoDisparo !== hojeStr) {
-                dispararPushNotificacao("🛒 Hora de lançar!", "Não se esqueça de registrar as compras e despesas de hoje no ControlCard.");
+                verificarEEmitirPushAntecipado();
                 localStorage.setItem('cc_push_ultimo', hojeStr);
             }
         }, 30000);
@@ -834,23 +846,69 @@
 
     function salvarConfigPush() {
         let h = document.getElementById('push-horario').value;
+        let a = document.getElementById('push-antecedencia').value;
         if(!h) return alert("Selecione um horário válido.");
         localStorage.setItem('cc_push_horario', h);
+        localStorage.setItem('cc_push_antecedencia', a);
         if ("Notification" in window && Notification.permission !== "granted") {
             Notification.requestPermission();
         }
-        toast("✅ Horário do alerta salvo para as " + h + "!");
+        toast("✅ Notificação configurada!");
+    }
+
+    function verificarEEmitirPushAntecipado() {
+        let diasAntec = parseInt(localStorage.getItem('cc_push_antecedencia') || '1');
+        
+        let targetDate = new Date();
+        targetDate.setDate(targetDate.getDate() + diasAntec);
+        let targetStr = targetDate.toISOString().split('T')[0];
+        let targetMesStr = targetStr.substring(0, 7);
+        let targetDiaNum = parseInt(targetStr.split('-')[2]);
+
+        let pendencias = [];
+
+        db.despesas.forEach(d => {
+            if(d.dataRef !== targetMesStr) return;
+            
+            let diaVenc = 10;
+            if(d.dataCompra && d.dataCompra.includes('-')) {
+                diaVenc = parseInt(d.dataCompra.split('-')[2]);
+            } else if(d.cartao) {
+                let cardInfo = db.cartoes.find(c => (c.nome||c) === d.cartao);
+                diaVenc = cardInfo && cardInfo.vencimento ? cardInfo.vencimento : 10;
+            }
+
+            if(diaVenc === targetDiaNum) {
+                let valReal = getValorAjustadoEmprestimo(d);
+                pendencias.push({
+                    desc: d.desc,
+                    pessoa: d.pessoa,
+                    valor: valReal,
+                    cartao: d.cartao || '💲 Acordo'
+                });
+            }
+        });
+
+        if(pendencias.length > 0) {
+            let total = pendencias.reduce((acc, p) => acc + p.valor, 0);
+            let tempoTexto = diasAntec === 0 ? "hoje" : (diasAntec === 1 ? "amanhã" : `em ${diasAntec} dias`);
+            let titulo = `⚠️ Vencimentos ${tempoTexto} (${pendencias.length} item${pendencias.length > 1 ? 's' : ''})`;
+            let corpo = `Total: R$ ${total.toFixed(2)}. Não se esqueça de conferir os lançamentos no ControlCard!`;
+            dispararPushNotificacao(titulo, corpo);
+        } else {
+            dispararPushNotificacao("🛒 ControlCard Lembrete", "Tudo em dia! Não se esqueça de registrar as compras de hoje.");
+        }
     }
 
     function testarPushAgora() {
         if (!("Notification" in window)) return alert("Seu navegador não suporta notificações.");
         if (Notification.permission !== "granted") {
             Notification.requestPermission().then(perm => {
-                if (perm === "granted") dispararPushNotificacao("🧪 Teste ControlCard v2", "As notificações estão funcionando perfeitamente!");
+                if (perm === "granted") verificarEEmitirPushAntecipado();
                 else alert("Permissão de notificação negada pelo navegador.");
             });
         } else {
-            dispararPushNotificacao("🧪 Teste ControlCard v2", "As notificações estão funcionando perfeitamente!");
+            verificarEEmitirPushAntecipado();
         }
     }
 
@@ -1378,13 +1436,22 @@
         if(d.isAssinatura) return d.assinaturaId;
         if(d.isEmprestimo) return d.emprestimoId;
         let baseDesc = (d.desc||'').replace(/\(\d+\/\d+\)/, '').trim();
-        if(d.cartao) return `${baseDesc}_${d.cartao}_${d.dataCompra}`;
+        let cartaoRef = d.cartao || NOME_EMPRESTIMO_VIRTUAL;
+        if(d.cartao || d.isEmprestimo) return `${baseDesc}_${cartaoRef}_${d.dataCompra}`;
         return `PAG_${baseDesc}_${d.pessoa}_${d.data}`;
     }
 
     /* ================= CONTROLE DE CHIPS E SELECTS ================= */
     let cartoesSelCal = [];
     let cartoesSelExt = [];
+
+    function getListaCartoesCompletos() {
+        let cartoesAtivos = db.cartoes.filter(c => !db.cartoesInativos.includes(c.nome || c)).map(c => c.nome || c);
+        if (!cartoesAtivos.includes(NOME_EMPRESTIMO_VIRTUAL)) {
+            cartoesAtivos.push(NOME_EMPRESTIMO_VIRTUAL);
+        }
+        return cartoesAtivos;
+    }
 
     function carregarSelects() {
         db.pessoas = [...new Set(db.pessoas)].filter(Boolean).sort();
@@ -1429,9 +1496,10 @@
     }
 
     function renderizarChipsCartoes() {
+        let cartoesEspecial = getListaCartoesCompletos();
+
         let htmlCal = '';
-        db.cartoes.filter(c => !db.cartoesInativos.includes(c.nome || c)).forEach(c => {
-            let nome = c.nome || c;
+        cartoesEspecial.forEach(nome => {
             let active = cartoesSelCal.length === 0 || cartoesSelCal.includes(nome) ? 'active' : '';
             htmlCal += `<div class="chip-filtro ${active}" onclick="toggleChipCal('${nome.replace(/'/g, "\\'")}')">${nome}</div>`;
         });
@@ -1439,8 +1507,7 @@
         if(cCal) cCal.innerHTML = htmlCal;
 
         let htmlExt = '';
-        db.cartoes.filter(c => !db.cartoesInativos.includes(c.nome || c)).forEach(c => {
-            let nome = c.nome || c;
+        cartoesEspecial.forEach(nome => {
             let active = cartoesSelExt.length === 0 || cartoesSelExt.includes(nome) ? 'active' : '';
             htmlExt += `<div class="chip-filtro ${active}" onclick="toggleChipExt('${nome.replace(/'/g, "\\'")}')">${nome}</div>`;
         });
@@ -1504,8 +1571,9 @@
     }
 
     function calcularDataVirtual(d) {
-        if (d.cartao) { 
-            let c = db.cartoes.find(x => (x.nome||x) === d.cartao);
+        let nomeCartao = d.cartao || (d.isEmprestimo ? NOME_EMPRESTIMO_VIRTUAL : null);
+        if (nomeCartao) { 
+            let c = db.cartoes.find(x => (x.nome||x) === nomeCartao);
             let venc = c && c.vencimento ? c.vencimento : 10;
             return d.dataRef + "-" + String(venc).padStart(2, '0');
         } else {
@@ -2176,11 +2244,11 @@
             let cor = saldoPessoa > 0 ? 'var(--danger)' : 'var(--success)';
             let idP = 'p_' + Math.random().toString(36).substr(2, 9);
             
-            let gruposOrigem = [...new Set(dp.map(d => d.cartao || '💲 ACORDOS / DINHEIRO'))].filter(Boolean);
+            let gruposOrigem = [...new Set(dp.map(d => d.cartao || NOME_EMPRESTIMO_VIRTUAL))].filter(Boolean);
             let subHtml = '';
             
             gruposOrigem.forEach(c => {
-                let dc = dp.filter(d => (d.cartao || '💲 ACORDOS / DINHEIRO') === c);
+                let dc = dp.filter(d => (d.cartao || NOME_EMPRESTIMO_VIRTUAL) === c);
                 let sumCartao = dc.reduce((s, d) => s + getValorAjustadoEmprestimo(d), 0);
                 let idC = idP + '_' + Math.random().toString(36).substr(2, 9);
                 
@@ -2209,10 +2277,10 @@
 
     function construirArvoreCartoes(despFiltradas) {
         let listaDadosCartoes = [];
-        let todosCartoes = [...new Set(db.cartoes.map(c => c.nome||c).concat(despFiltradas.map(d => d.cartao)))].filter(Boolean);
+        let todosCartoes = [...new Set(db.cartoes.map(c => c.nome||c).concat(despFiltradas.map(d => d.cartao || NOME_EMPRESTIMO_VIRTUAL)))].filter(Boolean);
 
         todosCartoes.forEach(cartaoNome => {
-            let dc = despFiltradas.filter(d => d.cartao === cartaoNome);
+            let dc = despFiltradas.filter(d => (d.cartao || NOME_EMPRESTIMO_VIRTUAL) === cartaoNome);
             let sumCartao = dc.reduce((s, d) => s + getValorAjustadoEmprestimo(d), 0);
 
             if(sumCartao > 0) {
@@ -2246,7 +2314,8 @@
                 subHtml += `<div class="sub-tree-card" id="${idP}"><div class="sub-tree-header" onclick="document.getElementById('${idP}').classList.toggle('open')"><div class="tree-person-info" style="gap:8px;"><div class="avatar">${getIniciais(p)}</div><span>${p}</span></div><span style="color: var(--text);">R$ ${sumPessoa.toFixed(2)}</span></div><div class="sub-tree-body">${itensHtml}</div></div>`;
             });
 
-            html += `<div class="tree-card" id="${idC}"><div class="tree-header" onclick="document.getElementById('${idC}').classList.toggle('open')"><span>💳 ${cartaoNome}</span><span style="color: var(--danger)">R$ ${sumCartao.toFixed(2)}</span></div><div class="tree-body">${subHtml}</div></div>`;
+            let iconeExib = cartaoNome.includes('💲') ? cartaoNome : '💳 ' + cartaoNome;
+            html += `<div class="tree-card" id="${idC}"><div class="tree-header" onclick="document.getElementById('${idC}').classList.toggle('open')"><span>${iconeExib}</span><span style="color: var(--danger)">R$ ${sumCartao.toFixed(2)}</span></div><div class="tree-body">${subHtml}</div></div>`;
         });
         return html;
     }
@@ -2285,7 +2354,8 @@
         let despFiltradas = db.despesas.filter(d => {
             if(d.dataRef !== mesStr) return false;
             if(fP !== 'TODOS' && d.pessoa !== fP) return false;
-            if(cartoesSelCal.length > 0 && d.cartao && !cartoesSelCal.includes(d.cartao)) return false;
+            let cartaoRef = d.cartao || NOME_EMPRESTIMO_VIRTUAL;
+            if(cartoesSelCal.length > 0 && !cartoesSelCal.includes(cartaoRef)) return false;
             return true;
         });
 
@@ -2396,12 +2466,13 @@
             if(item.tipo === 'desp') {
                 let parcInfo = formatarInfoItem(item, false);
                 let valReal = getValorAjustadoEmprestimo(item);
+                let cartaoExib = item.cartao || NOME_EMPRESTIMO_VIRTUAL;
                 htmlListaGeral += `<div class="t-row" onclick="abrirEdicao(${item.id}, 'desp')">
                     <div style="margin-right:12px; text-align:center; min-width:30px; border-right:1px solid var(--border); padding-right:10px;">
                         <div style="font-size:0.7rem; color:var(--text-light); text-transform:uppercase;">Dia</div>
                         <div style="font-weight:bold; font-size:1.1rem; color:var(--primary);">${diaStr}</div>
                     </div>
-                    <div class="t-desc"><strong style="font-size:0.85rem;">${parcInfo.descLimp} ${parcInfo.badgeP} ${parcInfo.compIcon}</strong><span>👤 ${item.pessoa} | 💳 ${item.cartao || '💲 Acordo/Dinheiro'}</span></div>
+                    <div class="t-desc"><strong style="font-size:0.85rem;">${parcInfo.descLimp} ${parcInfo.badgeP} ${parcInfo.compIcon}</strong><span>👤 ${item.pessoa} | ${cartaoExib}</span></div>
                     <div class="t-val desp">R$ ${valReal.toFixed(2)}</div>
                 </div>`;
             } else {
@@ -2466,7 +2537,8 @@
             
             if(targetDia !== dia) return false;
             if(fP !== 'TODOS' && d.pessoa !== fP) return false;
-            if(cartoesSelCal.length > 0 && d.cartao && !cartoesSelCal.includes(d.cartao)) return false;
+            let cartaoRef = d.cartao || NOME_EMPRESTIMO_VIRTUAL;
+            if(cartoesSelCal.length > 0 && !cartoesSelCal.includes(cartaoRef)) return false;
             return true;
         });
 
@@ -2492,7 +2564,8 @@
             let valReal = getValorAjustadoEmprestimo(d);
             subTotD += valReal;
             let parcInfo = formatarInfoItem(d, false);
-            html += `<div class="t-row" onclick="abrirEdicao(${d.id}, 'desp')"><div class="t-desc"><strong style="font-size:0.85rem;">${parcInfo.descLimp} ${parcInfo.badgeP} ${parcInfo.compIcon}</strong><span>👤 ${d.pessoa} | 💳 ${d.cartao || '💲 Acordo/Dinheiro'}</span></div><div class="t-val desp">R$ ${valReal.toFixed(2)}</div></div>`;
+            let cartaoExib = d.cartao || NOME_EMPRESTIMO_VIRTUAL;
+            html += `<div class="t-row" onclick="abrirEdicao(${d.id}, 'desp')"><div class="t-desc"><strong style="font-size:0.85rem;">${parcInfo.descLimp} ${parcInfo.badgeP} ${parcInfo.compIcon}</strong><span>👤 ${d.pessoa} | ${cartaoExib}</span></div><div class="t-val desp">R$ ${valReal.toFixed(2)}</div></div>`;
         });
         
         pagDia.forEach(pg => {
@@ -2531,7 +2604,8 @@
         db.despesas.filter(d => {
             if (busca && !(d.desc||'').toLowerCase().includes(busca)) return false;
             if (fP !== "TODOS" && d.pessoa !== fP) return false;
-            if (cartoesSelExt.length > 0 && d.cartao && !cartoesSelExt.includes(d.cartao)) return false;
+            let cartaoRef = d.cartao || NOME_EMPRESTIMO_VIRTUAL;
+            if (cartoesSelExt.length > 0 && !cartoesSelExt.includes(cartaoRef)) return false;
             if (!dentroDoPeriodo(d, range)) return false;
             return true;
         }).forEach(d => filtradas.push({...d, _uid: 'desp_'+d.id, _tipo: 'desp'}));
@@ -2554,7 +2628,7 @@
                 let valReal = getValorAjustadoEmprestimo(d);
                 valStr = `R$ ${valReal.toFixed(2)}`;
                 corVal = '';
-                iconeCartao = `💳 ${d.cartao || '💲 Acordo/Dinheiro'}`;
+                iconeCartao = d.cartao ? `💳 ${d.cartao}` : NOME_EMPRESTIMO_VIRTUAL;
                 dataExib = formatarMesAno(d.dataRef);
             } else {
                 let i = formatarInfoItem(d, true);
@@ -2693,7 +2767,7 @@
                 (isEmp ? `<div style="background:var(--primary); color:#000; padding:4px 8px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="${mainClick}" title="Modalidade Dinheiro / Acordo">💲 ${totalParc}x</div>` :
                 `<div style="background:${corBadge}; color:${corLetra}; padding:4px 8px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="${mainClick}">${totalParc}x</div>`);
 
-            let subTxt = isReceb ? `💰 Recebimento/Abatimento | R$ ${g[0].valor.toFixed(2)} /mês` : (isEmp ? `💲 Acordo/Dinheiro | R$ ${g[0].valor.toFixed(2)} /mês` : `💳 ${g[0].cartao} | R$ ${g[0].valor.toFixed(2)} /mês`);
+            let subTxt = isReceb ? `💰 Recebimento/Abatimento | R$ ${g[0].valor.toFixed(2)} /mês` : (isEmp ? `${NOME_EMPRESTIMO_VIRTUAL} | R$ ${g[0].valor.toFixed(2)} /mês` : `💳 ${g[0].cartao} | R$ ${g[0].valor.toFixed(2)} /mês`);
 
             html += `<div class="check-item" style="display:flex; justify-content:space-between; align-items:center;">
                 <div style="flex:1;" onclick="${mainClick}">
@@ -2716,10 +2790,11 @@
         let filtradas = db.despesas.filter(d => d.pessoa === de);
         let html = '';
         filtradas.forEach(d => {
+            let cExib = d.cartao || NOME_EMPRESTIMO_VIRTUAL;
             html += `
             <div class="check-item" id="tr-item-${d.id}" onclick="toggleTransfSel(${d.id})">
                 <span class="material-icons-outlined check-mark" style="color: transparent; border: 2px solid var(--text-light); border-radius: 6px; width: 18px; height: 18px; display:flex; align-items:center; justify-content:center;">check</span>
-                <div class="t-desc"><strong style="font-size:0.85rem;">${d.desc}</strong><span>${d.cartao || '💲 Acordo'} • Ref: ${formatarMesAno(d.dataRef)}</span></div>
+                <div class="t-desc"><strong style="font-size:0.85rem;">${d.desc}</strong><span>${cExib} • Ref: ${formatarMesAno(d.dataRef)}</span></div>
                 <div class="t-val">R$ ${d.valor.toFixed(2)}</div>
             </div>`;
         });
@@ -2752,7 +2827,7 @@
 
     function preencherListasCorrecao() {
         let nomesPessoas = [...new Set(db.pessoas.concat(db.despesas.map(d=>d.pessoa)))].filter(Boolean).sort();
-        let nomesCartoes = [...new Set(db.cartoes.map(c=>c.nome||c).concat(db.despesas.map(d=>d.cartao)))].filter(Boolean).sort();
+        let nomesCartoes = getListaCartoesCompletos().sort();
         let todosJuntos = [...new Set(nomesPessoas.concat(nomesCartoes))].sort();
 
         document.getElementById('corr-orig-pessoa').innerHTML = `<option value="TODOS">[QUALQUER PESSOA]</option>` + nomesPessoas.map(v => `<option value="${v.replace(/"/g, '&quot;')}">${v}</option>`).join('');
@@ -2774,11 +2849,19 @@
 
         let countAfe = 0;
         db.despesas.forEach(d => {
+            let cartaoRef = d.cartao || NOME_EMPRESTIMO_VIRTUAL;
             let achouP = (pOrig === "TODOS" || d.pessoa === pOrig);
-            let achouC = (cOrig === "TODOS" || d.cartao === cOrig);
+            let achouC = (cOrig === "TODOS" || cartaoRef === cOrig);
             if (achouP && achouC) {
                 if (pDest !== "") d.pessoa = pDest;
-                if (cDest !== "" && d.cartao) d.cartao = cDest;
+                if (cDest !== "") {
+                    if (cDest === NOME_EMPRESTIMO_VIRTUAL) {
+                        d.cartao = null;
+                        d.isEmprestimo = true;
+                    } else {
+                        d.cartao = cDest;
+                    }
+                }
                 countAfe++;
             }
         });
@@ -3054,7 +3137,7 @@
 
         const b = document.getElementById('app-versao-badge'); if (b) b.textContent = 'v' + APP_VERSION;
         document.title = 'ControlCard - v' + APP_VERSION;
-        try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+        try { if (navigator.storage && navigator.storage氛围) navigator.storage.persist(); } catch (e) {}
         
         verificarEspelho().then(() => {
             verificarNuvemNaInicializacao();
