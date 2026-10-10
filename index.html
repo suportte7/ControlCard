@@ -2,11 +2,14 @@
 <html lang="pt-BR" data-theme="midnight"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Configurações do App Instalável (PWA) -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#f59e0b">
-    <link rel="manifest" href="manifest.json?v=3.1">
-    <title>ControlCardMult - V3.1</title>
+    <link rel="manifest" href="manifest.json?v=3.2">
+    <link rel="icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f59e0b' rx='20'/%3E%3Ctext x='50' y='65' font-size='45' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'%3ECC%3C/text%3E%3C/svg%3E">
+    
+    <title>ControlCardMult</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
     <style>
         /* TEMAS COM CORES SUAVES */
@@ -30,7 +33,7 @@
         .brand-name { font-size:0.75rem; letter-spacing:.08em; text-transform:uppercase; color:var(--text-light); font-weight:800; display: flex; align-items: center; gap: 6px;}
         .v-badge { font-size: 0.55rem; background: var(--surface); border: 1px solid var(--border); padding: 2px 6px; border-radius: 4px; color: var(--text-light); font-weight: normal;}
         
-        .cloud-status { display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 11px; font-size: 1rem; color: var(--text-light); cursor: pointer; transition: 0.3s; }
+        .cloud-status { display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 11px; font-size: 1rem; color: var(--text-light); transition: 0.3s; cursor: pointer;}
         .cloud-status.synced { color: var(--success); }
         .cloud-status.offline { color: var(--danger); }
 
@@ -87,6 +90,7 @@
         
         .input-destaque-despesa { font-size: 1.4rem !important; color: var(--danger) !important; font-weight: 900 !important; padding: 14px 10px !important; border-color: rgba(239,68,68,0.3) !important; background: rgba(239,68,68,0.05) !important; }
         .input-destaque-receita { font-size: 1.4rem !important; color: var(--success) !important; font-weight: 900 !important; padding: 14px 10px !important; border-color: rgba(16,185,129,0.3) !important; background: rgba(16,185,129,0.05) !important; }
+        .input-destaque-cartao { font-size: 1.1rem !important; color: var(--primary) !important; border-color: var(--primary) !important; }
 
         .comprovante-btn { padding: 12px; border: 2px dashed var(--primary); background: rgba(245, 158, 11, 0.05); color: var(--primary); border-radius: 10px; text-align: center; cursor: pointer; font-weight: bold; font-size: 0.85rem; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s;}
         .img-preview { width: 100%; max-height: 200px; object-fit: contain; border-radius: 10px; margin-top: 8px; display: none; border: 2px solid var(--border); background: #000; }
@@ -177,25 +181,26 @@
 </head>
 <body>
 
-<!-- TELA DE LOGIN -->
+<!-- TELA DE LOGIN / LOCK -->
 <div id="tela-lock" style="display: none;">
     <div style="text-align: center; margin-bottom: 20px; width: 100%; max-width: 300px;">
         <div class="brand-mark" style="width: 50px; height: 50px; font-size: 1.5rem; margin: 0 auto 10px;">CC</div>
-        <h2 style="color: var(--text); margin: 0; font-weight: 900; letter-spacing: 1px; font-size: 1.2rem;">QUEM ESTÁ ACESSANDO?</h2>
+        <h2 style="color: var(--text); margin: 0; font-weight: 900; letter-spacing: 1px; font-size: 1.2rem;" id="login-main-title">QUEM ESTÁ ACESSANDO?</h2>
         <p style="color: var(--text-light); font-size: 0.8rem; margin: 5px 0 15px;" id="login-subtitle">Selecione seu perfil</p>
     </div>
     
     <div id="login-users-list" style="width: 100%; max-width: 300px; max-height: 250px; overflow-y: auto; margin-bottom: 10px;"></div>
     
     <div id="primeiro-acesso-box" style="display: none; width: 100%; max-width: 300px;">
-        <p style="text-align: center; font-size: 0.85rem; color: var(--primary); font-weight: bold;">Nenhum usuário detectado.</p>
         <div class="form-group">
-            <label>Link do Google Drive (Para puxar seu Backup Nuvem)</label>
-            <input type="url" id="primeiro-webhook" class="form-input" style="font-size: 0.8rem; text-transform: none; padding: 14px;" placeholder="https://script.google.com/...">
+            <label style="color: var(--primary);">Defina a senha do Administrador (Dono)</label>
+            <input type="text" id="setup-admin-nome" class="form-input up-text" placeholder="Seu Nome (Ex: NETO)" style="margin-bottom: 8px;">
+            <input type="number" id="setup-admin-pin" class="form-input" placeholder="Crie um PIN (4 dígitos)" maxlength="4" style="margin-bottom: 8px;">
         </div>
-        <button class="btn btn-primary" onclick="iniciarPrimeiroAcesso()" style="margin-bottom: 10px;">PUXAR DA NUVEM (WIFI)</button>
-        <p style="text-align: center; font-size: 0.75rem; color: var(--text-light); margin: 10px 0;">OU</p>
-        <button class="btn btn-outline" style="color:var(--text);" onclick="document.getElementById('primeiro-file').click()"><span class="material-icons-outlined">upload_file</span> IMPORTAR BACKUP LOCAL (ARQUIVO)</button>
+        <button class="btn btn-primary" onclick="salvarPrimeiroAcesso()" style="margin-bottom: 15px;">SALVAR E ENTRAR</button>
+        <hr style="border: 1px dashed var(--border); margin: 15px 0;">
+        <p style="text-align: center; font-size: 0.75rem; color: var(--text-light);">Já tem um backup com seus dados?</p>
+        <button class="btn btn-outline" style="color:var(--text);" onclick="document.getElementById('primeiro-file').click()"><span class="material-icons-outlined">upload_file</span> IMPORTAR ARQUIVO JSON</button>
         <input type="file" id="primeiro-file" accept=".json" onchange="importarBackup(event)" style="display:none;">
     </div>
 
@@ -217,8 +222,8 @@
 <!-- ENVELOPE PRINCIPAL DO APLICATIVO -->
 <div id="app-wrapper" style="display: none; opacity: 0; transition: opacity 0.3s ease;">
 
-    <div class="theme-btn" style="right: 48px; background: transparent; border: 1px solid var(--border); color: var(--text-light);" onclick="mudarTela('config','Ajustes')" title="Ajustes"><span class="material-icons-outlined" style="font-size:1.1rem;">settings</span></div>
-    <div class="theme-btn" onclick="fazerLogout()" title="Sair do Perfil"><span class="material-icons-outlined" style="font-size:1.1rem;">logout</span></div>
+    <div class="theme-btn" style="right: 48px; background: transparent; border: 1px solid var(--border); color: var(--text-light);" onclick="mudarTela('config','Ajustes do Sistema')" title="Ajustes"><span class="material-icons-outlined" style="font-size:1.1rem;">settings</span></div>
+    <div class="theme-btn" onclick="fazerLogout()" title="Sair (Bloquear Tela)"><span class="material-icons-outlined" style="font-size:1.1rem;">logout</span></div>
 
     <div class="modal-overlay" id="modal-overlay" onclick="fecharModais()"></div>
 
@@ -227,7 +232,7 @@
             <div class="dock-item" id="icon-dashboard" onclick="mudarTela('dashboard','Visão Geral')"><span class="material-icons-outlined">space_dashboard</span></div>
             <div class="dock-item" id="icon-calendario" onclick="mudarTela('calendario','Calendário')"><span class="material-icons-outlined">event_note</span></div>
             <button class="dock-main" onclick="abrirModalLancamento()"><span class="material-icons-outlined">add</span></button>
-            <div class="dock-item" id="icon-extrato" onclick="mudarTela('extrato','Lançamentos')"><span class="material-icons-outlined">receipt_long</span></div>
+            <div class="dock-item" id="icon-extrato" onclick="mudarTela('extrato','Cobranças e Extrato')"><span class="material-icons-outlined">receipt_long</span></div>
         </div>
     </div>
 
@@ -260,7 +265,7 @@
         <!-- ABA DESPESA -->
         <div id="form-desp">
             <div class="form-group"><label>Cartão Utilizado</label><select id="cartao" class="form-input input-destaque-cartao up-text"></select></div>
-            <div class="form-group"><label>Descrição Geral</label><input type="text" id="desc" class="form-input" placeholder="Ex: Compras no Supermercado"></div>
+            <div class="form-group"><label>Descrição Geral da Compra</label><input type="text" id="desc" class="form-input" placeholder="Ex: Compras no Supermercado"></div>
             <div class="form-group"><label>Categoria</label><select id="categoria-compra" class="form-input up-text"></select></div>
             <div class="edicao-field-row">
                 <div class="form-group" style="margin-bottom:0;"><label>Data Exata</label><input type="date" id="data-compra-exata" class="form-input" onchange="atualizarMesRefCompra()"></div>
@@ -268,7 +273,7 @@
             </div>
             
             <div class="form-group" style="margin-top: 15px;">
-                <label>📸 Anexar Foto</label>
+                <label>📸 Anexar Foto do Recibo</label>
                 <label for="file-desp" class="comprovante-btn"><span class="material-icons-outlined">add_a_photo</span> Tocar para Fotografar</label>
                 <input type="file" id="file-desp" accept="image/*" capture="environment" style="display:none;" onchange="processarImagem(this, 'preview-desp', 'btn-rm-desp', 'base64Desp')">
                 <img id="preview-desp" class="img-preview">
@@ -299,7 +304,7 @@
             </div>
             <div class="edicao-field-row" style="margin-top: 15px;">
                 <div class="form-group" style="margin-bottom:0;"><label>Data Exata</label><input type="date" id="pag-data" class="form-input"></div>
-                <div class="form-group" style="margin-bottom:0;"><label>Mês Referência</label><input type="month" id="pag-data-ref" class="form-input"></div>
+                <div class="form-group" style="margin-bottom:0;"><label>Mês Referência na Fatura</label><input type="month" id="pag-data-ref" class="form-input"></div>
             </div>
             
             <div class="form-group" style="margin-top: 15px;">
@@ -314,7 +319,7 @@
 
         <!-- ABA DOLLAR ($) -->
         <div id="form-emp" style="display: none;">
-            <div class="form-group"><label>Para Quem?</label><select id="emp-pessoa" class="form-input up-text" style="font-size: 1.2rem; color: var(--primary); border-color: var(--primary);"></select></div>
+            <div class="form-group"><label>Acordo com Quem?</label><select id="emp-pessoa" class="form-input up-text" style="font-size: 1.2rem; color: var(--primary); border-color: var(--primary);"></select></div>
             <div class="form-group"><label>Descrição</label><input type="text" id="emp-desc" class="form-input" placeholder="Ex: Acordo em Dinheiro"></div>
             <div class="edicao-field-row">
                 <div class="form-group"><label>Valor Total (R$)</label><input type="number" id="emp-val-total" class="form-input input-destaque-despesa" step="0.01" oninput="calcularParcelaEmpPorTotal()"></div>
@@ -326,7 +331,7 @@
                 <div class="form-group" style="margin-bottom:0;"><label>1º Vencimento (Mês)</label><input type="month" id="emp-data-ref" class="form-input"></div>
             </div>
             <div style="margin: 15px 0; border-top: 2px dashed var(--border); padding-top: 15px;">
-                <label style="font-size: 0.8rem; font-weight: 900; color: var(--primary); text-transform: uppercase; text-align: center; display: block; margin-bottom: 8px;">⚙️ Regra de Atraso (Opcional)</label>
+                <label style="font-size: 0.8rem; font-weight: 900; color: var(--primary); text-transform: uppercase; text-align: center; display: block; margin-bottom: 8px;">⚙️ Regra de Atraso Sucessivo</label>
             </div>
             <div class="edicao-field-row">
                 <div class="form-group"><label>Tolerância inicial (Dias)</label><input type="number" id="emp-juros-dias" class="form-input" value="30"></div>
@@ -334,7 +339,7 @@
             </div>
             <div class="edicao-field-row">
                 <div class="form-group"><label>Tipo de Acréscimo</label><select id="emp-juros-tipo" class="form-input up-text"><option value="val">VALOR FIXO (R$)</option><option value="perc">PORCENTAGEM (%)</option></select></div>
-                <div class="form-group"><label>Valor Acréscimo</label><input type="number" id="emp-juros-valor" class="form-input" step="0.01" placeholder="0.00"></div>
+                <div class="form-group"><label>Valor Acréscimo</label><input type="number" id="emp-juros-valor" class="form-input" step="0.01" placeholder="Ex: 50.00"></div>
             </div>
             <button class="btn btn-primary" style="padding: 16px; font-size: 1.1rem; margin-top: 15px;" onclick="registrarEmprestimo()"><span class="material-icons-outlined">done_all</span> REGISTRAR ACORDO</button>
         </div>
@@ -344,7 +349,7 @@
     <div class="modal" id="modal-edicao">
         <button class="modal-close-btn" onclick="fecharModais()"><span class="material-icons-outlined">close</span></button>
         <div class="modal-drag"></div>
-        <h3 style="margin: 0 0 20px; color: var(--primary); font-size: 1.3rem; border-bottom: 2px solid var(--border); padding-bottom: 15px; text-transform: uppercase; text-align: center; font-weight: 900;" id="edit-title">EDITAR</h3>
+        <h3 style="margin: 0 0 20px; color: var(--primary); font-size: 1.3rem; border-bottom: 2px solid var(--border); padding-bottom: 15px; text-transform: uppercase; text-align: center; font-weight: 900;" id="edit-title">EDITAR LANÇAMENTO</h3>
         
         <input type="hidden" id="edit-id"><input type="hidden" id="edit-tipo">
         <div class="form-group" style="margin-bottom: 20px;"><label id="edit-label-desc">DESCRIÇÃO</label><input type="text" id="edit-desc" class="form-input" style="font-size: 1.1rem; text-transform: none;"></div>
@@ -386,11 +391,11 @@
         <div class="page-header">
             <div class="brand-line" style="margin-bottom: 0;">
                 <div class="brand-mark">CC</div>
-                <span class="brand-name">ControlCardMult <span class="v-badge">v3.1</span>
+                <span class="brand-name">ControlCardMult <span class="v-badge">v3.2</span>
                     <span id="cloud-status-icon" class="material-icons-outlined cloud-status synced" onclick="sincronizarManual(false, true)">cloud_done</span>
                 </span>
             </div>
-            <div style="font-size: 0.65rem; color: var(--text-light); margin-left: 34px; margin-bottom: 8px; font-weight: 800;">PERFIL: <span id="header-user-name" style="color:var(--primary);">...</span></div>
+            <div style="font-size: 0.65rem; color: var(--text-light); margin-left: 34px; margin-bottom: 8px; font-weight: 800; text-transform: uppercase;">PERFIL DE ACESSO: <span id="header-user-name" style="color:var(--primary);">...</span></div>
             <h2 id="page-title">Visão Geral</h2>
             <p id="page-subtitle">Acompanhe quem deve e faturas abertas</p>
         </div>
@@ -401,8 +406,8 @@
                 <select id="dash-filtro-global" class="form-input up-text" style="font-weight: 900; color: var(--primary); border-color: var(--primary); font-size: 0.95rem; padding: 10px;" onchange="mudouFiltroDash()"></select>
             </div>
             <div id="dash-custom-dates" class="date-custom-grid" style="display:none;">
-                <div><label>INÍCIO</label><input type="date" id="dash-dt-ini" onchange="atualizarDashboard()"></div>
-                <div><label>FIM</label><input type="date" id="dash-dt-fim" onchange="atualizarDashboard()"></div>
+                <div><label>INÍCIO</label><input type="date" id="dash-dt-ini" onchange="atualizarSaldos()"></div>
+                <div><label>FIM</label><input type="date" id="dash-dt-fim" onchange="atualizarSaldos()"></div>
             </div>
             <div class="metric-grid">
                 <div class="metric"><small>Lançado</small><strong id="metric-despesas">R$&nbsp;0,00</strong></div>
@@ -460,29 +465,39 @@
                 <div><strong id="contagem-selecionados" style="font-size: 0.85rem; color: var(--primary); text-transform: uppercase;">0 itens</strong><span id="total-selecionados" style="font-size: 1.1rem; font-weight: 900; display:block; margin-top: 2px;">R$ 0,00</span></div>
                 <div style="display: flex; flex-direction: column; gap: 6px;">
                     <button class="btn-outline" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px;" onclick="selecionarTodasExtrato()">Selecionar Tudo</button>
-                    <button class="btn-success" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px;" onclick="enviarZapSelecionados()"><span class="material-icons-outlined" style="font-size:1rem;">send</span> ZAP</button>
+                    <button class="btn-success" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px;" onclick="enviarZapSelecionados()"><span class="material-icons-outlined" style="font-size:1rem;">send</span> WHATSAPP</button>
                 </div>
             </div>
             <div id="lista-transacoes-container"></div>
         </div>
 
-        <!-- TELA 4: AJUSTES & ADMIN -->
+        <!-- TELA 4: AJUSTES (COMUM E ADMIN) -->
         <div id="tela-config" class="tela" style="display: none;">
             
-            <div class="section-label" style="color: var(--primary);">👤 Meu Perfil</div>
+            <div class="section-label" style="color: var(--primary);">👤 Opções do seu Perfil</div>
             <div class="card">
-                <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">notifications</span> Alertas e Fechamento</h3>
-                <p class="helper">Notificações diárias sobre vencimentos. Também é possível exportar sua parte.</p>
+                <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">notifications</span> Alertas Diários (Push)</h3>
+                <p class="helper">O app vai analisar o dia e avisar sobre quais cartões vão fechar/vencer.</p>
                 <div style="display:flex; gap:10px; margin-bottom: 10px;">
                     <input type="time" id="push-horario" class="form-input" value="20:00" style="padding:10px;">
-                    <button class="btn btn-outline" style="padding:10px; border-color:var(--primary); color:var(--primary);" onclick="salvarConfigPush()">SALVAR</button>
+                    <button class="btn btn-outline" style="padding:10px; border-color:var(--primary); color:var(--primary);" onclick="salvarConfigPush()">SALVAR HORÁRIO</button>
                 </div>
-                <button class="btn btn-outline" style="color:var(--success); border-color:var(--success);" onclick="baixarExcelUsuario()"><span class="material-icons-outlined">table_view</span> BAIXAR MEU EXCEL</button>
+                <button class="btn btn-outline" style="color:var(--success); border-color:var(--success);" onclick="baixarExcelUsuario()"><span class="material-icons-outlined">table_view</span> BAIXAR MEU EXCEL (CSV)</button>
             </div>
 
-            <!-- CADASTROS LIVRES: VOLTOU! -->
+            <!-- CADASTROS GLOBAIS: LIBERADOS PARA QUALQUER UM CADASTRAR -->
             <div class="section-label">Cadastros Globais</div>
             
+            <div class="card">
+                <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">people</span> Pessoas (Nomes)</h3>
+                <p class="helper">Adicione os nomes das pessoas com quem você divide contas ou empresta o cartão.</p>
+                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                    <div style="display:flex; flex:1; gap:4px;"><input type="text" id="nova-pessoa-simples" class="form-input up-text" placeholder="Nome (Ex: JOÃO)" style="margin-bottom:0; padding:10px;"><button class="btn-small" onclick="inserirEmoji(this, 'nova-pessoa-simples')">😀</button></div>
+                    <button class="btn btn-primary" style="width: auto; padding: 0 12px;" onclick="addPessoaSimples()">SALVAR</button>
+                </div>
+                <div id="lista-edit-pessoas-simples"></div>
+            </div>
+
             <div class="card">
                 <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">credit_card</span> Cartões</h3>
                 <div class="form-group"><div style="display:flex; gap:4px; flex:1;"><input type="text" id="novo-cartao-nome" class="form-input up-text" placeholder="Nome (Ex: NUBANK)" style="padding:10px;"><button class="btn-small" onclick="inserirEmoji(this, 'novo-cartao-nome')">😀</button></div></div>
@@ -503,32 +518,22 @@
                 <div id="lista-edit-categorias"></div>
             </div>
             
-            <!-- ADMIN PANEL -->
+            <!-- ADMIN PANEL (SÓ APARECE PARA QUEM FOR ROLE=ADMIN) -->
             <div id="admin-panel" style="display: none;">
-                <div class="section-label" style="color: var(--danger); margin-top: 30px;">🔑 Controle Mestre (Admin)</div>
                 
+                <div class="section-label" style="color: var(--danger); margin-top: 30px;">🔑 Gestão de Acessos (Logins)</div>
                 <div class="card" style="border-color: var(--danger);">
-                    <h3 style="color: var(--danger); font-size:0.9rem;"><span class="material-icons-outlined">manage_accounts</span> Logins e Acessos Pessoas</h3>
-                    <div class="form-group"><input type="text" id="adm-novo-user-nome" class="form-input up-text" placeholder="Nome de Login (Ex: JOÃO)"></div>
+                    <h3 style="color: var(--danger); font-size:0.9rem;"><span class="material-icons-outlined">manage_accounts</span> Criar Senha para uma Pessoa</h3>
+                    <p class="helper">Selecione uma pessoa já cadastrada acima e crie um PIN para ela entrar no app pelo celular dela.</p>
+                    <div class="form-group"><label>ESCOLHA A PESSOA:</label><select id="adm-login-pessoa" class="form-input up-text"></select></div>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
                         <input type="number" id="adm-novo-user-pin" class="form-input" placeholder="PIN (4 dig)" maxlength="4">
                         <select id="adm-novo-user-perfil" class="form-input up-text"><option value="user">USER COMUM</option><option value="admin">ADMINISTRADOR</option></select>
                     </div>
-                    <button class="btn btn-danger" style="padding:12px; margin-bottom: 15px;" onclick="adminCriarUsuario()">CADASTRAR LOGIN</button>
+                    <button class="btn btn-danger" style="padding:12px; margin-bottom: 15px;" onclick="adminCriarUsuario()">CRIAR/ATUALIZAR ACESSO</button>
                     <div id="admin-lista-usuarios"></div>
                 </div>
 
-                <div class="card" style="border-color: var(--danger);">
-                    <h3 style="color: var(--danger); font-size:0.9rem;"><span class="material-icons-outlined">people</span> Cadastrar Pessoa sem Login</h3>
-                    <p class="helper">Adicione pessoas que não usam o app, mas que você lança contas no nome delas.</p>
-                    <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                        <div style="display:flex; flex:1; gap:4px;"><input type="text" id="nova-pessoa-simples" class="form-input up-text" placeholder="Nome..." style="margin-bottom:0; padding:10px;"><button class="btn-small" onclick="inserirEmoji(this, 'nova-pessoa-simples')">😀</button></div>
-                        <button class="btn btn-primary" style="width: auto; padding: 0 12px;" onclick="addPessoaSimples()">SALVAR</button>
-                    </div>
-                    <div id="lista-edit-pessoas-simples"></div>
-                </div>
-
-                <!-- GESTÃO EM MASSA: VOLTOU! -->
                 <div class="section-label" style="color: var(--danger);">🛠 Gestão em Massa</div>
                 <div class="card" style="border-color: var(--danger);">
                     <h3 style="color: var(--danger); font-size:0.9rem;"><span class="material-icons-outlined">layers</span> Gestão de Assinaturas e Parcelas</h3>
@@ -537,7 +542,7 @@
                 </div>
                 
                 <div class="card" style="border-color: var(--danger);">
-                    <h3 style="color: var(--danger); font-size:0.9rem;"><span class="material-icons-outlined">move_up</span> Repassar Dívida</h3>
+                    <h3 style="color: var(--danger); font-size:0.9rem;"><span class="material-icons-outlined">move_up</span> Repassar Dívida (Mover Contas)</h3>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                         <div class="form-group" style="margin:0;"><label>TIRAR DE:</label><select id="transf-de" class="form-input up-text" style="padding:10px;" onchange="renderizarListaTransferencia()"></select></div>
                         <div class="form-group" style="margin:0;"><label>PASSAR PARA:</label><select id="transf-para" class="form-input up-text" style="padding:10px;"></select></div>
@@ -545,13 +550,29 @@
                     <div id="lista-transferencia-container" style="margin: 10px 0;"></div>
                     <button class="btn btn-outline" style="border-color: var(--danger); color: var(--danger); padding:10px;" onclick="executarTransferenciaInterativa()">Repassar Marcadas</button>
                 </div>
+                
+                <div class="card" style="border: 1px solid var(--danger);">
+                    <h3 style="color: var(--danger); font-size:0.9rem;"><span class="material-icons-outlined">build</span> Correção Direta (Lado A -> B)</h3>
+                    <div class="box-correcao">
+                        <div class="box-title" style="color: var(--danger);">LADO 1: Onde está o erro?</div>
+                        <div class="form-group"><label>SE A PESSOA FOR:</label><select id="corr-orig-pessoa" class="form-input up-text" style="padding:10px;"></select></div>
+                        <div class="form-group" style="margin-bottom:0;"><label>E O CARTÃO FOR:</label><select id="corr-orig-cartao" class="form-input up-text" style="padding:10px;"></select></div>
+                    </div>
+                    <div class="box-correcao" style="border-color: var(--success);">
+                        <div class="box-title" style="color: var(--success);">LADO 2: Para onde deve ir?</div>
+                        <div class="form-group"><label>MUDAR A PESSOA PARA:</label><select id="corr-dest-pessoa" class="form-input up-text" style="padding:10px;"></select></div>
+                        <div class="form-group" style="margin-bottom:0;"><label>MUDAR O CARTÃO PARA:</label><select id="corr-dest-cartao" class="form-input up-text" style="padding:10px;"></select></div>
+                    </div>
+                    <button class="btn btn-danger" style="padding:10px;" onclick="executarCorrecaoLadoALado()">APLICAR CORREÇÃO</button>
+                </div>
 
+                <div class="section-label" style="color: var(--danger);">Sincronização & Backup Global</div>
                 <div class="card" style="border-color: var(--danger);">
-                    <h3 style="color: var(--danger); font-size:0.9rem;"><span class="material-icons-outlined">cloud_sync</span> Sincronização / Backup Global</h3>
                     <input type="url" id="drive-webhook" class="form-input" style="font-size: 0.8rem; text-transform: none; padding:10px; border-color: rgba(239, 68, 68, 0.5); margin-bottom:10px;" placeholder="URL Webhook Google Drive" onchange="salvarWebhook()">
-                    <button class="btn btn-primary" style="margin-bottom:8px; padding:10px;" onclick="sincronizarManual(true, false)">FORÇAR ENVIO NUVEM</button>
+                    <button class="btn btn-primary" style="margin-bottom:8px; padding:10px;" onclick="sincronizarManual(true, true)">FORÇAR ENVIO PARA NUVEM</button>
+                    <button class="btn btn-outline" style="margin-bottom:8px; padding:10px;" onclick="sincronizarManual(false, true)">PUXAR DA NUVEM AGORA</button>
                     <hr style="border: 1px solid rgba(239, 68, 68, 0.2); margin: 15px 0;">
-                    <button class="btn btn-outline" style="margin-bottom:8px; padding:10px;" onclick="exportarBackup(false)"><span class="material-icons-outlined">download</span> Baixar Backup JSON (Completo)</button>
+                    <button class="btn btn-outline" style="margin-bottom:8px; padding:10px;" onclick="exportarBackup(false)"><span class="material-icons-outlined">download</span> Baixar Backup JSON (Tudo)</button>
                     <button class="btn btn-outline" style="margin-bottom:8px; padding:10px;" onclick="document.getElementById('import-file').click()"><span class="material-icons-outlined">file_upload</span> Importar Backup JSON (v2 ou v3)</button>
                     <input type="file" id="import-file" accept=".json" onchange="importarBackup(event)" style="display:none;">
                     <hr style="border: 1px solid rgba(239, 68, 68, 0.2); margin: 15px 0;">
@@ -563,17 +584,17 @@
 </div>
 
 <script>
-    const APP_VERSION = '3.1';
+    const APP_VERSION = '3.2';
     const DB_NOME = 'ControlCard_Multi_DB'; 
     
     // Core Inicialização
     let db = JSON.parse(localStorage.getItem(DB_NOME));
     if (!db || !db.despesas) {
         db = {
-            usuarios: [{ id: 'admin_master', nome: 'NETO (ADMIN)', pin: '0000', role: 'admin', ativo: true }],
+            usuarios: [], // Logins
             cartoes: [{ nome: 'NUBANK', fechamento: 25, vencimento: 5 }],
-            categorias: ["🛍 Mercado", "🚗 Carro", "🏠 Casa"],
-            pessoas: ['NETO (ADMIN)'],
+            categorias: ["🛍 Mercado/Compras", "🚗 Transporte/Veículo", "🏠 Casa/Contas"],
+            pessoas: ['NETO'], // Apenas os nomes das pessoas
             pessoasInativas: [], cartoesInativos: [], categoriasInativas: [],
             despesas: [], pagamentos: [], emprestimos: []
         };
@@ -595,6 +616,7 @@
 
     function toast(msg, tipo) {
         let t = document.getElementById('toast-app');
+        if (!t) return;
         t.className = 'show ' + (tipo || 'ok');
         t.textContent = msg;
         clearTimeout(t._h); t._h = setTimeout(() => t.className = '', 3500);
@@ -603,7 +625,7 @@
     /* ================= LOGIN & AUTH ================= */
     window.onload = () => {
         let savedSession = sessionStorage.getItem('cc_logged_user');
-        if (savedSession) {
+        if (savedSession && db.usuarios) {
             let u = db.usuarios.find(x => x.id === savedSession);
             if(u && u.ativo) { executarLoginReal(u); return; }
         }
@@ -621,8 +643,15 @@
         let usersAtivos = db.usuarios ? db.usuarios.filter(u => u.ativo) : [];
         if (usersAtivos.length === 0) {
             document.getElementById('primeiro-acesso-box').style.display = 'block';
-            list.style.display = 'none'; return;
+            list.style.display = 'none'; 
+            document.getElementById('login-main-title').innerText = "BEM-VINDO!";
+            document.getElementById('login-subtitle').innerText = "Vamos configurar seu acesso Mestre";
+            return;
         }
+
+        document.getElementById('primeiro-acesso-box').style.display = 'none';
+        document.getElementById('login-main-title').innerText = "QUEM ESTÁ ACESSANDO?";
+        document.getElementById('login-subtitle').innerText = "Selecione seu perfil";
 
         usersAtivos.forEach(u => {
             let initial = u.nome.substring(0,2).toUpperCase();
@@ -632,6 +661,20 @@
                 <strong style="font-size:1rem; color:var(--text);">${u.nome}</strong>${adminBadge}
             </div>`;
         });
+    }
+
+    function salvarPrimeiroAcesso() {
+        let nome = document.getElementById('setup-admin-nome').value.trim().toUpperCase();
+        let pin = document.getElementById('setup-admin-pin').value.trim();
+        if(!nome || pin.length !== 4) return toast("Preencha Nome e um PIN de 4 números.", "erro");
+        
+        if(!db.usuarios) db.usuarios = [];
+        db.usuarios.push({ id: 'admin_' + Date.now(), nome: nome, pin: pin, role: 'admin', ativo: true });
+        
+        if(!db.pessoas) db.pessoas = [];
+        if(!db.pessoas.includes(nome)) db.pessoas.push(nome);
+        
+        salvarDB(); renderizarTelaLogin();
     }
 
     function solicitarPin(id) {
@@ -679,7 +722,8 @@
 
     function fazerLogout() { sessionStorage.removeItem('cc_logged_user'); currentUser = null; document.getElementById('app-wrapper').style.opacity = '0'; setTimeout(()=> renderizarTelaLogin(), 300); }
 
-    /* ================= FILTROS E ISOLAMENTO ================= */
+    /* ================= FILTROS DE ISOLAMENTO ================= */
+    // Essa é a mágica: O Admin vê tudo, o User vê apenas as despesas vinculadas ao NOME dele na base (que significa o que ele deve).
     function obterDespesasPermitidas() { return currentUser.role === 'admin' ? db.despesas : db.despesas.filter(d => d.pessoa === currentUser.nome); }
     function obterPagamentosPermitidos() { return currentUser.role === 'admin' ? db.pagamentos : db.pagamentos.filter(p => p.pessoa === currentUser.nome); }
 
@@ -687,27 +731,31 @@
     function formatarMesAno(mesStr) { if(!mesStr || !mesStr.includes('-')) return mesStr; let [ano, mes] = mesStr.split('-'); return `${MESES_ABREV[parseInt(mes)-1]}/${ano}`; }
     function getIniciais(nome) { if(!nome) return '?'; let partes = nome.replace(/[^a-zA-ZÀ-ÿ\s]/g, '').trim().split(' '); if(partes.length === 1) return partes[0].substring(0, 2).toUpperCase(); return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase(); }
 
-    /* ================= TRANSLATOR / BACKUP FIX ================= */
+    /* ================= IMPORTAÇÃO DE BACKUP PROTEGIDA (Onde ocorreu seu erro) ================= */
     function importarBackup(e) {
         const f = e.target.files[0]; if(!f) return;
         const r = new FileReader();
         r.onload = ev => {
             try {
                 let novo = JSON.parse(ev.target.result);
-                if (!novo.despesas) return toast('Arquivo inválido', 'erro');
+                if (!novo.despesas) return toast('Arquivo inválido: Não parece ser um backup do ControlCard.', 'erro');
                 
-                // MÁGICA 1: Compatibilidade V2 -> V3
-                if (!novo.usuarios) {
-                    novo.usuarios = [{ id: 'admin_master', nome: 'NETO (ADMIN)', pin: '0000', role: 'admin', ativo: true }];
-                    toast("Migrando backup antigo para v3...");
+                // MÁGICA 1: Se o backup (antigo v2) NÃO TIVER usuários de login, preservamos os usuários atuais da v3.
+                // Assim o seu login Admin não é apagado e o app não trava.
+                if (!novo.usuarios || novo.usuarios.length === 0) {
+                    novo.usuarios = db.usuarios; 
                 }
-                // MÁGICA 2: Garantir arrays
-                ['pessoas','cartoes','categorias','pessoasInativas','cartoesInativos','categoriasInativas','emprestimos'].forEach(k => { if (!Array.isArray(novo[k])) novo[k] = []; });
                 
+                // MÁGICA 2: Garantir que os arrays existam, mesmo que o JSON seja muito antigo.
+                ['pessoas','cartoes','categorias','pessoasInativas','cartoesInativos','categoriasInativas','emprestimos', 'despesas', 'pagamentos'].forEach(k => { if (!Array.isArray(novo[k])) novo[k] = []; });
+                
+                // Tratar formato antigo de cartões caso necessário
+                novo.cartoes = novo.cartoes.map(c => typeof c === 'string' ? {nome: c, fechamento: 25, vencimento: 5} : c);
+
                 db = novo; salvarDB();
-                toast('✅ Dados restaurados perfeitamente!');
-                setTimeout(() => window.location.reload(), 1000);
-            } catch (err) { toast('Erro ao ler backup.', 'erro'); }
+                toast('✅ Dados restaurados e migrados perfeitamente!');
+                setTimeout(() => window.location.reload(), 1500);
+            } catch (err) { toast('Erro ao ler arquivo de backup.', 'erro'); }
             e.target.value = '';
         };
         r.readAsText(f, "UTF-8");
@@ -717,16 +765,19 @@
         const blob = new Blob([JSON.stringify(db, null, 2)], { type: "application/json;charset=utf-8" });
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
         a.download = `ControlCard_V3_${new Date().toISOString().substring(0,10)}.json`; 
-        a.click(); 
+        a.click(); toast("Backup baixado com sucesso!");
     }
 
     /* ================= SYNC NUVEM ================= */
     function carregarWebhook() { let w = localStorage.getItem('cc_drive_webhook'); if(w) document.getElementById('drive-webhook').value = w; }
-    function salvarWebhook() { localStorage.setItem('cc_drive_webhook', document.getElementById('drive-webhook').value.trim()); toast("Webhook Salvo!"); }
+    function salvarWebhook() { localStorage.setItem('cc_drive_webhook', document.getElementById('drive-webhook').value.trim()); toast("URL Nuvem Salva!"); }
     
     function sincronizarManual(forcePush = false, clickUsuario = false) {
         let url = localStorage.getItem('cc_drive_webhook');
-        if(!url || !navigator.onLine) return;
+        if(!url || !navigator.onLine) {
+            if (clickUsuario) toast("URL da Nuvem não configurada ou Offline.", "erro");
+            return;
+        }
         
         let icon = document.getElementById('cloud-status-icon');
         icon.innerText = 'cloud_sync'; icon.classList.remove('synced', 'offline');
@@ -738,13 +789,12 @@
         } else {
             fetch(url).then(r => r.json()).then(nuvem => {
                 if(nuvem && nuvem.despesas) {
-                    if (!nuvem.usuarios) nuvem.usuarios = [{ id: 'admin_master', nome: 'NETO (ADMIN)', pin: '0000', role: 'admin', ativo: true }];
-                    ['pessoas','cartoes','categorias','pessoasInativas','cartoesInativos','categoriasInativas','emprestimos'].forEach(k => { if (!Array.isArray(nuvem[k])) nuvem[k] = []; });
+                    if (!nuvem.usuarios || nuvem.usuarios.length === 0) nuvem.usuarios = db.usuarios; // Preserva logins se nuvem estiver velha
+                    ['pessoas','cartoes','categorias','pessoasInativas','cartoesInativos','categoriasInativas','emprestimos', 'despesas', 'pagamentos'].forEach(k => { if (!Array.isArray(nuvem[k])) nuvem[k] = []; });
                     
-                    // Simple logic: if nuvem has more entries or is newer, replace local
                     if(nuvem.despesas.length > db.despesas.length || clickUsuario) {
                         db = nuvem; salvarDB(); carregarSelectsGerais();
-                        if(document.getElementById('tela-dashboard').style.display === 'block') atualizarDashboard();
+                        if(document.getElementById('tela-dashboard').style.display === 'block') atualizarSaldos();
                         if(clickUsuario) toast("Sincronizado da Nuvem!");
                     }
                 }
@@ -753,13 +803,7 @@
         }
     }
 
-    function iniciarPrimeiroAcesso() {
-        let wh = document.getElementById('primeiro-webhook').value.trim();
-        if(wh) { localStorage.setItem('cc_drive_webhook', wh); sincronizarManual(false, true); setTimeout(()=> window.location.reload(), 2000); }
-        else toast("Cole a URL ou importe um arquivo.", "erro");
-    }
-
-    /* ================= SELECTS GERAIS E NAVEGAÇÃO ================= */
+    /* ================= SELECTS GERAIS (As Pessoas e Cartões) ================= */
     function montarFiltrosGlobais() {
         let selectOptions = `<option value="MES_ATUAL">MÊS ATUAL</option><option value="MES_ANTERIOR">MÊS ANTERIOR</option><option value="ULTIMOS_3">ÚLTIMOS 3 MESES</option><option value="ANO_ATUAL">ESTE ANO</option><option value="TUDO">TUDO</option><option value="PERSONALIZADO">PERSONALIZADO...</option>`;
         document.getElementById('dash-filtro-global').innerHTML = selectOptions; document.getElementById('extrato-filtro-global').innerHTML = selectOptions;
@@ -767,27 +811,26 @@
     }
 
     function carregarSelectsGerais() {
-        let pAtivas = (db.pessoas||[]).filter(p => !(db.pessoasInativas||[]).includes(p));
-        let cAtivos = (db.cartoes||[]).filter(c => !(db.cartoesInativos||[]).includes(c.nome||c));
-        let catAtivas = (db.categorias||[]).filter(c => !(db.categoriasInativas||[]).includes(c));
+        let pAtivas = (db.pessoas||[]).filter(p => !(db.pessoasInativas||[]).includes(p)).sort();
+        let cAtivos = (db.cartoes||[]).filter(c => !(db.cartoesInativos||[]).includes(c.nome||c)).sort((a,b)=>(a.nome||a).localeCompare(b.nome||b));
+        let catAtivas = (db.categorias||[]).filter(c => !(db.categoriasInativas||[]).includes(c)).sort();
 
-        // Pessoas (Modal de Lancamento e Filtros)
+        // 1. Pessoas (Para os Modais de Lançamento e Filtros)
         let pSelect = `<option value="" disabled selected>SELECIONE...</option>`;
         if (currentUser.role === 'admin') {
             pAtivas.forEach(p => pSelect += `<option value="${p}">${p}</option>`);
-            document.getElementById('cal-filtro-pessoa').innerHTML = `<option value="TODOS">TODAS PESSOAS</option>` + pSelect;
-            document.getElementById('extrato-pessoa').innerHTML = `<option value="TODOS">TODAS PESSOAS</option>` + pSelect;
+            document.getElementById('cal-filtro-pessoa').innerHTML = `<option value="TODOS">TODAS AS PESSOAS</option>` + pSelect;
+            document.getElementById('extrato-pessoa').innerHTML = `<option value="TODOS">TODAS AS PESSOAS</option>` + pSelect;
         } else {
-            pSelect += `<option value="${currentUser.nome}">${currentUser.nome}</option>`;
-            // Users still see other people in the dropdown IF they want to "delegate" an expense.
-            pAtivas.forEach(p => { if(p !== currentUser.nome) pSelect += `<option value="${p}">${p}</option>` });
-            document.getElementById('cal-filtro-pessoa').innerHTML = `<option value="TODOS" selected>SOMENTE EU</option>`;
-            document.getElementById('extrato-pessoa').innerHTML = `<option value="TODOS" selected>SOMENTE EU</option>`;
+            // Se for usuário comum, ele VÊ as outras pessoas na hora de lançar (para caso ele tenha comprado algo para outra pessoa no cartão que ele administra), mas no filtro dele, ele só vê a si mesmo por padrão.
+            pAtivas.forEach(p => pSelect += `<option value="${p}">${p}</option>`);
+            document.getElementById('cal-filtro-pessoa').innerHTML = `<option value="TODOS" selected>SOMENTE EU (${currentUser.nome})</option>`;
+            document.getElementById('extrato-pessoa').innerHTML = `<option value="TODOS" selected>SOMENTE EU (${currentUser.nome})</option>`;
         }
         
-        document.querySelectorAll('.pessoa-lanc, #pag-pessoa, #emp-pessoa, #edit-pessoa, #parc-pessoa, #transf-de, #transf-para').forEach(el => el.innerHTML = pSelect);
+        document.querySelectorAll('.pessoa-lanc, #pag-pessoa, #emp-pessoa, #edit-pessoa, #parc-pessoa, #transf-de, #transf-para, #adm-login-pessoa').forEach(el => el.innerHTML = pSelect);
 
-        // Cartoes
+        // 2. Cartões
         let cSelect = `<option value="" disabled selected>SELECIONE...</option>`;
         cAtivos.forEach(c => { let n = c.nome||c; cSelect += `<option value="${n}">${n}</option>`; });
         document.getElementById('cartao').innerHTML = cSelect; document.getElementById('edit-cartao').innerHTML = cSelect;
@@ -799,16 +842,14 @@
         });
         document.getElementById('cal-cartoes-chips').innerHTML = chipsHtml; document.getElementById('ext-cartoes-chips').innerHTML = chipsHtml;
 
-        // Categorias
+        // 3. Categorias
         let catSelect = `<option value="" disabled selected>SELECIONE...</option>`;
         catAtivas.forEach(c => catSelect += `<option value="${c}">${c}</option>`);
         document.getElementById('categoria-compra').innerHTML = catSelect; document.getElementById('edit-cat').innerHTML = catSelect;
 
-        if(currentUser.role === 'admin') {
-            carregarEdicaoCartoes(); carregarEdicaoCategorias(); carregarEdicaoPessoasSimples(); carregarConfigAdmin();
-        } else {
-            carregarEdicaoCartoes(); carregarEdicaoCategorias(); 
-        }
+        // 4. Tabelas de Configuração
+        carregarEdicaoCartoes(); carregarEdicaoCategorias(); carregarEdicaoPessoasSimples(); 
+        if(currentUser.role === 'admin') { carregarConfigAdmin(); preencherListasCorrecao(); }
     }
 
     function toggleChip(nome) {
@@ -828,17 +869,13 @@
         document.querySelectorAll('.dock-item').forEach(el => el.classList.remove('active-icon'));
         if(document.getElementById('icon-' + id)) document.getElementById('icon-' + id).classList.add('active-icon');
         
-        if(id === 'dashboard') atualizarDashboard();
+        if(id === 'dashboard') atualizarSaldos();
         if(id === 'calendario') renderizarCalendario();
         if(id === 'extrato') renderizarExtrato();
-        if(id === 'config') {
-            if (currentUser.role === 'admin') {
-                renderizarListaParcelamentos(); renderizarListaTransferencia();
-            }
-        }
+        if(id === 'config') { if (currentUser.role === 'admin') { renderizarListaParcelamentos(); renderizarListaTransferencia(); } }
     }
 
-    /* ================= COMPONENTES VISUAIS & CÁLCULOS ================= */
+    /* ================= CÁLCULOS E DASHBOARD ================= */
     function getFiltroRange(idSelect, idIni, idFim) {
         let val = document.getElementById(idSelect).value;
         let hj = new Date(); let y = hj.getFullYear(); let m = hj.getMonth() + 1; let pad = n => String(n).padStart(2,'0');
@@ -900,9 +937,9 @@
         return { descLimp, badgeP, textData, cat, compIcon };
     }
 
-    function mudouFiltroDash() { document.getElementById('dash-custom-dates').style.display = document.getElementById('dash-filtro-global').value === 'PERSONALIZADO' ? 'grid' : 'none'; atualizarDashboard(); }
+    function mudouFiltroDash() { document.getElementById('dash-custom-dates').style.display = document.getElementById('dash-filtro-global').value === 'PERSONALIZADO' ? 'grid' : 'none'; atualizarSaldos(); }
     
-    function atualizarDashboard() {
+    function atualizarSaldos() {
         let range = getFiltroRange('dash-filtro-global', 'dash-dt-ini', 'dash-dt-fim');
         let despesas = obterDespesasPermitidas().filter(d => dentroDoPeriodo(d, range));
         let pags = obterPagamentosPermitidos().filter(p => dentroDoPeriodo(p, range));
@@ -918,14 +955,14 @@
 
         let pessoasUnicas = [...new Set(despesas.map(d=>d.pessoa).concat(pags.map(p=>p.pessoa)))].filter(Boolean);
         let html = visaoDashboardAtual === 'pessoa' ? construirArvorePessoas(pessoasUnicas, despesas, pags) : construirArvoreCartoes(despesas);
-        document.getElementById('lista-arvore-saldos').innerHTML = html || '<p style="color:var(--text-light); text-align:center;">Sem movimentos.</p>';
+        document.getElementById('lista-arvore-saldos').innerHTML = html || '<p style="color:var(--text-light); text-align:center;">Sem movimentos no período.</p>';
     }
     
-    function alternarVisaoDash(modo) { visaoDashboardAtual = modo; document.getElementById('btn-visao-pessoa').classList.toggle('active', modo === 'pessoa'); document.getElementById('btn-visao-cartao').classList.toggle('active', modo === 'cartao'); atualizarDashboard(); }
+    function alternarVisaoDash(modo) { visaoDashboardAtual = modo; document.getElementById('btn-visao-pessoa').classList.toggle('active', modo === 'pessoa'); document.getElementById('btn-visao-cartao').classList.toggle('active', modo === 'cartao'); atualizarSaldos(); }
 
     function construirArvorePessoas(pessoasUnicas, despesas, pags) {
         let html = '';
-        pessoasUnicas.forEach(p => {
+        pessoasUnicas.sort().forEach(p => {
             let dp = despesas.filter(d => d.pessoa === p); let pp = pags.filter(pg => pg.pessoa === p);
             let sumD = dp.reduce((s, d) => s + getValorAjustadoEmprestimo(d), 0);
             let sumP = pp.reduce((s, pg) => s + pg.valor, 0);
@@ -935,9 +972,9 @@
                 let idP = 'p_' + Math.random().toString(36).substr(2, 9);
                 let subHtml = '';
                 
-                let gruposOrigem = [...new Set(dp.map(d => d.cartao || '💲 ACORDOS'))].filter(Boolean);
+                let gruposOrigem = [...new Set(dp.map(d => d.cartao || '💲 ACORDOS / DINHEIRO'))].filter(Boolean);
                 gruposOrigem.forEach(c => {
-                    let dc = dp.filter(d => (d.cartao || '💲 ACORDOS') === c);
+                    let dc = dp.filter(d => (d.cartao || '💲 ACORDOS / DINHEIRO') === c);
                     let sumC = dc.reduce((s, d) => s + getValorAjustadoEmprestimo(d), 0);
                     let idC = idP + '_' + Math.random().toString(36).substr(2, 9);
                     
@@ -951,9 +988,9 @@
                 if(sumP > 0) {
                     let pagHtml = pp.map(pg => {
                         let i = formatarInfoItem(pg, true);
-                        return `<div class="t-row" onclick="abrirEdicao(${pg.id}, 'pag')"><div class="t-desc"><strong>${i.descLimp} ${i.badgeP} ${i.compIcon}</strong><span>📅 ${i.textData}</span></div><div class="t-val pag">- R$ ${pg.valor.toFixed(2)}</div></div>`;
+                        return `<div class="t-row" onclick="abrirEdicao(${pg.id}, 'pag')"><div class="t-desc"><strong>${i.descLimp} ${i.badgeP} ${i.compIcon}</strong><span>📅 Recebido: ${i.textData}</span></div><div class="t-val pag">- R$ ${pg.valor.toFixed(2)}</div></div>`;
                     }).join('');
-                    subHtml += `<div class="sub-tree-card" id="${idP}_pags" style="border-color: var(--success);"><div class="sub-tree-header" style="color: var(--success);" onclick="document.getElementById('${idP}_pags').classList.toggle('open')"><span>💰 Pagamentos</span><span>- R$ ${sumP.toFixed(2)}</span></div><div class="sub-tree-body">${pagHtml}</div></div>`;
+                    subHtml += `<div class="sub-tree-card" id="${idP}_pags" style="border-color: var(--success);"><div class="sub-tree-header" style="color: var(--success);" onclick="document.getElementById('${idP}_pags').classList.toggle('open')"><span>💰 Pagamentos / Abatimentos</span><span>- R$ ${sumP.toFixed(2)}</span></div><div class="sub-tree-body">${pagHtml}</div></div>`;
                 }
                 
                 html += `<div class="tree-card" id="${idP}"><div class="tree-header" onclick="document.getElementById('${idP}').classList.toggle('open')"><div class="tree-person-info"><div class="avatar">${getIniciais(p)}</div><span>${p}</span></div><span style="color: ${saldo > 0 ? 'var(--danger)' : 'var(--success)'}">R$ ${Math.abs(saldo).toFixed(2)}</span></div><div class="tree-body">${subHtml}</div></div>`;
@@ -965,7 +1002,7 @@
     function construirArvoreCartoes(despesas) {
         let html = '';
         let cartoes = [...new Set(despesas.map(d => d.cartao))].filter(Boolean);
-        cartoes.forEach(c => {
+        cartoes.sort().forEach(c => {
             let dc = despesas.filter(d => d.cartao === c);
             let sumC = dc.reduce((s, d) => s + getValorAjustadoEmprestimo(d), 0);
             if(sumC > 0) {
@@ -980,7 +1017,7 @@
                     
                     let itensHtml = dp.map(d => {
                         let i = formatarInfoItem(d, false); let v = getValorAjustadoEmprestimo(d);
-                        return `<div class="t-row" onclick="abrirEdicao(${d.id}, 'desp')"><div class="t-desc"><strong>${i.descLimp} ${i.badgeP} ${i.compIcon}</strong><span>📅 ${i.textData}</span></div><div class="t-val desp">R$ ${v.toFixed(2)}</div></div>`;
+                        return `<div class="t-row" onclick="abrirEdicao(${d.id}, 'desp')"><div class="t-desc"><strong>${i.descLimp} ${i.badgeP} ${i.compIcon}</strong><span>📅 ${i.textData} | Ref: ${formatarMesAno(d.dataRef)}</span></div><div class="t-val desp">R$ ${v.toFixed(2)}</div></div>`;
                     }).join('');
                     subHtml += `<div class="sub-tree-card" id="${idP}"><div class="sub-tree-header" onclick="document.getElementById('${idP}').classList.toggle('open')"><div class="tree-person-info"><div class="avatar">${getIniciais(p)}</div><span>${p}</span></div><span style="color: var(--text);">R$ ${sumP.toFixed(2)}</span></div><div class="sub-tree-body">${itensHtml}</div></div>`;
                 });
@@ -990,7 +1027,7 @@
         return html;
     }
 
-    /* ================= CALENDÁRIO & EXTRATO ================= */
+    /* ================= CALENDÁRIO ================= */
     function mudarMesCalendario(d) { dataCalendario.setMonth(dataCalendario.getMonth() + d); document.getElementById('cal-seletor-mes').value = `${dataCalendario.getFullYear()}-${String(dataCalendario.getMonth()+1).padStart(2,'0')}`; renderizarCalendario(); }
     function irParaMesCalendario() { let v = document.getElementById('cal-seletor-mes').value; if(v) { let p = v.split('-'); dataCalendario = new Date(p[0], p[1]-1, 1); renderizarCalendario(); } }
 
@@ -1060,7 +1097,7 @@
     }
     function fecharDetalheDia() { document.querySelectorAll('.cal-day').forEach(el => el.classList.remove('selected')); document.getElementById('cal-dia-detalhe').classList.remove('open'); }
 
-    // Extrato
+    /* ================= EXTRATO & COBRANÇA WHATSAPP ================= */
     let extSelecionados = new Set();
     function mudouFiltroExtrato() { document.getElementById('extrato-custom-dates').style.display = document.getElementById('extrato-filtro-global').value === 'PERSONALIZADO' ? 'grid' : 'none'; renderizarExtrato(); }
     
@@ -1086,19 +1123,18 @@
         filtradas.sort((a,b) => calcularDataVirtual(a).localeCompare(calcularDataVirtual(b)));
 
         let html = filtradas.map(d => {
-            let isD = d._tipo === 'desp';
-            let i = formatarInfoItem(d, !isD);
+            let isD = d._tipo === 'desp'; let i = formatarInfoItem(d, !isD);
             let val = isD ? getValorAjustadoEmprestimo(d) : d.valor;
             let selClass = extSelecionados.has(d._uid) ? 'selected' : '';
             let chkStyle = extSelecionados.has(d._uid) ? 'background: var(--primary); border-color: var(--primary); color: var(--bg);' : 'color: transparent; border-color: var(--text-light); background: transparent;';
 
             return `<div class="check-item ${selClass}" id="ext-item-${d._uid}" onclick="toggleExtratoSel('${d._uid}')">
                 <span class="material-icons-outlined check-mark" style="${chkStyle} border-width:2px; border-style:solid; border-radius: 5px; display:flex; align-items:center; justify-content:center; width:18px; height:18px; flex:none; transition:0.2s;">check</span>
-                <div class="t-desc"><strong>${i.descLimp} ${i.badgeP} ${i.compIcon}</strong><span>${isD ? `💳 ${d.cartao||'💲'}` : '💰 Recebido'} • ${formatarMesAno(d.dataRef || d.data.substring(0,7))}</span></div>
+                <div class="t-desc"><strong>${i.descLimp} ${i.badgeP} ${i.compIcon}</strong><span>👤 ${d.pessoa} | ${isD ? `💳 ${d.cartao||'💲'}` : '💰 Recebido'} • Ref: ${formatarMesAno(d.dataRef || d.data.substring(0,7))}</span></div>
                 <div class="t-val" style="color:${isD ? 'var(--danger)' : 'var(--success)'};">${isD ? '' : '+ '}R$ ${val.toFixed(2)}</div>
             </div>`;
         }).join('');
-        document.getElementById('lista-transacoes-container').innerHTML = html || '<p style="color:var(--text-light); text-align:center;">Nenhum registo.</p>';
+        document.getElementById('lista-transacoes-container').innerHTML = html || '<p style="color:var(--text-light); text-align:center; padding-top:20px;">Nenhum registo no período.</p>';
     }
 
     function toggleExtratoSel(uid) {
@@ -1119,7 +1155,7 @@
     }
 
     function enviarZapSelecionados() {
-        if(extSelecionados.size === 0) return alert("Selecione.");
+        if(extSelecionados.size === 0) return alert("Selecione os lançamentos primeiro.");
         let sD = db.despesas.filter(d => extSelecionados.has('desp_'+d.id)); 
         let sP = db.pagamentos.filter(pg => extSelecionados.has('pag_'+pg.id));
         let p = sD.length > 0 ? sD[0].pessoa : (sP.length > 0 ? sP[0].pessoa : 'Cliente');
@@ -1127,12 +1163,12 @@
 
         let txt = `📄 *Resumo de Fatura*\n👤 *${p}*\n\n`;
         if(sD.length > 0){ txt += `🛒 *Cobranças:*\n`; sD.forEach((d,i) => txt += `${i+1}. ${d.desc} - R$ ${getValorAjustadoEmprestimo(d).toFixed(2)}\n`); }
-        if(sP.length > 0){ txt += `\n💰 *Abatimentos:*\n`; sP.forEach((pg,i) => txt += `${i+1}. ${pg.desc||'Rec'} - R$ ${pg.valor.toFixed(2)}\n`); }
-        txt += `\n💳 *TOTAL: R$ ${t.toFixed(2)}*`;
+        if(sP.length > 0){ txt += `\n💰 *Abatimentos / Recebidos:*\n`; sP.forEach((pg,i) => txt += `${i+1}. ${pg.desc||'Recebimento'} - R$ ${pg.valor.toFixed(2)}\n`); }
+        txt += `\n💳 *TOTAL A PAGAR: R$ ${t.toFixed(2)}*`;
         window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`, '_blank');
     }
 
-    /* ================= MODAIS & LANÇAMENTO COMPLETO ================= */
+    /* ================= MODAIS & LANÇAMENTO COMPLETO (EXATAMENTE COMO A v2.1) ================= */
     let calcTargetInput = null; let calcExp = "";
     function abrirCalc(btn) { calcTargetInput = btn.previousElementSibling; calcExp = ""; document.getElementById('calc-display').innerText = "0"; document.getElementById('modal-calc').classList.add('open'); }
     function fecharCalc() { document.getElementById('modal-calc').classList.remove('open'); calcTargetInput = null; }
@@ -1147,6 +1183,9 @@
         
         document.getElementById('desc').value = ''; document.getElementById('pag-desc').value = ''; document.getElementById('emp-desc').value = 'Acordo / Dinheiro';
         document.getElementById('pagadores-container').innerHTML = ''; addPagador();
+        
+        removerImagem('preview-desp', 'file-desp', 'btn-rm-desp', 'base64Desp');
+        removerImagem('preview-pag', 'file-pag', 'btn-rm-pag', 'base64Pag');
         
         document.getElementById('modal-overlay').classList.add('open'); document.getElementById('modal-lancamento').classList.add('open');
     }
@@ -1171,17 +1210,20 @@
 
     function addPagador() {
         const id = Date.now();
-        let pSelect = document.getElementById('cal-filtro-pessoa').innerHTML.replace('<option value="TODOS">TODAS PESSOAS</option>', '').replace('<option value="TODOS" selected="">SOMENTE EU</option>', '');
+        // Clona as opções do select mestre de pessoas e joga no bloco
+        let pSelect = document.getElementById('cal-filtro-pessoa').innerHTML
+            .replace('<option value="TODOS">TODAS AS PESSOAS</option>', '')
+            .replace('<option value="TODOS" selected="">SOMENTE EU ('+currentUser.nome+')</option>', '');
         
         const html = `
         <div class="pagador-block" id="pag-${id}">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;"><strong style="font-size: 0.85rem; color: var(--primary);">👤 Divisão</strong><button class="btn-small btn-remove-pag" style="color:var(--danger); border:none; background:transparent; padding:0;" onclick="removerPagador('pag-${id}')"><span class="material-icons-outlined">close</span></button></div>
             <div class="form-group"><label>Quem vai pagar?</label><select class="form-input pessoa-lanc up-text" style="color:var(--primary); border-color:var(--primary);">${pSelect}</select></div>
-            <div class="form-group"><label>Anotação específica</label><input type="text" class="form-input desc-lanc" placeholder="Ex: Tênis ou Mensalidade"></div>
+            <div class="form-group"><label>Anotação específica (Opcional)</label><input type="text" class="form-input desc-lanc" placeholder="Ex: Tênis ou Mensalidade"></div>
             <div style="display: flex; gap: 10px;">
-                <div class="form-group" style="flex:2; margin-bottom:0;"><label>Valor (R$)</label><div style="display: flex; gap: 6px;"><input type="number" class="form-input valor-lanc" step="0.01" style="color:var(--danger);"><button class="btn-primary" style="width: 45px;" onclick="abrirCalc(this)"><span class="material-icons-outlined">calculate</span></button></div></div>
-                <div class="form-group" style="flex:1.5; margin-bottom:0;"><label>Tipo</label><select class="form-input tipo-lanc up-text" onchange="mudarTipoLancamentoGlobal(this, 'box-parcelas')"><option value="1">À VISTA</option><option value="P">PARCELADO</option><option value="A">MENSALIDADE</option></select></div>
-                <div class="form-group box-parcelas" style="flex:0.8; margin-bottom:0; display:none;"><label>Vezes</label><input type="number" class="form-input parcelas-lanc" value="2"></div>
+                <div class="form-group" style="flex:2; margin-bottom:0;"><label>Valor (R$)</label><div style="display: flex; gap: 6px;"><input type="number" class="form-input valor-lanc" step="0.01" style="color:var(--danger); padding:10px;"><button class="btn-primary" style="width: 45px; border-radius:10px;" onclick="abrirCalc(this)"><span class="material-icons-outlined">calculate</span></button></div></div>
+                <div class="form-group" style="flex:1.5; margin-bottom:0;"><label>Tipo</label><select class="form-input tipo-lanc up-text" style="padding:12px 6px;" onchange="mudarTipoLancamentoGlobal(this, 'box-parcelas')"><option value="1">À VISTA</option><option value="P">PARCELADO</option><option value="A">MENSALIDADE</option></select></div>
+                <div class="form-group box-parcelas" style="flex:0.8; margin-bottom:0; display:none;"><label>Vezes</label><input type="number" class="form-input parcelas-lanc" value="2" style="padding:10px;"></div>
             </div>
         </div>`;
         document.getElementById('pagadores-container').insertAdjacentHTML('beforeend', html);
@@ -1196,11 +1238,11 @@
 
     function salvarCompra() {
         const descGlobal = document.getElementById('desc').value.trim(); const cartao = document.getElementById('cartao').value;
-        const cat = document.getElementById('categoria-compra').value; const dtRef = document.getElementById('data-compra-ref').value;
-        if(!cartao || !cat || !dtRef) return toast('Preencha os campos gerais.', 'erro');
+        const cat = document.getElementById('categoria-compra').value; const dtReal = document.getElementById('data-compra-exata').value; const dtRef = document.getElementById('data-compra-ref').value;
+        if(!cartao || !cat || !dtRef || !dtReal) return toast('Preencha os campos gerais (Cartão, Categoria, Datas).', 'erro');
 
         const blocos = document.querySelectorAll('.pagador-block');
-        if(blocos.length === 0) return toast('Adicione pagadores.', 'erro');
+        if(blocos.length === 0) return toast('Adicione pelo menos um pagador.', 'erro');
 
         let transacoes = []; let idBase = Date.now(); let loop = 0;
         
@@ -1211,33 +1253,33 @@
             let parc = tipo === 'P' ? parseInt(b.querySelector('.parcelas-lanc').value)||2 : (isAss ? 36 : 1);
             
             if(!p || isNaN(v) || v<=0) return;
-            let dFinal = descLoc || descGlobal || 'Compra';
+            let dFinal = descLoc || descGlobal || 'Compra Diversa';
             
             for(let i=1; i<=parc; i++) {
                 let mRef = gerarMesVencimentoBase(dtRef, i);
                 let dShow = (tipo === 'P' && parc > 1) ? `${dFinal} (${i}/${parc})` : dFinal;
-                transacoes.push({ id: idBase + loop, desc: dShow, valor: parseFloat(v.toFixed(2)), cartao, pessoa: p, dataRef: mRef, categoria: cat, isAssinatura: isAss, assinaturaId: isAss ? `ass_${idBase}_${p}` : null });
+                transacoes.push({ id: idBase + loop, desc: dShow, valor: parseFloat(v.toFixed(2)), cartao, pessoa: p, dataCompra: dtReal, dataRef: mRef, categoria: cat, comprovante: base64Desp, isAssinatura: isAss, assinaturaId: isAss ? `ass_${idBase}_${p}` : null });
                 loop++;
             }
         });
 
-        if(transacoes.length === 0) return toast('Erro nos valores.', 'erro');
-        db.despesas.push(...transacoes); salvarDB(); fecharModais(); atualizarDashboard(); sincronizarManual(true); toast('Lançado com sucesso!');
+        if(transacoes.length === 0) return toast('Verifique se escolheu a PESSOA e um VALOR.', 'erro');
+        db.despesas.push(...transacoes); salvarDB(); fecharModais(); atualizarSaldos(); sincronizarManual(true); toast('Lançado com sucesso!');
     }
 
     function registrarBaixa() {
-        let p = document.getElementById('pag-pessoa').value; let desc = document.getElementById('pag-desc').value.trim() || 'Recebimento';
-        let v = parseFloat(document.getElementById('pag-valor').value); let dtRef = document.getElementById('pag-data-ref').value;
+        let p = document.getElementById('pag-pessoa').value; let desc = document.getElementById('pag-desc').value.trim() || 'Recebimento/Abatimento';
+        let v = parseFloat(document.getElementById('pag-valor').value); let dtReal = document.getElementById('pag-data').value; let dtRef = document.getElementById('pag-data-ref').value;
         let tipo = document.getElementById('pag-tipo').value; let isAss = tipo === 'A';
         let parc = tipo === 'P' ? parseInt(document.getElementById('pag-parcelas').value)||2 : (isAss ? 36 : 1);
 
-        if(!p || isNaN(v) || v<=0) return toast('Preencha a pessoa e valor.', 'erro');
+        if(!p || isNaN(v) || v<=0 || !dtReal || !dtRef) return toast('Preencha a pessoa, o valor e datas.', 'erro');
         let tr = []; let idB = Date.now();
         for(let i=1; i<=parc; i++) {
             let mRef = gerarMesVencimentoBase(dtRef, i); let dShow = (tipo === 'P' && parc > 1) ? `${desc} (${i}/${parc})` : desc;
-            tr.push({ id: idB + i, desc: dShow, pessoa: p, valor: v, dataRef: mRef, isAssinatura: isAss, assinaturaId: isAss ? `ass_p_${idB}_${p}` : null });
+            tr.push({ id: idB + i, desc: dShow, pessoa: p, valor: v, data: dtReal, dataRef: mRef, comprovante: base64Pag, isAssinatura: isAss, assinaturaId: isAss ? `ass_p_${idB}_${p}` : null });
         }
-        db.pagamentos.push(...tr); salvarDB(); fecharModais(); atualizarDashboard(); sincronizarManual(true); toast('Recebido!');
+        db.pagamentos.push(...tr); salvarDB(); fecharModais(); atualizarSaldos(); sincronizarManual(true); toast('Recebido confirmado!');
     }
 
     function calcularParcelaEmpPorTotal() {
@@ -1246,23 +1288,23 @@
     }
 
     function registrarEmprestimo() {
-        let p = document.getElementById('emp-pessoa').value; let desc = document.getElementById('emp-desc').value.trim() || 'Acordo';
+        let p = document.getElementById('emp-pessoa').value; let desc = document.getElementById('emp-desc').value.trim() || 'Acordo / Dinheiro';
         let v = parseFloat(document.getElementById('emp-val-parc').value); let qtd = parseInt(document.getElementById('emp-qtd-parc').value)||1;
-        let dtRef = document.getElementById('emp-data-ref').value;
+        let dtReal = document.getElementById('emp-data').value; let dtRef = document.getElementById('emp-data-ref').value;
         
         let jV = parseFloat(document.getElementById('emp-juros-valor').value)||0;
         let jRegra = jV > 0 ? { tolerancia: parseInt(document.getElementById('emp-juros-dias').value)||30, ciclo: parseInt(document.getElementById('emp-juros-ciclo').value)||7, tipo: document.getElementById('emp-juros-tipo').value, valor: jV } : null;
 
-        if(!p || isNaN(v) || v<=0) return toast('Preencha os campos.', 'erro');
+        if(!p || isNaN(v) || v<=0 || !dtReal || !dtRef) return toast('Preencha pessoa, valor e datas.', 'erro');
         let tr = []; let idB = Date.now();
         for(let i=1; i<=qtd; i++) {
             let mRef = gerarMesVencimentoBase(dtRef, i); let dShow = qtd > 1 ? `${desc} (${i}/${qtd})` : desc;
-            tr.push({ id: idB + i, desc: dShow, pessoa: p, valor: v, dataRef: mRef, categoria: '💸 Dinheiro', isEmprestimo: true, emprestimoId: `emp_${idB}_${p}`, jurosRegra: jRegra });
+            tr.push({ id: idB + i, desc: dShow, pessoa: p, valor: v, dataCompra: dtReal, dataRef: mRef, categoria: '💸 Dinheiro', cartao: null, isEmprestimo: true, emprestimoId: `emp_${idB}_${p}`, jurosRegra: jRegra });
         }
-        db.despesas.push(...tr); salvarDB(); fecharModais(); atualizarDashboard(); sincronizarManual(true); toast('Acordo salvo!');
+        db.despesas.push(...tr); salvarDB(); fecharModais(); atualizarSaldos(); sincronizarManual(true); toast('Acordo registrado!');
     }
 
-    /* ================= CÂMERA ================= */
+    /* ================= FOTOS (COMPROVANTES) ================= */
     function processarImagem(inp, pId, bId, varName) {
         let f = inp.files[0]; if(!f) return;
         const r = new FileReader(); r.readAsDataURL(f);
@@ -1283,36 +1325,40 @@
         document.getElementById(inpId).value = ''; document.getElementById(pId).style.display = 'none'; document.getElementById(bId).style.display = 'none';
     }
 
-    /* ================= EDIÇÃO MODAL ================= */
-    function getGroupKey(d) { if(d.isAssinatura) return d.assinaturaId; if(d.isEmprestimo) return d.emprestimoId; let baseDesc = (d.desc||'').replace(/\(\d+\/\d+\)/, '').trim(); return d.cartao ? `${baseDesc}_${d.cartao}_${d.dataCompra}` : `PAG_${baseDesc}_${d.pessoa}_${d.dataRef}`; }
+    /* ================= EDIÇÃO MODAL DIRETA ================= */
+    function getGroupKey(d) { if(d.isAssinatura) return d.assinaturaId; if(d.isEmprestimo) return d.emprestimoId; let baseDesc = (d.desc||'').replace(/\(\d+\/\d+\)/, '').trim(); return d.cartao ? `${baseDesc}_${d.cartao}_${d.dataCompra}` : `PAG_${baseDesc}_${d.pessoa}_${d.data}`; }
 
     function abrirEdicao(id, tipo) {
         document.getElementById('edit-id').value = id; document.getElementById('edit-tipo').value = tipo;
-        document.getElementById('box-edit-parcelas').style.display = 'none';
+        document.getElementById('box-edit-parcelas').style.display = 'none'; document.getElementById('box-edit-comprovante').style.display = 'none';
         
         if(tipo === 'desp') {
             let d = db.despesas.find(x => x.id === id); if(!d) return;
-            document.getElementById('edit-title').innerText = "EDITAR COMPRA";
+            document.getElementById('edit-title').innerText = d.isEmprestimo ? "EDITAR $ LANÇAMENTO" : "EDITAR COMPRA";
             let mP = d.desc.match(/\((\d+)\/(\d+)\)/);
             if(d.isAssinatura || d.isEmprestimo) { document.getElementById('edit-desc').value = d.desc; document.getElementById('edit-parc-original-key').value = getGroupKey(d); }
             else if(mP) { document.getElementById('edit-desc').value = d.desc.replace(mP[0], '').trim(); document.getElementById('box-edit-parcelas').style.display = 'grid'; document.getElementById('edit-parc-atual').value = mP[1]; document.getElementById('edit-parc-total').value = mP[2]; document.getElementById('edit-parc-original-key').value = getGroupKey(d); }
             else { document.getElementById('edit-desc').value = d.desc; }
             
-            document.getElementById('edit-valor').value = d.valor; document.getElementById('edit-cat').value = d.categoria;
-            document.getElementById('edit-pessoa').value = d.pessoa; document.getElementById('edit-cartao').value = d.cartao;
-            document.getElementById('edit-data-ref').value = d.dataRef;
+            document.getElementById('edit-valor').value = d.valor; document.getElementById('edit-cat').value = d.categoria||'';
+            document.getElementById('edit-pessoa').value = d.pessoa; document.getElementById('edit-cartao').value = d.cartao||'';
+            document.getElementById('edit-data-real').value = d.dataCompra||''; document.getElementById('edit-data-ref').value = d.dataRef;
             document.getElementById('box-edit-cat').style.display = d.isEmprestimo ? 'none' : 'block'; document.getElementById('box-edit-cartao').style.display = d.isEmprestimo ? 'none' : 'block';
+            document.getElementById('edit-label-data-real').innerText = "DATA EXATA";
+            if(d.comprovante) { document.getElementById('edit-preview-comp').src = d.comprovante; document.getElementById('box-edit-comprovante').style.display = 'block'; }
         } else {
             let pg = db.pagamentos.find(x => x.id === id); if(!pg) return;
             document.getElementById('edit-title').innerText = "EDITAR RECEBIDO";
             let mP = (pg.desc||'').match(/\((\d+)\/(\d+)\)/);
             if(pg.isAssinatura) { document.getElementById('edit-desc').value = pg.desc; document.getElementById('edit-parc-original-key').value = getGroupKey(pg); }
             else if(mP) { document.getElementById('edit-desc').value = pg.desc.replace(mP[0], '').trim(); document.getElementById('box-edit-parcelas').style.display = 'grid'; document.getElementById('edit-parc-atual').value = mP[1]; document.getElementById('edit-parc-total').value = mP[2]; document.getElementById('edit-parc-original-key').value = getGroupKey(pg); }
-            else { document.getElementById('edit-desc').value = pg.desc; }
+            else { document.getElementById('edit-desc').value = pg.desc||'Recebimento'; }
             
             document.getElementById('edit-valor').value = pg.valor; document.getElementById('edit-pessoa').value = pg.pessoa;
-            document.getElementById('edit-data-ref').value = pg.dataRef || pg.data.substring(0,7);
+            document.getElementById('edit-data-real').value = pg.data||''; document.getElementById('edit-data-ref').value = pg.dataRef || pg.data.substring(0,7);
             document.getElementById('box-edit-cat').style.display = 'none'; document.getElementById('box-edit-cartao').style.display = 'none';
+            document.getElementById('edit-label-data-real').innerText = "DATA DE ENTRADA";
+            if(pg.comprovante) { document.getElementById('edit-preview-comp').src = pg.comprovante; document.getElementById('box-edit-comprovante').style.display = 'block'; }
         }
         
         document.getElementById('modal-overlay').classList.add('open'); document.getElementById('modal-edicao').classList.add('open');
@@ -1320,7 +1366,7 @@
 
     function salvarEdicaoModal() {
         let id = parseInt(document.getElementById('edit-id').value); let tipo = document.getElementById('edit-tipo').value;
-        let v = parseFloat(document.getElementById('edit-valor').value); if(isNaN(v)) return alert("Valor inválido");
+        let v = parseFloat(document.getElementById('edit-valor').value.replace(',','.')); if(isNaN(v)) return alert("Valor inválido");
         
         let arr = tipo === 'desp' ? db.despesas : db.pagamentos;
         let obj = arr.find(x => x.id === id); if(!obj) return;
@@ -1328,32 +1374,32 @@
         let isParc = document.getElementById('box-edit-parcelas').style.display !== 'none';
         let isAss = obj.isAssinatura; let isEmp = obj.isEmprestimo;
         let origKey = document.getElementById('edit-parc-original-key').value;
-        let dB = document.getElementById('edit-desc').value.trim();
-        let p = document.getElementById('edit-pessoa').value; let dRef = document.getElementById('edit-data-ref').value;
+        let dB = document.getElementById('edit-desc').value.trim() || 'Lançamento';
+        let p = document.getElementById('edit-pessoa').value; let dReal = document.getElementById('edit-data-real').value; let dRef = document.getElementById('edit-data-ref').value;
         let c = document.getElementById('edit-cartao').value; let cat = document.getElementById('edit-cat').value;
         
         let nA = isParc ? parseInt(document.getElementById('edit-parc-atual').value) : null;
         let nT = isParc ? parseInt(document.getElementById('edit-parc-total').value) : null;
 
-        if((isParc || isAss || isEmp) && confirm("Deseja aplicar para os meses seguintes também?")) {
+        if((isParc || isAss || isEmp) && confirm("Deseja aplicar essa alteração para os meses seguintes também?")) {
             let idsDel = arr.filter(x => getGroupKey(x) === origKey && x.dataRef > obj.dataRef).map(x => x.id);
             if(tipo === 'desp') db.despesas = db.despesas.filter(x => !idsDel.includes(x.id));
             else db.pagamentos = db.pagamentos.filter(x => !idsDel.includes(x.id));
             
             obj.desc = (isParc||isEmp) ? `${dB} (${nA}/${nT})` : dB; obj.valor = v; obj.pessoa = p; obj.dataRef = dRef;
-            if(tipo === 'desp') { obj.cartao = c; obj.categoria = cat; }
+            if(tipo === 'desp') { obj.cartao = c; obj.categoria = cat; obj.dataCompra = dReal; } else { obj.data = dReal; }
             
             let extra = isParc ? (nT - nA) : 36; let currRef = dRef; let bId = Date.now();
             for(let i=1; i<=extra; i++) {
                 currRef = gerarMesVencimentoBase(currRef, 2); 
                 let oNew = { id: bId+i, desc: (isParc||isEmp) ? `${dB} (${nA+i}/${nT})` : dB, valor: v, pessoa: p, dataRef: currRef, isAssinatura: isAss, isEmprestimo: isEmp, assinaturaId: obj.assinaturaId, emprestimoId: obj.emprestimoId };
-                if(tipo === 'desp') { oNew.cartao = c; oNew.categoria = cat; db.despesas.push(oNew); } else db.pagamentos.push(oNew);
+                if(tipo === 'desp') { oNew.cartao = c; oNew.categoria = cat; oNew.dataCompra = dReal; db.despesas.push(oNew); } else { oNew.data = dReal; db.pagamentos.push(oNew); }
             }
         } else {
             obj.desc = (isParc||isEmp) ? `${dB} (${nA}/${nT})` : dB; obj.valor = v; obj.pessoa = p; obj.dataRef = dRef;
-            if(tipo === 'desp') { obj.cartao = c; obj.categoria = cat; }
+            if(tipo === 'desp') { obj.cartao = c; obj.categoria = cat; obj.dataCompra = dReal; } else { obj.data = dReal; }
         }
-        salvarDB(); fecharModais(); atualizarDashboard(); sincronizarManual(true);
+        salvarDB(); fecharModais(); atualizarSaldos(); sincronizarManual(true);
     }
 
     function excluirLançamentoModal() {
@@ -1361,66 +1407,89 @@
         let arr = tipo === 'desp' ? db.despesas : db.pagamentos;
         let obj = arr.find(x => x.id === id); if(!obj) return;
         
-        if ((obj.desc.match(/\(\d+\/\d+\)/) || obj.isAssinatura || obj.isEmprestimo) && confirm("Apagar também TODAS AS COBRANÇAS FUTURAS deste lançamento?")) {
+        if ((obj.desc.match(/\(\d+\/\d+\)/) || obj.isAssinatura || obj.isEmprestimo) && confirm("Deseja apagar TODAS AS COBRANÇAS FUTURAS deste lançamento também?")) {
             let k = getGroupKey(obj);
             let idsDel = arr.filter(x => getGroupKey(x) === k && x.dataRef >= obj.dataRef).map(x => x.id);
             if(tipo === 'desp') db.despesas = db.despesas.filter(x => !idsDel.includes(x.id));
             else db.pagamentos = db.pagamentos.filter(x => !idsDel.includes(x.id));
         } else {
-            if(tipo === 'desp') db.despesas = db.despesas.filter(x => x.id !== id);
-            else db.pagamentos = db.pagamentos.filter(x => x.id !== id);
+            if(confirm("Deseja apagar este registro?")) {
+                if(tipo === 'desp') db.despesas = db.despesas.filter(x => x.id !== id);
+                else db.pagamentos = db.pagamentos.filter(x => x.id !== id);
+            }
         }
-        salvarDB(); fecharModais(); atualizarDashboard(); sincronizarManual(true);
+        salvarDB(); fecharModais(); atualizarSaldos(); sincronizarManual(true);
     }
 
-    /* ================= CONFIGURAÇÕES E CADASTRSO GLOBAIS ================= */
-    const emojis = ["💳","💰","🛍️","🚗","💊","🍕","🏠","💸","👨","👩","👦","👧"];
+    /* ================= CADASTRAS GLOBAIS (LIVRES PARA TODOS NA TELA DE AJUSTES) ================= */
+    const emojis = ["💳","💰","🏦","🛍️","🚗","💊","🍕","🏠","💸","👨","👩","🐶","🐱","📱"];
     function inserirEmoji(btn, inputId) {
-        let picker = document.createElement('div');
-        picker.style.cssText = 'position:absolute; background:var(--surface); border:1px solid var(--border); padding:8px; border-radius:12px; display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; margin-top:45px; z-index:100;';
-        picker.innerHTML = emojis.map(e => `<span style="font-size:1.4rem; cursor:pointer;" onclick="document.getElementById('${inputId}').value = '${e} ' + document.getElementById('${inputId}').value; this.parentNode.remove();">${e}</span>`).join('');
-        btn.parentNode.appendChild(picker);
+        let current = btn.innerText;
+        if(current === "😀") {
+            let picker = document.createElement('div');
+            picker.style.cssText = 'position:absolute; background:var(--surface); border:1px solid var(--border); padding:8px; border-radius:12px; display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; margin-top:45px; z-index:100; box-shadow:0 4px 12px rgba(0,0,0,0.2);';
+            picker.innerHTML = emojis.map(e => `<span style="font-size:1.4rem; cursor:pointer;" onclick="document.getElementById('${inputId}').value = '${e} ' + document.getElementById('${inputId}').value; this.parentNode.remove();">${e}</span>`).join('');
+            btn.parentNode.appendChild(picker);
+            setTimeout(() => { document.addEventListener('click', function f(ev) { if(!picker.contains(ev.target)) { picker.remove(); document.removeEventListener('click', f); } }); }, 100);
+        }
     }
 
-    // Cartoes
+    function carregarEdicaoPessoasSimples() {
+        let html = '';
+        db.pessoas.sort().forEach(p => {
+            let inativo = (db.pessoasInativas||[]).includes(p);
+            html += `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border);">
+                <div><strong>${p}</strong> ${inativo ? '<span style="color:var(--danger); font-size:0.7rem;">(Inativo)</span>' : ''}</div>
+                <div style="display:flex; gap:6px;">
+                    <button class="btn-small" style="color:var(--primary);" onclick="editarPessoa('${p}')"><span class="material-icons-outlined" style="font-size:1rem;">edit</span></button>
+                    ${currentUser.role==='admin' ? `<button class="btn-small" style="color:var(--text);" onclick="toggleAtivoPessoa('${p}')"><span class="material-icons-outlined" style="font-size:1rem;">${inativo?'visibility_off':'visibility'}</span></button>` : ''}
+                </div>
+            </div>`;
+        });
+        document.getElementById('lista-edit-pessoas-simples').innerHTML = html;
+    }
+    function addPessoaSimples() { let n = document.getElementById('nova-pessoa-simples').value.trim(); if(n && !db.pessoas.includes(n.toUpperCase())) { db.pessoas.push(n.toUpperCase()); salvarDB(); carregarSelectsGerais(); document.getElementById('nova-pessoa-simples').value=''; } }
+    function editarPessoa(p) { let n = prompt(`Novo nome para "${p}":`, p); if(n && n.trim() && n.toUpperCase() !== p) { let nv = n.toUpperCase(); db.pessoas[db.pessoas.indexOf(p)] = nv; db.despesas.forEach(d=>{if(d.pessoa===p) d.pessoa=nv;}); db.pagamentos.forEach(d=>{if(d.pessoa===p) d.pessoa=nv;}); if(db.usuarios) { let u = db.usuarios.find(x => x.nome === p); if(u) u.nome = nv; } salvarDB(); carregarSelectsGerais(); sincronizarManual(true); } }
+    function toggleAtivoPessoa(p) { if(!db.pessoasInativas) db.pessoasInativas = []; if(db.pessoasInativas.includes(p)) db.pessoasInativas = db.pessoasInativas.filter(x => x !== p); else db.pessoasInativas.push(p); salvarDB(); carregarEdicaoPessoasSimples(); }
+
     function carregarEdicaoCartoes() {
         let html = '';
         db.cartoes.sort((a,b) => (a.nome||a).localeCompare(b.nome||b)).forEach(c => {
-            let nome = c.nome || c;
+            let nome = c.nome || c; let inativo = (db.cartoesInativos||[]).includes(nome);
             html += `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border);">
-                <div><strong>${nome}</strong> ${db.cartoesInativos.includes(nome) ? '<span style="color:var(--danger); font-size:0.7rem;">(Inativo)</span>' : ''}</div>
+                <div><strong>${nome}</strong> ${inativo ? '<span style="color:var(--danger); font-size:0.7rem;">(Inativo)</span>' : ''}</div>
                 <div style="display:flex; gap:6px;">
                     <button class="btn-small" style="color:var(--primary);" onclick="editarCartao('${nome}')"><span class="material-icons-outlined" style="font-size:1rem;">edit</span></button>
-                    ${currentUser.role==='admin' ? `<button class="btn-small" style="color:var(--danger);" onclick="excluirCartao('${nome}')"><span class="material-icons-outlined" style="font-size:1rem;">delete</span></button>` : ''}
+                    ${currentUser.role==='admin' ? `<button class="btn-small" style="color:var(--text);" onclick="toggleAtivoCartao('${nome}')"><span class="material-icons-outlined" style="font-size:1rem;">${inativo?'visibility_off':'visibility'}</span></button>` : ''}
                 </div>
             </div>`;
         });
         document.getElementById('lista-edit-cartoes').innerHTML = html;
     }
-    function addCartao() { let n = document.getElementById('novo-cartao-nome').value.trim(); if(n && !db.cartoes.find(x => (x.nome||x) === n.toUpperCase())) { db.cartoes.push({nome: n.toUpperCase(), fechamento: parseInt(document.getElementById('novo-cartao-fecha').value)||25, vencimento: parseInt(document.getElementById('novo-cartao-vence').value)||5}); salvarDB(); carregarSelectsGerais(); } }
+    function addCartao() { let n = document.getElementById('novo-cartao-nome').value.trim(); if(n && !db.cartoes.find(x => (x.nome||x) === n.toUpperCase())) { db.cartoes.push({nome: n.toUpperCase(), fechamento: parseInt(document.getElementById('novo-cartao-fecha').value)||25, vencimento: parseInt(document.getElementById('novo-cartao-vence').value)||5}); salvarDB(); carregarSelectsGerais(); document.getElementById('novo-cartao-nome').value=''; } }
     function editarCartao(nome) { let n = prompt(`Mudar nome de "${nome}":`, nome); if(n && n.trim() && n.toUpperCase() !== nome) { let novo = n.toUpperCase(); db.cartoes.find(c=>(c.nome||c)===nome).nome = novo; db.despesas.forEach(d=>{if(d.cartao===nome) d.cartao=novo;}); salvarDB(); carregarSelectsGerais(); sincronizarManual(true); } }
-    function excluirCartao(nome) { if(confirm(`Apagar ${nome}?`)) { db.cartoes = db.cartoes.filter(c => (c.nome||c) !== nome); salvarDB(); carregarSelectsGerais(); sincronizarManual(true); } }
+    function toggleAtivoCartao(c) { if(!db.cartoesInativos) db.cartoesInativos = []; if(db.cartoesInativos.includes(c)) db.cartoesInativos = db.cartoesInativos.filter(x => x !== c); else db.cartoesInativos.push(c); salvarDB(); carregarSelectsGerais(); }
 
-    // Categorias
     function carregarEdicaoCategorias() {
         let html = '';
         db.categorias.sort().forEach(cat => {
+            let inativo = (db.categoriasInativas||[]).includes(cat);
             html += `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border);">
-                <div><strong>${cat}</strong></div>
+                <div><strong>${cat}</strong> ${inativo ? '<span style="color:var(--danger); font-size:0.7rem;">(Inativo)</span>' : ''}</div>
                 <div style="display:flex; gap:6px;">
                     <button class="btn-small" style="color:var(--primary);" onclick="editarCategoria('${cat}')"><span class="material-icons-outlined" style="font-size:1rem;">edit</span></button>
-                    ${currentUser.role==='admin' ? `<button class="btn-small" style="color:var(--danger);" onclick="excluirCategoria('${cat}')"><span class="material-icons-outlined" style="font-size:1rem;">delete</span></button>` : ''}
+                    ${currentUser.role==='admin' ? `<button class="btn-small" style="color:var(--text);" onclick="toggleAtivoCategoria('${cat}')"><span class="material-icons-outlined" style="font-size:1rem;">${inativo?'visibility_off':'visibility'}</span></button>` : ''}
                 </div>
             </div>`;
         });
         document.getElementById('lista-edit-categorias').innerHTML = html;
     }
-    function addCategoria() { let n = document.getElementById('nova-categoria').value.trim(); if(n && !db.categorias.includes(n.toUpperCase())) { db.categorias.push(n.toUpperCase()); salvarDB(); carregarSelectsGerais(); } }
+    function addCategoria() { let n = document.getElementById('nova-categoria').value.trim(); if(n && !db.categorias.includes(n.toUpperCase())) { db.categorias.push(n.toUpperCase()); salvarDB(); carregarSelectsGerais(); document.getElementById('nova-categoria').value=''; } }
     function editarCategoria(c) { let n = prompt(`Nova categoria:`, c); if(n && n.trim() && n.toUpperCase() !== c) { let nv = n.toUpperCase(); db.categorias[db.categorias.indexOf(c)] = nv; db.despesas.forEach(d=>{if(d.categoria===c) d.categoria=nv;}); salvarDB(); carregarSelectsGerais(); sincronizarManual(true); } }
-    function excluirCategoria(c) { if(confirm(`Apagar ${c}?`)) { db.categorias = db.categorias.filter(x => x !== c); salvarDB(); carregarSelectsGerais(); sincronizarManual(true); } }
+    function toggleAtivoCategoria(c) { if(!db.categoriasInativas) db.categoriasInativas = []; if(db.categoriasInativas.includes(c)) db.categoriasInativas = db.categoriasInativas.filter(x => x !== c); else db.categoriasInativas.push(c); salvarDB(); carregarSelectsGerais(); }
 
-    /* ================= PUSH E BACKUP DO USUÁRIO ================= */
-    function salvarConfigPush() { localStorage.setItem('cc_push_horario_' + currentUser.id, document.getElementById('push-horario').value); if("Notification" in window) Notification.requestPermission(); toast("Horário salvo!"); }
+    /* ================= PUSH E BACKUP DO PERFIL ================= */
+    function salvarConfigPush() { localStorage.setItem('cc_push_horario_' + currentUser.id, document.getElementById('push-horario').value); if("Notification" in window) Notification.requestPermission(); toast("Horário de Push salvo!"); }
     
     function iniciarPushDiario() {
         if (!("Notification" in window) || !currentUser) return;
@@ -1429,8 +1498,8 @@
             let config = localStorage.getItem('cc_push_horario_' + currentUser.id) || '20:00'; let hoje = agora.toISOString().substring(0,10);
             if (hm === config && localStorage.getItem('cc_push_last_' + currentUser.id) !== hoje) {
                 let diaA = agora.getDate(); let alertas = [];
-                db.cartoes.forEach(c => { if(diaA === parseInt(c.fechamento)) alertas.push(`✅ ${c.nome}: Melhor dia para comprar!`); if(diaA === parseInt(c.vencimento)) alertas.push(`⚠️ ${c.nome}: VENCE HOJE!`); });
-                if (alertas.length > 0 && Notification.permission === "granted") new Notification("ControlCard", { body: alertas.join("\n") });
+                db.cartoes.forEach(c => { if(diaA === parseInt(c.fechamento)) alertas.push(`✅ ${c.nome||c}: Melhor dia para comprar!`); if(diaA === parseInt(c.vencimento)) alertas.push(`⚠️ ${c.nome||c}: VENCE HOJE!`); });
+                if (alertas.length > 0 && Notification.permission === "granted") new Notification("ControlCard - Resumo do Dia", { body: alertas.join("\n") });
                 localStorage.setItem('cc_push_last_' + currentUser.id, hoje);
             }
         }, 30000);
@@ -1444,42 +1513,36 @@
         a.download = `Relatorio_${currentUser.nome.replace(/[^a-zA-Z0-9]/g, '')}_${new Date().toISOString().substring(0,10)}.csv`; a.click(); toast("Excel gerado!");
     }
 
-    /* ================= ADMIN GESTÃO DE ACESSOS E PESSOAS ================= */
+    /* ================= ÁREA DE ADMINISTRAÇÃO ================= */
     function carregarConfigAdmin() {
         let html = '';
-        db.usuarios.forEach(u => {
-            let stat = u.ativo ? '<span style="color:var(--success)">ATIVO</span>' : '<span style="color:var(--danger)">BLOQUEADO</span>';
-            let b = u.ativo ? `<button class="btn-small" style="color:var(--danger);" onclick="adminToggleBloqueio('${u.id}')">BLOQUEAR</button>` : `<button class="btn-small" style="color:var(--success);" onclick="adminToggleBloqueio('${u.id}')">LIBERAR</button>`;
-            html += `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border);"><div><strong>${u.nome}</strong><br><span style="font-size:0.7rem; color:var(--text-light);">PIN: ${u.pin} | Perfil: ${u.role} | ${stat}</span></div>${u.id !== 'admin_master' ? b : ''}</div>`;
-        });
+        if(db.usuarios) {
+            db.usuarios.forEach(u => {
+                let stat = u.ativo ? '<span style="color:var(--success)">ATIVO</span>' : '<span style="color:var(--danger)">BLOQUEADO</span>';
+                let b = u.ativo ? `<button class="btn-small" style="color:var(--danger);" onclick="adminToggleBloqueio('${u.id}')">BLOQUEAR</button>` : `<button class="btn-small" style="color:var(--success);" onclick="adminToggleBloqueio('${u.id}')">LIBERAR</button>`;
+                html += `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border);"><div><strong>${u.nome}</strong><br><span style="font-size:0.7rem; color:var(--text-light);">PIN: ${u.pin} | Perfil: ${u.role.toUpperCase()} | ${stat}</span></div>${u.role !== 'admin' ? b : ''}</div>`;
+            });
+        }
         document.getElementById('admin-lista-usuarios').innerHTML = html;
     }
     
     function adminCriarUsuario() {
-        let n = document.getElementById('adm-novo-user-nome').value.trim().toUpperCase(); let pin = document.getElementById('adm-novo-user-pin').value.trim(); let r = document.getElementById('adm-novo-user-perfil').value;
-        if(!n || pin.length !== 4) return alert("Preencha Nome e PIN de 4 dígitos.");
-        if(db.usuarios.find(u => u.nome === n)) return alert("Nome já existe.");
-        db.usuarios.push({ id: 'user_'+Date.now(), nome: n, pin: pin, role: r, ativo: true });
-        if(!db.pessoas.includes(n)) db.pessoas.push(n);
-        salvarDB(); carregarSelectsGerais(); toast("✅ Criado!");
+        let n = document.getElementById('adm-login-pessoa').value; let pin = document.getElementById('adm-novo-user-pin').value.trim(); let r = document.getElementById('adm-novo-user-perfil').value;
+        if(!n || pin.length !== 4) return alert("Selecione a pessoa e crie um PIN de 4 números.");
+        
+        let userExistente = db.usuarios.find(u => u.nome === n);
+        if(userExistente) {
+            userExistente.pin = pin; userExistente.role = r; toast("✅ PIN Atualizado!");
+        } else {
+            db.usuarios.push({ id: 'user_'+Date.now(), nome: n, pin: pin, role: r, ativo: true }); toast("✅ Login Criado!");
+        }
+        salvarDB(); carregarConfigAdmin();
+        document.getElementById('adm-novo-user-pin').value = '';
     }
     
     function adminToggleBloqueio(id) { let u = db.usuarios.find(x => x.id === id); if(u) { u.ativo = !u.ativo; salvarDB(); carregarConfigAdmin(); sincronizarManual(true); } }
 
-    function carregarEdicaoPessoasSimples() {
-        let html = '';
-        db.pessoas.sort().forEach(p => {
-            html += `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border);">
-                <div><strong>${p}</strong> ${db.pessoasInativas.includes(p) ? '<span style="color:var(--danger); font-size:0.7rem;">(Inativo)</span>' : ''}</div>
-                <div style="display:flex; gap:6px;"><button class="btn-small" style="color:var(--primary);" onclick="editarPessoa('${p}')"><span class="material-icons-outlined" style="font-size:1rem;">edit</span></button></div>
-            </div>`;
-        });
-        document.getElementById('lista-edit-pessoas-simples').innerHTML = html;
-    }
-    function addPessoaSimples() { let n = document.getElementById('nova-pessoa-simples').value.trim(); if(n && !db.pessoas.includes(n.toUpperCase())) { db.pessoas.push(n.toUpperCase()); salvarDB(); carregarSelectsGerais(); } }
-    function editarPessoa(p) { let n = prompt(`Novo nome:`, p); if(n && n.trim() && n.toUpperCase() !== p) { let nv = n.toUpperCase(); db.pessoas[db.pessoas.indexOf(p)] = nv; db.despesas.forEach(d=>{if(d.pessoa===p) d.pessoa=nv;}); db.pagamentos.forEach(d=>{if(d.pessoa===p) d.pessoa=nv;}); salvarDB(); carregarSelectsGerais(); sincronizarManual(true); } }
-
-    /* ================= ADMIN GESTÃO EM MASSA ================= */
+    /* ================= FERRAMENTAS EM MASSA DO ADMIN ================= */
     function renderizarListaParcelamentos() {
         const p = document.getElementById('parc-pessoa').value;
         let filtradas = [...db.despesas.filter(d => d.pessoa === p && (d.desc.match(/\(\d+\/\d+\)/) || d.isAssinatura || d.isEmprestimo)).map(d => ({...d, _tipo: 'desp'})), ...db.pagamentos.filter(pg => pg.pessoa === p && ((pg.desc||'').match(/\(\d+\/\d+\)/) || pg.isAssinatura)).map(pg => ({...pg, _tipo: 'pag'}))];
@@ -1496,7 +1559,7 @@
                 <div style="background:var(--primary); color:#000; padding:4px 8px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="${mainClick}">${g[0].isAssinatura?'🔁':g.length+'x'}</div>
             </div>`;
         }
-        document.getElementById('lista-parcelamentos-container').innerHTML = html || '<p style="color:var(--text-light); font-size:0.85rem; text-align:center;">Nenhum registo.</p>';
+        document.getElementById('lista-parcelamentos-container').innerHTML = html || '<p style="color:var(--text-light); font-size:0.85rem; text-align:center;">Nenhum registo em andamento.</p>';
     }
 
     let transSelecionados = new Set();
@@ -1515,14 +1578,45 @@
     function executarTransferenciaInterativa() {
         const para = document.getElementById('transf-para').value; const de = document.getElementById('transf-de').value;
         if(de === para) return alert("Pessoas iguais."); if(transSelecionados.size === 0) return alert("Marque as contas.");
-        if(!confirm(`Mover de ${de} para ${para}?`)) return;
+        if(!confirm(`Mover as parcelas de ${de} para ${para}?`)) return;
         let idsArray = Array.from(transSelecionados); db.despesas.forEach(d => { if(idsArray.includes(d.id)) d.pessoa = para; });
-        salvarDB(); alert('Concluído!'); renderizarListaTransferencia(); atualizarDashboard(); sincronizarManual(true);
+        salvarDB(); alert('Repasse Concluído!'); renderizarListaTransferencia(); atualizarSaldos(); sincronizarManual(true);
+    }
+
+    function preencherListasCorrecao() {
+        let p = [...new Set(db.pessoas.concat(db.despesas.map(d=>d.pessoa)))].filter(Boolean).sort();
+        let c = [...new Set(db.cartoes.map(c=>c.nome||c).concat(db.despesas.map(d=>d.cartao)))].filter(Boolean).sort();
+        let t = [...new Set(p.concat(c))].sort();
+
+        document.getElementById('corr-orig-pessoa').innerHTML = `<option value="TODOS">[QUALQUER PESSOA]</option>` + p.map(v => `<option value="${v}">${v}</option>`).join('');
+        document.getElementById('corr-orig-cartao').innerHTML = `<option value="TODOS">[QUALQUER CARTÃO]</option>` + c.map(v => `<option value="${v}">${v}</option>`).join('');
+        
+        document.getElementById('corr-dest-pessoa').innerHTML = `<option value="">[NÃO MUDAR A PESSOA]</option>` + t.map(v => `<option value="${v}">${v}</option>`).join('');
+        document.getElementById('corr-dest-cartao').innerHTML = `<option value="">[NÃO MUDAR O CARTÃO]</option>` + t.map(v => `<option value="${v}">${v}</option>`).join('');
+    }
+
+    function executarCorrecaoLadoALado() {
+        let pO = document.getElementById('corr-orig-pessoa').value; let cO = document.getElementById('corr-orig-cartao').value;
+        let pD = document.getElementById('corr-dest-pessoa').value; let cD = document.getElementById('corr-dest-cartao').value;
+
+        if (pO === "TODOS" && cO === "TODOS") return alert("Escolha uma origem no LADO 1.");
+        if (pD === "" && cD === "") return alert("Escolha o destino no LADO 2.");
+
+        let count = 0;
+        db.despesas.forEach(d => {
+            if ((pO === "TODOS" || d.pessoa === pO) && (cO === "TODOS" || d.cartao === cO)) {
+                if (pD !== "") d.pessoa = pD; if (cD !== "" && d.cartao) d.cartao = cD; count++;
+            }
+        });
+        if (pO !== "TODOS" && cO === "TODOS" && pD !== "") db.pagamentos.forEach(pg => { if(pg.pessoa === pO) pg.pessoa = pD; });
+        if (count === 0) return alert("Nenhum lançamento encontrado.");
+
+        salvarDB(); carregarSelectsGerais(); atualizarSaldos(); sincronizarManual(true); alert(`${count} itens corrigidos.`);
     }
 
     function adminZerarTudo() {
-        if(prompt("Digite ZERAR BASE COMPLETA para apagar todo o sistema:") === "ZERAR BASE COMPLETA") {
-            db = { usuarios: [{ id: 'admin_master', nome: 'NETO (ADMIN)', pin: '0000', role: 'admin', ativo: true }], cartoes: [], categorias: ["🛍 Mercado"], pessoas: ['NETO (ADMIN)'], despesas: [], pagamentos: [] };
+        if(prompt("Para apagar TUDO (incluindo usuários), digite:\n\nZERAR BASE COMPLETA") === "ZERAR BASE COMPLETA") {
+            db = { usuarios: [{ id: 'admin_master', nome: 'NETO', pin: '0000', role: 'admin', ativo: true }], cartoes: [], categorias: ["🛍 Mercado"], pessoas: ['NETO'], despesas: [], pagamentos: [] };
             salvarDB(); alert("Resetado. Você será desconectado."); fazerLogout();
         }
     }
