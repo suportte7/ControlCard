@@ -1,81 +1,67 @@
-// sw.js - Service Worker com Suporte a Notificações e Cache Offline
+/* ControlCard — Service Worker
+   Troque o número de VERSAO sempre que alterar ESTE arquivo (sw.js) ou os ícones.
+   O index.html se atualiza sozinho (rede primeiro); não precisa mexer na versão por causa dele. */
+const VERSAO = 'controlcard-v3.4';
+const CACHE_APP = VERSAO + '-app';
+const CACHE_EXT = VERSAO + '-ext';
 
-const CACHE_NAME = 'controlcardmult-v1';
-const ASSETS_TO_CACHE = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icon-192.png'
+const ARQUIVOS = [
+  './', './index.html', './manifest.json',
+  './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png'
 ];
+// Sincronização com o Google nunca passa pelo cache
+const SEM_CACHE = ['script.google.com', 'script.googleusercontent.com'];
+// Fontes dos ícones e leitor de planilha: guardados para funcionar offline
+const EXTERNOS = ['fonts.googleapis.com', 'fonts.gstatic.com', 'cdnjs.cloudflare.com'];
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    }).then(() => self.skipWaiting())
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE_APP).then(c => c.addAll(ARQUIVOS)).then(() => self.skipWaiting()));
+});
+
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys()
+      .then(chaves => Promise.all(chaves.filter(k => !k.startsWith(VERSAO)).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
 });
 
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+self.addEventListener('fetch', e => {
+  const req = e.request;
+  if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+  if (SEM_CACHE.includes(url.hostname)) return;
+
+  if (url.origin === self.location.origin) {
+    // Abrir o app: tenta a rede (pega versão nova); sem internet, abre a cópia guardada
+    if (req.mode === 'navigate') {
+      e.respondWith(
+        fetch(req)
+          .then(r => { if (r.ok) { const cp = r.clone(); caches.open(CACHE_APP).then(c => c.put('./index.html', cp)); } return r; })
+          .catch(() => caches.match('./index.html'))
       );
-    }).then(() => self.clients.claim())
-  );
-});
-
-self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) return cachedResponse;
-      return fetch(event.request).then((response) => {
-        if (!response || response.status !== 200 || response.type !== 'basic') {
-          return response;
-        }
-        const responseToCache = response.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
-        });
-        return response;
-      });
-    }).catch(() => caches.match('./index.html'))
-  );
-});
-
-self.addEventListener('push', (event) => {
-  let title = 'ControlCardMult Aviso';
-  let options = {
-    body: 'Você tem um lembrete de cartão ou vencimento hoje!',
-    icon: './icon-192.png',
-    badge: './icon-192.png',
-    vibrate: [200, 100, 200]
-  };
-
-  if (event.data) {
-    try {
-      const data = event.data.json();
-      title = data.title || title;
-      options.body = data.body || options.body;
-    } catch (e) {
-      options.body = event.data.text();
+      return;
     }
+    // Demais arquivos do app: cache primeiro, atualiza em segundo plano
+    e.respondWith(
+      caches.match(req).then(guardado => {
+        const rede = fetch(req)
+          .then(r => { if (r.ok) { const cp = r.clone(); caches.open(CACHE_APP).then(c => c.put(req, cp)); } return r; })
+          .catch(() => guardado);
+        return guardado || rede;
+      })
+    );
+    return;
   }
 
-  event.waitUntil(self.registration.showNotification(title, options));
-});
-
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      for (let i = 0; i < clientList.length; i++) {
-        let client = clientList[i];
-        if ('focus' in client) return client.focus();
-      }
-      if (clients.openWindow) return clients.openWindow('./index.html');
-    })
-  );
+  if (EXTERNOS.includes(url.hostname)) {
+    e.respondWith(
+      caches.open(CACHE_EXT).then(c =>
+        c.match(req).then(guardado => {
+          const rede = fetch(req).then(r => { c.put(req, r.clone()); return r; }).catch(() => guardado);
+          return guardado || rede;
+        })
+      )
+    );
+  }
 });
