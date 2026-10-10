@@ -193,8 +193,8 @@
         
         <div id="btn-importar-login" style="margin-top: 15px; text-align: center; border-top: 1px dashed var(--border); padding-top: 15px;">
             <p style="font-size: 0.75rem; color: var(--text-light); margin-bottom: 8px;">Primeiro acesso ou tem backup?</p>
-            <button class="btn-small" style="width:100%; padding: 10px;" onclick="document.getElementById('primeiro-file').click()"><span class="material-icons-outlined" style="font-size:1rem; margin-right:4px;">upload_file</span> IMPORTAR BACKUP</button>
-            <input type="file" id="primeiro-file" accept=".json" onchange="importarBackup(event)" style="display:none;">
+            <button class="btn-small" style="width:100%; padding: 10px;" onclick="document.getElementById('primeiro-file').click()"><span class="material-icons-outlined" style="font-size:1rem; margin-right:4px;">upload_file</span> IMPORTAR BACKUP / PLANILHA</button>
+            <input type="file" id="primeiro-file" accept=".json,.xlsx,.xls" onchange="importarBackup(event)" style="display:none;">
         </div>
     </div>
 </div>
@@ -555,8 +555,8 @@
                     <button class="btn btn-outline" style="margin-bottom:8px; padding:10px;" onclick="sincronizarManual(false, true)">PUXAR DA NUVEM AGORA</button>
                     <hr style="border: 1px solid rgba(239, 68, 68, 0.2); margin: 15px 0;">
                     <button class="btn btn-outline" style="margin-bottom:8px; padding:10px;" onclick="exportarBackup(false)"><span class="material-icons-outlined">download</span> Baixar Backup JSON (Tudo)</button>
-                    <button class="btn btn-outline" style="margin-bottom:8px; padding:10px;" onclick="document.getElementById('import-file').click()"><span class="material-icons-outlined">file_upload</span> Importar Backup JSON (v2 ou v3)</button>
-                    <input type="file" id="import-file" accept=".json" onchange="importarBackup(event)" style="display:none;">
+                    <button class="btn btn-outline" style="margin-bottom:8px; padding:10px;" onclick="document.getElementById('import-file').click()"><span class="material-icons-outlined">file_upload</span> Importar Backup JSON ou Planilha (.xlsx)</button>
+                    <input type="file" id="import-file" accept=".json,.xlsx,.xls" onchange="importarBackup(event)" style="display:none;">
                     <hr style="border: 1px solid rgba(239, 68, 68, 0.2); margin: 15px 0;">
                     <button class="btn btn-danger" style="padding:10px;" onclick="adminZerarTudo()">ZERAR BASE COMPLETA</button>
                 </div>
@@ -710,6 +710,7 @@
     /* ================= IMPORTAÇÃO DE BACKUP PROTEGIDA ================= */
     function importarBackup(e) {
         const f = e.target.files[0]; if(!f) return;
+        if (/\.xlsx?$/i.test(f.name)) return importarPlanilha(e);
         const r = new FileReader();
         r.onload = ev => {
             try {
@@ -739,6 +740,169 @@
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
         a.download = `ControlCard_V3_${new Date().toISOString().substring(0,10)}.json`; 
         a.click(); toast("Backup baixado com sucesso!");
+    }
+
+    /* ================= IMPORTAÇÃO DE PLANILHA (.xlsx) ================= */
+    // Lê a planilha exportada (abas Despesas / Pagamentos / Usuarios) e reconstrói a base no formato do app.
+    const XLSX_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    const PLAN_MESES = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+
+    function carregarSheetJS() {
+        return new Promise((ok, falha) => {
+            if (window.XLSX) return ok();
+            const s = document.createElement('script'); s.src = XLSX_CDN; s.onload = () => ok();
+            s.onerror = () => falha(new Error('Sem internet para carregar o leitor de planilhas.'));
+            document.head.appendChild(s);
+        });
+    }
+
+    function planNorm(s) { return String(s == null ? '' : s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim(); }
+
+    function planISO(v) {
+        if (v == null || v === '') return '';
+        let s = String(v).trim(), m;
+        if ((m = s.match(/^(\d{4})-(\d{2})-(\d{2})/))) return `${m[1]}-${m[2]}-${m[3]}`;
+        if ((m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/))) return `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+        if ((m = s.match(/^(\d{4})-(\d{2})$/))) return `${m[1]}-${m[2]}-01`;
+        return '';
+    }
+
+    // Lê uma aba em lista de objetos {cabecalho_normalizado: valor}. Células com formato de data viram 'AAAA-MM-DD'.
+    function planLerAba(ws) {
+        if (!ws || !ws['!ref']) return [];
+        const rg = XLSX.utils.decode_range(ws['!ref']); const cab = [];
+        for (let c = rg.s.c; c <= rg.e.c; c++) { const h = ws[XLSX.utils.encode_cell({ r: rg.s.r, c })]; cab[c] = h ? planNorm(h.v) : ''; }
+        const out = [];
+        for (let r = rg.s.r + 1; r <= rg.e.r; r++) {
+            const o = { _linha: r + 1 }; let tem = false;
+            for (let c = rg.s.c; c <= rg.e.c; c++) {
+                const cell = ws[XLSX.utils.encode_cell({ r, c })]; if (!cell || cell.v == null || cell.v === '' || !cab[c]) continue;
+                let v = cell.v;
+                if (cell.t === 'n' && cell.z && String(cell.z).toLowerCase() !== 'general' && /[dmy]/i.test(String(cell.z).replace(/"[^"]*"|\[[^\]]*\]|\\./g, ''))) {
+                    v = new Date(Math.round((Math.floor(v) - 25569) * 86400000)).toISOString().substring(0, 10);
+                } else if (cell.t === 'd' && cell.v instanceof Date) { v = cell.v.toISOString().substring(0, 10); }
+                o[cab[c]] = v; tem = true;
+            }
+            if (tem) out.push(o);
+        }
+        return out;
+    }
+
+    function planNum(v) { if (typeof v === 'number') return v; let n = parseFloat(String(v == null ? '' : v).replace(/[R$\s]/g, '').replace(/\.(?=\d{3}\b)/g, '').replace(',', '.')); return isNaN(n) ? NaN : n; }
+    function planIdxMes(ref) { const [a, m] = ref.split('-').map(Number); return a * 12 + m; }
+
+    // Função pura (testável): recebe {despesas, pagamentos, usuarios} e a base atual; devolve a nova base + relatório.
+    function planConstruir(abas, dbAtual, baseId) {
+        const T = s => String(s == null ? '' : s).trim(), U = s => T(s).toUpperCase();
+        const RE_NULL = /\s*\(\s*(null|\d+)\s*\/\s*null\s*\)\s*$/i, RE_PARC = /\s*\((\d+)\/(\d+)\)\s*$/;
+        const rel = { ignoradas: [], avisos: [], assinaturas: 0, acordos: 0, parcelasReagrupadas: 0, duplicadasMantidas: 0, descCorrigidas: 0 };
+        let seq = 0; const novoId = () => baseId + (seq++);
+
+        /* ---- DESPESAS ---- */
+        let desp = [];
+        (abas.despesas || []).forEach(o => {
+            const valor = planNum(o['valor (r$)'] != null ? o['valor (r$)'] : o['valor']);
+            const dc = planISO(o['data compra']); let ref = planISO(o['mes ref']).substring(0, 7);
+            const pessoa = U(o['pessoa']);
+            if (isNaN(valor) || !pessoa || (!dc && !ref)) { rel.ignoradas.push(`Despesas linha ${o._linha}: dados incompletos`); return; }
+            if (!ref) { ref = dc.substring(0, 7); rel.avisos.push(`Despesas linha ${o._linha}: sem mês de referência, usei o mês da data da compra`); }
+            desp.push({ _l: o._linha, desc: T(o['descricao']) || 'Lançamento', valor, cartao: T(o['cartao']) || null, pessoa, dataCompra: dc || (ref + '-10'), dataRef: ref, categoria: T(o['categoria']) || null });
+        });
+
+        // (1) Resíduo do bug "(null/null)": uma edição de acordo gerou 36 cópias. Mantém só o lançamento original.
+        const gBug = {};
+        desp.forEach(d => { if (RE_NULL.test(d.desc)) { const base = d.desc.replace(RE_NULL, '').trim(); const k = [base, d.pessoa, d.cartao, d.dataCompra].join('|'); (gBug[k] = gBug[k] || []).push(d); d._base = base; } });
+        const descartar = new Set();
+        Object.values(gBug).forEach(g => {
+            g.sort((a, b) => a.dataRef.localeCompare(b.dataRef) || a._l - b._l);
+            const orig = g.find(x => /\(\s*null\s*\/\s*null\s*\)/i.test(x.desc)) || g[0];
+            g.forEach(x => { if (x === orig) { x.desc = x._base; rel.descCorrigidas++; } else { descartar.add(x); rel.ignoradas.push(`Despesas linha ${x._l}: "${x.desc}" (cópia gerada pelo bug de edição de acordo)`); } });
+        });
+        desp = desp.filter(d => !descartar.has(d));
+
+        // (2) Sem cartão = acordo / dinheiro
+        const idAcordo = {};
+        desp.forEach(d => {
+            if (d.cartao) return;
+            const k = [d.desc.replace(RE_PARC, '').trim(), d.pessoa, d.dataCompra].join('|');
+            if (!idAcordo[k]) { idAcordo[k] = `emp_mig_${novoId()}_${d.pessoa}`; rel.acordos++; }
+            d.isEmprestimo = true; d.emprestimoId = idAcordo[k]; d.cartao = null; d.categoria = d.categoria || '💸 Dinheiro';
+        });
+
+        // (3) Mensalidades: mesma descrição/pessoa/cartão/valor repetida em 12+ meses consecutivos
+        const gAss = {};
+        desp.forEach(d => { if (d.isEmprestimo || RE_PARC.test(d.desc)) return; (gAss[[d.desc, d.pessoa, d.cartao, d.valor].join('|')] = gAss[[d.desc, d.pessoa, d.cartao, d.valor].join('|')] || []).push(d); });
+        Object.values(gAss).forEach(g => {
+            if (g.length < 12) return;
+            g.sort((a, b) => a.dataRef.localeCompare(b.dataRef));
+            if (!g.every((x, i) => i === 0 || planIdxMes(x.dataRef) - planIdxMes(g[i - 1].dataRef) === 1)) return;
+            const id = `ass_mig_${novoId()}_${g[0].pessoa}`; g.forEach(x => { x.isAssinatura = true; x.assinaturaId = id; }); rel.assinaturas++;
+        });
+
+        // (4) Parcelas de uma mesma compra: unifica a data da compra para o app reconhecer o grupo
+        const gPar = {};
+        desp.forEach(d => { const m = d.desc.match(RE_PARC); if (!m || d.isEmprestimo || d.isAssinatura) return; const k = [d.desc.replace(RE_PARC, '').trim(), d.pessoa, d.cartao, m[2]].join('|'); d._n = +m[1]; (gPar[k] = gPar[k] || []).push(d); });
+        Object.values(gPar).forEach(g => {
+            if (g.length < 2) return;
+            const ns = new Set(g.map(x => x._n)); const dias = new Set(g.map(x => x.dataCompra.substring(8, 10)));
+            const difs = new Set(g.map(x => planIdxMes(x.dataRef) - x._n)); const datas = new Set(g.map(x => x.dataCompra));
+            if (ns.size !== g.length || dias.size !== 1 || difs.size !== 1 || datas.size === 1) return;
+            const menor = [...datas].sort()[0]; g.forEach(x => x.dataCompra = menor); rel.parcelasReagrupadas++;
+        });
+
+        // (5) Duplicadas exatas: só avisa, não apaga
+        const vistos = {}; desp.forEach(d => { const k = [d.desc, d.pessoa, d.cartao, d.dataCompra, d.dataRef, d.valor].join('|'); if (vistos[k]) { rel.duplicadasMantidas++; rel.avisos.push(`Despesas linha ${d._l}: idêntica à linha ${vistos[k]} (mantida; confira se não é duplicada)`); } else vistos[k] = d._l; });
+
+        const despesas = desp.map(d => {
+            const o = { id: novoId(), desc: d.desc, valor: d.valor, cartao: d.cartao, pessoa: d.pessoa, dataCompra: d.dataCompra, dataRef: d.dataRef, categoria: d.categoria, comprovante: null };
+            if (d.isAssinatura) { o.isAssinatura = true; o.assinaturaId = d.assinaturaId; } else { o.isAssinatura = false; o.assinaturaId = null; }
+            if (d.isEmprestimo) { o.isEmprestimo = true; o.emprestimoId = d.emprestimoId; o.jurosRegra = null; }
+            return o;
+        });
+
+        /* ---- PAGAMENTOS ---- */
+        const pagamentos = [];
+        (abas.pagamentos || []).forEach(o => {
+            const valor = planNum(o['valor (r$)'] != null ? o['valor (r$)'] : o['valor']); const data = planISO(o['data recebimento'] || o['data']);
+            let ref = planISO(o['mes ref']).substring(0, 7); const pessoa = U(o['pessoa']);
+            if (isNaN(valor) || !pessoa || (!data && !ref)) { rel.ignoradas.push(`Pagamentos linha ${o._linha}: dados incompletos`); return; }
+            if (!ref) ref = data.substring(0, 7);
+            let desc = T(o['descricao']);
+            if (/^\d{4}-\d{2}-\d{2}$/.test(desc)) { desc = `Recebimento (${PLAN_MESES[+desc.substring(5, 7) - 1]}/${desc.substring(0, 4)})`; rel.avisos.push(`Pagamentos linha ${o._linha}: a descrição tinha virado uma data na planilha; troquei por "${desc}"`); }
+            pagamentos.push({ id: novoId(), desc: desc || 'Recebimento', pessoa, valor, data: data || (ref + '-10'), dataRef: ref, comprovante: null, isAssinatura: false, assinaturaId: null });
+        });
+
+        /* ---- LISTAS (cartões, categorias, pessoas) ---- */
+        const cartoes = (dbAtual.cartoes || []).map(c => typeof c === 'string' ? { nome: c, fechamento: 25, vencimento: 5 } : c);
+        const nomesCart = new Set(cartoes.map(c => c.nome)); const cartNovos = [];
+        despesas.forEach(d => { if (d.cartao && !nomesCart.has(d.cartao)) { nomesCart.add(d.cartao); cartNovos.push(d.cartao); cartoes.push({ nome: d.cartao, fechamento: 25, vencimento: 5 }); } });
+        const categorias = [...new Set([...(dbAtual.categorias || []), ...despesas.map(d => d.categoria).filter(Boolean)])];
+        const pessoas = [...new Set([...(dbAtual.pessoas || []), ...despesas.map(d => d.pessoa), ...pagamentos.map(p => p.pessoa), ...(abas.usuarios || []).map(u => U(u['nome'])).filter(Boolean)])];
+
+        const novo = Object.assign({}, dbAtual, { cartoes, categorias, pessoas, despesas, pagamentos });
+        return { novo, rel, cartNovos };
+    }
+
+    function importarPlanilha(e) {
+        const f = e.target.files[0]; if (!f) return;
+        const limpar = () => { e.target.value = ''; };
+        toast('Lendo planilha...');
+        Promise.all([f.arrayBuffer(), carregarSheetJS()]).then(([buf]) => {
+            const wb = XLSX.read(buf, { type: 'array', cellNF: true });
+            const aba = n => { const k = wb.SheetNames.find(s => planNorm(s) === n); return k ? planLerAba(wb.Sheets[k]) : null; };
+            const abas = { despesas: aba('despesas'), pagamentos: aba('pagamentos'), usuarios: aba('usuarios') };
+            if (!abas.despesas) { limpar(); return toast('Planilha inválida: não achei a aba "Despesas".', 'erro'); }
+            const { novo, rel, cartNovos } = planConstruir(abas, db, Date.now());
+            let msg = `PLANILHA LIDA\n\n• Despesas: ${novo.despesas.length}\n• Pagamentos: ${novo.pagamentos.length}\n• Pessoas: ${novo.pessoas.length}\n• Cartões: ${novo.cartoes.length}` + (cartNovos.length ? ` (novos, com fechamento 25 e vencimento 5: ${cartNovos.join(', ')})` : '') + `\n• Categorias: ${novo.categorias.length}\n• Mensalidades reconhecidas: ${rel.assinaturas}\n• Acordos/dinheiro (sem cartão): ${rel.acordos}\n• Parcelamentos reagrupados: ${rel.parcelasReagrupadas}`;
+            if (rel.ignoradas.length) msg += `\n\nNÃO IMPORTADAS (${rel.ignoradas.length}):\n- ` + rel.ignoradas.slice(0, 4).join('\n- ') + (rel.ignoradas.length > 4 ? `\n- ...e mais ${rel.ignoradas.length - 4}` : '');
+            if (rel.avisos.length) msg += `\n\nAVISOS (${rel.avisos.length}):\n- ` + rel.avisos.slice(0, 3).join('\n- ') + (rel.avisos.length > 3 ? `\n- ...e mais ${rel.avisos.length - 3}` : '');
+            msg += `\n\nIsto SUBSTITUI despesas e pagamentos atuais (${db.despesas.length} e ${db.pagamentos.length}). Os logins são mantidos. Um backup JSON do estado atual será baixado antes. Continuar?`;
+            if (!confirm(msg)) { limpar(); return; }
+            if (db.despesas.length || db.pagamentos.length) exportarBackup(true);
+            db = novo; salvarDB(); limpar();
+            toast('✅ Planilha migrada com sucesso!');
+            setTimeout(() => window.location.reload(), 1500);
+        }).catch(err => { limpar(); toast('Erro ao ler planilha: ' + err.message, 'erro'); });
     }
 
     /* ================= SYNC NUVEM ================= */
