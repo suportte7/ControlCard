@@ -6,7 +6,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#f59e0b">
-    <link rel="manifest" href="manifest.json?v=3.2">
+    <link rel="manifest" href="manifest.json?v=3.3">
     <link rel="icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f59e0b' rx='20'/%3E%3Ctext x='50' y='65' font-size='45' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'%3ECC%3C/text%3E%3C/svg%3E">
     
     <title>ControlCardMult</title>
@@ -26,7 +26,7 @@
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
         .app-container { max-width: 760px; margin: 0 auto; padding: 8px 8px 90px; box-sizing: border-box; }
         
-        .theme-btn { position: absolute; top: 10px; right: 10px; width: 32px; height: 32px; border-radius: 8px; background: var(--surface); color: var(--primary); display: flex; justify-content: center; align-items: center; cursor: pointer; border: 1px solid var(--border); z-index: 100; }
+        .theme-btn { position: absolute; top: 10px; right: 10px; width: 32px; height: 32px; border-radius: 8px; background: var(--surface); color: var(--primary); display: flex; justify-content: center; align-items: center; cursor: pointer; border: 1px solid var(--border); z-index: 100; transition: 0.2s;}
         
         .brand-line { display:flex; align-items:center; gap:8px; margin-bottom:2px; }
         .brand-mark { width:26px; height:26px; border-radius:6px; background:var(--primary); color:var(--bg); display:flex; align-items:center; justify-content:center; font-weight: bold; font-size: 0.8rem;}
@@ -163,16 +163,7 @@
         
         /* LOGIN & PIN */
         #tela-lock { position: fixed; inset: 0; background: var(--bg); z-index: 999999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;}
-        .login-user-card { background: var(--surface); border: 2px solid var(--border); border-radius: 14px; padding: 15px; width: 100%; max-width: 300px; margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; gap: 15px; transition: 0.2s;}
-        .login-user-card:active { border-color: var(--primary); background: rgba(245, 158, 11, 0.1); transform: scale(0.98);}
-        .login-avatar { width: 40px; height: 40px; border-radius: 10px; background: var(--bg); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--primary); font-size: 1.2rem;}
-        .pin-dots-container { display: flex; gap: 15px; margin: 20px 0 30px; }
-        .pin-dot { width: 18px; height: 18px; border-radius: 50%; border: 3px solid var(--border); background: transparent; transition: 0.2s;}
-        .pin-dot.filled { background: var(--primary); border-color: var(--primary); box-shadow: 0 0 10px var(--primary);}
-        .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 300px; width: 100%;}
-        .pin-kbtn { width: 70px; height: 70px; border-radius: 35px; border: none; background: var(--surface); color: var(--text); font-size: 1.8rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0 auto; box-shadow: 0 4px 20px rgba(0,0,0,.10);}
-        .pin-kbtn:active { background: var(--primary); color: #000; transform: scale(0.9);}
-        .pin-kbtn.btn-action { font-size: 1.1rem; background: transparent; box-shadow: none; border: 2px solid transparent;}
+        .login-box { width: 100%; max-width: 300px; background: var(--surface); padding: 20px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
 
         #toast-app { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translate(-50%, 30px); opacity: 0; pointer-events: none; z-index: 99999; max-width: 90vw; padding: 14px 20px; border-radius: 14px; font-weight: 700; font-size: .95rem; color: #fff; background: var(--success); box-shadow: 0 12px 40px rgba(0,0,0,.25); transition: 0.3s; text-align: center; }
         #toast-app.erro { background: var(--danger); }
@@ -181,40 +172,29 @@
 </head>
 <body>
 
-<!-- TELA DE LOGIN / LOCK -->
+<!-- TELA DE LOGIN / LOCK COM PRIVACIDADE -->
 <div id="tela-lock" style="display: none;">
     <div style="text-align: center; margin-bottom: 20px; width: 100%; max-width: 300px;">
-        <div class="brand-mark" style="width: 50px; height: 50px; font-size: 1.5rem; margin: 0 auto 10px;">CC</div>
-        <h2 style="color: var(--text); margin: 0; font-weight: 900; letter-spacing: 1px; font-size: 1.2rem;" id="login-main-title">QUEM ESTÁ ACESSANDO?</h2>
-        <p style="color: var(--text-light); font-size: 0.8rem; margin: 5px 0 15px;" id="login-subtitle">Selecione seu perfil</p>
+        <div class="brand-mark" style="width: 60px; height: 60px; font-size: 1.8rem; margin: 0 auto 10px; border-radius: 14px;">CC</div>
+        <h2 style="color: var(--text); margin: 0; font-weight: 900; letter-spacing: 1px; font-size: 1.4rem;" id="login-main-title">ACESSO SEGURO</h2>
+        <p style="color: var(--text-light); font-size: 0.85rem; margin: 5px 0 15px;" id="login-subtitle">Informe seus dados para continuar</p>
     </div>
     
-    <div id="login-users-list" style="width: 100%; max-width: 300px; max-height: 250px; overflow-y: auto; margin-bottom: 10px;"></div>
-    
-    <div id="primeiro-acesso-box" style="display: none; width: 100%; max-width: 300px;">
+    <div id="login-form-area" class="login-box">
         <div class="form-group">
-            <label style="color: var(--primary);">Defina a senha do Administrador (Dono)</label>
-            <input type="text" id="setup-admin-nome" class="form-input up-text" placeholder="Seu Nome (Ex: NETO)" style="margin-bottom: 8px;">
-            <input type="number" id="setup-admin-pin" class="form-input" placeholder="Crie um PIN (4 dígitos)" maxlength="4" style="margin-bottom: 8px;">
+            <label style="color: var(--primary);">NOME DO SEU PERFIL</label>
+            <input type="text" id="login-nome" class="form-input up-text" placeholder="Ex: NETO" style="margin-bottom: 12px; font-size:1.1rem;">
         </div>
-        <button class="btn btn-primary" onclick="salvarPrimeiroAcesso()" style="margin-bottom: 15px;">SALVAR E ENTRAR</button>
-        <hr style="border: 1px dashed var(--border); margin: 15px 0;">
-        <p style="text-align: center; font-size: 0.75rem; color: var(--text-light);">Já tem um backup com seus dados?</p>
-        <button class="btn btn-outline" style="color:var(--text);" onclick="document.getElementById('primeiro-file').click()"><span class="material-icons-outlined">upload_file</span> IMPORTAR ARQUIVO JSON</button>
-        <input type="file" id="primeiro-file" accept=".json" onchange="importarBackup(event)" style="display:none;">
-    </div>
-
-    <div id="login-pin-area" style="display: none; flex-direction: column; align-items: center; width: 100%;">
-        <div class="pin-dots-container">
-            <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+        <div class="form-group">
+            <label style="color: var(--primary);">PIN DE ACESSO</label>
+            <input type="password" id="login-pin" class="form-input" placeholder="4 DÍGITOS" inputmode="numeric" maxlength="4" style="margin-bottom: 15px; font-size:1.1rem; letter-spacing: 4px;">
         </div>
-        <div class="keypad">
-            <button class="pin-kbtn" onclick="addPin('1')">1</button><button class="pin-kbtn" onclick="addPin('2')">2</button><button class="pin-kbtn" onclick="addPin('3')">3</button>
-            <button class="pin-kbtn" onclick="addPin('4')">4</button><button class="pin-kbtn" onclick="addPin('5')">5</button><button class="pin-kbtn" onclick="addPin('6')">6</button>
-            <button class="pin-kbtn" onclick="addPin('7')">7</button><button class="pin-kbtn" onclick="addPin('8')">8</button><button class="pin-kbtn" onclick="addPin('9')">9</button>
-            <button class="pin-kbtn btn-action" style="color: var(--danger);" onclick="cancelLogin()">VOLTAR</button>
-            <button class="pin-kbtn" onclick="addPin('0')">0</button>
-            <button class="pin-kbtn btn-action" style="color: var(--primary);" onclick="backPin()"><span class="material-icons-outlined">backspace</span></button>
+        <button class="btn btn-primary" onclick="tentarLogin()">ENTRAR</button>
+        
+        <div id="btn-importar-login" style="margin-top: 15px; text-align: center; border-top: 1px dashed var(--border); padding-top: 15px;">
+            <p style="font-size: 0.75rem; color: var(--text-light); margin-bottom: 8px;">Primeiro acesso ou tem backup?</p>
+            <button class="btn-small" style="width:100%; padding: 10px;" onclick="document.getElementById('primeiro-file').click()"><span class="material-icons-outlined" style="font-size:1rem; margin-right:4px;">upload_file</span> IMPORTAR BACKUP</button>
+            <input type="file" id="primeiro-file" accept=".json" onchange="importarBackup(event)" style="display:none;">
         </div>
     </div>
 </div>
@@ -222,17 +202,19 @@
 <!-- ENVELOPE PRINCIPAL DO APLICATIVO -->
 <div id="app-wrapper" style="display: none; opacity: 0; transition: opacity 0.3s ease;">
 
-    <div class="theme-btn" style="right: 48px; background: transparent; border: 1px solid var(--border); color: var(--text-light);" onclick="mudarTela('config','Ajustes do Sistema')" title="Ajustes"><span class="material-icons-outlined" style="font-size:1.1rem;">settings</span></div>
-    <div class="theme-btn" onclick="fazerLogout()" title="Sair (Bloquear Tela)"><span class="material-icons-outlined" style="font-size:1.1rem;">logout</span></div>
+    <!-- BOTÃO DE TEMA VOLTOU -->
+    <div class="theme-btn" onclick="mudarTema()" title="Mudar Cores"><span class="material-icons-outlined" style="font-size:1.2rem;">palette</span></div>
 
     <div class="modal-overlay" id="modal-overlay" onclick="fecharModais()"></div>
 
+    <!-- DOCK COM 5 ÍCONES (CADASTROS E AJUSTES SUPER VISÍVEL) -->
     <div class="dock-wrapper">
         <div class="dock" id="dock">
             <div class="dock-item" id="icon-dashboard" onclick="mudarTela('dashboard','Visão Geral')"><span class="material-icons-outlined">space_dashboard</span></div>
             <div class="dock-item" id="icon-calendario" onclick="mudarTela('calendario','Calendário')"><span class="material-icons-outlined">event_note</span></div>
             <button class="dock-main" onclick="abrirModalLancamento()"><span class="material-icons-outlined">add</span></button>
             <div class="dock-item" id="icon-extrato" onclick="mudarTela('extrato','Cobranças e Extrato')"><span class="material-icons-outlined">receipt_long</span></div>
+            <div class="dock-item" id="icon-config" onclick="mudarTela('config','Cadastros e Ajustes')"><span class="material-icons-outlined">settings</span></div>
         </div>
     </div>
 
@@ -294,7 +276,7 @@
             <div class="form-group"><label>Quem está pagando / abatendo?</label><select id="pag-pessoa" class="form-input up-text" style="font-size: 1.2rem; color: var(--primary); border-color: var(--primary);"></select></div>
             <div class="form-group"><label>O que é este recebimento/abatimento?</label><input type="text" id="pag-desc" class="form-input" placeholder="Ex: Abatimento de dívida ou PIX Fulano"></div>
             <div style="display: flex; gap: 10px;">
-                <div class="form-group" style="flex: 2; margin-bottom:0;"><label>Valor (R$)</label>
+                <div class="form-group" style="flex: 2; margin-bottom:0;"><label>Valor Total (R$)</label>
                     <div style="display: flex; gap: 6px;"><input type="number" id="pag-valor" class="form-input input-destaque-receita" step="0.01" placeholder="0.00" style="padding: 10px;"><button class="btn-success" style="border-radius: 10px; width: 45px; border:none; display:flex; align-items:center; justify-content:center;" onclick="abrirCalc(this)"><span class="material-icons-outlined" style="font-size:1.3rem;">calculate</span></button></div>
                 </div>
                 <div class="form-group" style="flex: 1.5; margin-bottom:0;"><label>Tipo</label>
@@ -391,7 +373,7 @@
         <div class="page-header">
             <div class="brand-line" style="margin-bottom: 0;">
                 <div class="brand-mark">CC</div>
-                <span class="brand-name">ControlCardMult <span class="v-badge">v3.2</span>
+                <span class="brand-name">ControlCardMult <span class="v-badge">v3.3</span>
                     <span id="cloud-status-icon" class="material-icons-outlined cloud-status synced" onclick="sincronizarManual(false, true)">cloud_done</span>
                 </span>
             </div>
@@ -471,11 +453,13 @@
             <div id="lista-transacoes-container"></div>
         </div>
 
-        <!-- TELA 4: AJUSTES (COMUM E ADMIN) -->
+        <!-- TELA 4: AJUSTES & CADASTROS -->
         <div id="tela-config" class="tela" style="display: none;">
             
             <div class="section-label" style="color: var(--primary);">👤 Opções do seu Perfil</div>
             <div class="card">
+                <button class="btn btn-danger" style="margin-bottom: 15px; font-size: 1rem; padding: 16px;" onclick="fazerLogout()"><span class="material-icons-outlined">power_settings_new</span> DESCONECTAR / SAIR DO PERFIL</button>
+                <hr style="border: 1px dashed var(--border); margin: 15px 0;">
                 <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">notifications</span> Alertas Diários (Push)</h3>
                 <p class="helper">O app vai analisar o dia e avisar sobre quais cartões vão fechar/vencer.</p>
                 <div style="display:flex; gap:10px; margin-bottom: 10px;">
@@ -485,12 +469,10 @@
                 <button class="btn btn-outline" style="color:var(--success); border-color:var(--success);" onclick="baixarExcelUsuario()"><span class="material-icons-outlined">table_view</span> BAIXAR MEU EXCEL (CSV)</button>
             </div>
 
-            <!-- CADASTROS GLOBAIS: LIBERADOS PARA QUALQUER UM CADASTRAR -->
             <div class="section-label">Cadastros Globais</div>
-            
             <div class="card">
                 <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">people</span> Pessoas (Nomes)</h3>
-                <p class="helper">Adicione os nomes das pessoas com quem você divide contas ou empresta o cartão.</p>
+                <p class="helper">Nomes das pessoas com quem você divide contas ou empresta o cartão.</p>
                 <div style="display: flex; gap: 8px; margin-bottom: 10px;">
                     <div style="display:flex; flex:1; gap:4px;"><input type="text" id="nova-pessoa-simples" class="form-input up-text" placeholder="Nome (Ex: JOÃO)" style="margin-bottom:0; padding:10px;"><button class="btn-small" onclick="inserirEmoji(this, 'nova-pessoa-simples')">😀</button></div>
                     <button class="btn btn-primary" style="width: auto; padding: 0 12px;" onclick="addPessoaSimples()">SALVAR</button>
@@ -584,17 +566,30 @@
 </div>
 
 <script>
-    const APP_VERSION = '3.2';
+    const APP_VERSION = '3.3';
     const DB_NOME = 'ControlCard_Multi_DB'; 
     
-    // Core Inicialização
+    // Core de Temas
+    const temas = ['midnight', 'nubank', 'dracula', 'ocean'];
+    let temaAtual = localStorage.getItem('cc_tema') || 'midnight';
+    document.documentElement.setAttribute('data-theme', temaAtual);
+
+    function mudarTema() {
+        let idx = temas.indexOf(temaAtual);
+        idx = (idx + 1) % temas.length;
+        temaAtual = temas[idx];
+        document.documentElement.setAttribute('data-theme', temaAtual);
+        localStorage.setItem('cc_tema', temaAtual);
+    }
+
+    // Core Inicialização DB
     let db = JSON.parse(localStorage.getItem(DB_NOME));
     if (!db || !db.despesas) {
         db = {
-            usuarios: [], // Logins
+            usuarios: [], // Logins seguros
             cartoes: [{ nome: 'NUBANK', fechamento: 25, vencimento: 5 }],
             categorias: ["🛍 Mercado/Compras", "🚗 Transporte/Veículo", "🏠 Casa/Contas"],
-            pessoas: ['NETO'], // Apenas os nomes das pessoas
+            pessoas: ['NETO'], // Apenas os nomes das pessoas p/ cadastro
             pessoasInativas: [], cartoesInativos: [], categoriasInativas: [],
             despesas: [], pagamentos: [], emprestimos: []
         };
@@ -602,8 +597,6 @@
     }
 
     let currentUser = null; 
-    let targetPinUser = null; let typedPin = "";
-    
     let cartoesSelCal = [];
     let cartoesSelExt = [];
     let dataCalendario = new Date();
@@ -622,7 +615,7 @@
         clearTimeout(t._h); t._h = setTimeout(() => t.className = '', 3500);
     }
 
-    /* ================= LOGIN & AUTH ================= */
+    /* ================= LOGIN SEGURO (PRIVACIDADE MÁXIMA) ================= */
     window.onload = () => {
         let savedSession = sessionStorage.getItem('cc_logged_user');
         if (savedSession && db.usuarios) {
@@ -635,72 +628,51 @@
     function renderizarTelaLogin() {
         document.getElementById('app-wrapper').style.display = 'none';
         document.getElementById('tela-lock').style.display = 'flex';
-        document.getElementById('login-pin-area').style.display = 'none';
         
-        const list = document.getElementById('login-users-list');
-        list.style.display = 'block'; list.innerHTML = '';
+        // Limpa campos se houver
+        document.getElementById('login-nome').value = '';
+        document.getElementById('login-pin').value = '';
         
         let usersAtivos = db.usuarios ? db.usuarios.filter(u => u.ativo) : [];
         if (usersAtivos.length === 0) {
-            document.getElementById('primeiro-acesso-box').style.display = 'block';
-            list.style.display = 'none'; 
-            document.getElementById('login-main-title').innerText = "BEM-VINDO!";
-            document.getElementById('login-subtitle').innerText = "Vamos configurar seu acesso Mestre";
+            document.getElementById('login-main-title').innerText = "CRIAR ADMIN";
+            document.getElementById('login-subtitle').innerText = "Defina seu acesso Mestre";
+            document.getElementById('btn-importar-login').style.display = 'block';
             return;
         }
 
-        document.getElementById('primeiro-acesso-box').style.display = 'none';
-        document.getElementById('login-main-title').innerText = "QUEM ESTÁ ACESSANDO?";
-        document.getElementById('login-subtitle').innerText = "Selecione seu perfil";
-
-        usersAtivos.forEach(u => {
-            let initial = u.nome.substring(0,2).toUpperCase();
-            let adminBadge = u.role === 'admin' ? '<span class="material-icons-outlined" style="font-size:1rem; color:var(--danger); margin-left:auto;">verified_user</span>' : '';
-            list.innerHTML += `<div class="login-user-card" onclick="solicitarPin('${u.id}')">
-                <div class="login-avatar">${initial}</div>
-                <strong style="font-size:1rem; color:var(--text);">${u.nome}</strong>${adminBadge}
-            </div>`;
-        });
+        document.getElementById('login-main-title').innerText = "ACESSO SEGURO";
+        document.getElementById('login-subtitle').innerText = "Informe seus dados para continuar";
+        document.getElementById('btn-importar-login').style.display = 'none';
     }
 
-    function salvarPrimeiroAcesso() {
-        let nome = document.getElementById('setup-admin-nome').value.trim().toUpperCase();
-        let pin = document.getElementById('setup-admin-pin').value.trim();
-        if(!nome || pin.length !== 4) return toast("Preencha Nome e um PIN de 4 números.", "erro");
+    function tentarLogin() {
+        let nome = document.getElementById('login-nome').value.trim().toUpperCase();
+        let pin = document.getElementById('login-pin').value.trim();
         
-        if(!db.usuarios) db.usuarios = [];
-        db.usuarios.push({ id: 'admin_' + Date.now(), nome: nome, pin: pin, role: 'admin', ativo: true });
+        if(!nome || pin.length !== 4) return toast("Preencha Nome e PIN (4 dígitos).", "erro");
         
-        if(!db.pessoas) db.pessoas = [];
-        if(!db.pessoas.includes(nome)) db.pessoas.push(nome);
+        let usersAtivos = db.usuarios ? db.usuarios.filter(u => u.ativo) : [];
         
-        salvarDB(); renderizarTelaLogin();
-    }
+        // Se não tem ninguém, cria o Admin
+        if(usersAtivos.length === 0) {
+            db.usuarios = [{ id: 'admin_' + Date.now(), nome: nome, pin: pin, role: 'admin', ativo: true }];
+            if(!db.pessoas) db.pessoas = [];
+            if(!db.pessoas.includes(nome)) db.pessoas.push(nome);
+            salvarDB();
+            executarLoginReal(db.usuarios[0]);
+            return;
+        }
 
-    function solicitarPin(id) {
-        targetPinUser = db.usuarios.find(u => u.id === id);
-        typedPin = ""; document.querySelectorAll('.pin-dot').forEach(d => d.classList.remove('filled'));
-        document.getElementById('login-users-list').style.display = 'none';
-        document.getElementById('login-pin-area').style.display = 'flex';
-        document.getElementById('login-subtitle').innerText = `Senha de ${targetPinUser.nome}`;
-    }
-
-    function addPin(num) {
-        if(typedPin.length < 4) {
-            typedPin += num;
-            let dots = document.querySelectorAll('.pin-dot');
-            for(let i=0; i<typedPin.length; i++) dots[i].classList.add('filled');
-            if(typedPin.length === 4) {
-                setTimeout(() => {
-                    if (typedPin === targetPinUser.pin) executarLoginReal(targetPinUser);
-                    else { toast("Senha incorreta!", "erro"); cancelLogin(); }
-                }, 100);
-            }
+        // Tenta achar o usuário digitado
+        let u = usersAtivos.find(x => x.nome === nome && x.pin === pin);
+        if(u) {
+            executarLoginReal(u);
+        } else {
+            toast("Nome ou PIN Incorretos!", "erro");
+            document.getElementById('login-pin').value = '';
         }
     }
-    
-    function backPin() { if(typedPin.length > 0) { typedPin = typedPin.slice(0, -1); let dots = document.querySelectorAll('.pin-dot'); dots.forEach(d => d.classList.remove('filled')); for(let i=0; i<typedPin.length; i++) dots[i].classList.add('filled'); } }
-    function cancelLogin() { targetPinUser = null; typedPin = ""; document.getElementById('login-subtitle').innerText = "Selecione seu perfil"; renderizarTelaLogin(); }
 
     function executarLoginReal(user) {
         currentUser = user; sessionStorage.setItem('cc_logged_user', user.id);
@@ -720,10 +692,14 @@
         iniciarPushDiario();
     }
 
-    function fazerLogout() { sessionStorage.removeItem('cc_logged_user'); currentUser = null; document.getElementById('app-wrapper').style.opacity = '0'; setTimeout(()=> renderizarTelaLogin(), 300); }
+    function fazerLogout() { 
+        sessionStorage.removeItem('cc_logged_user'); 
+        currentUser = null; 
+        document.getElementById('app-wrapper').style.opacity = '0'; 
+        setTimeout(()=> renderizarTelaLogin(), 300); 
+    }
 
-    /* ================= FILTROS DE ISOLAMENTO ================= */
-    // Essa é a mágica: O Admin vê tudo, o User vê apenas as despesas vinculadas ao NOME dele na base (que significa o que ele deve).
+    /* ================= ISOLAMENTO DE DADOS ================= */
     function obterDespesasPermitidas() { return currentUser.role === 'admin' ? db.despesas : db.despesas.filter(d => d.pessoa === currentUser.nome); }
     function obterPagamentosPermitidos() { return currentUser.role === 'admin' ? db.pagamentos : db.pagamentos.filter(p => p.pessoa === currentUser.nome); }
 
@@ -731,25 +707,22 @@
     function formatarMesAno(mesStr) { if(!mesStr || !mesStr.includes('-')) return mesStr; let [ano, mes] = mesStr.split('-'); return `${MESES_ABREV[parseInt(mes)-1]}/${ano}`; }
     function getIniciais(nome) { if(!nome) return '?'; let partes = nome.replace(/[^a-zA-ZÀ-ÿ\s]/g, '').trim().split(' '); if(partes.length === 1) return partes[0].substring(0, 2).toUpperCase(); return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase(); }
 
-    /* ================= IMPORTAÇÃO DE BACKUP PROTEGIDA (Onde ocorreu seu erro) ================= */
+    /* ================= IMPORTAÇÃO DE BACKUP PROTEGIDA ================= */
     function importarBackup(e) {
         const f = e.target.files[0]; if(!f) return;
         const r = new FileReader();
         r.onload = ev => {
             try {
                 let novo = JSON.parse(ev.target.result);
-                if (!novo.despesas) return toast('Arquivo inválido: Não parece ser um backup do ControlCard.', 'erro');
+                if (!novo.despesas) return toast('Arquivo inválido: Não é um backup do ControlCard.', 'erro');
                 
-                // MÁGICA 1: Se o backup (antigo v2) NÃO TIVER usuários de login, preservamos os usuários atuais da v3.
-                // Assim o seu login Admin não é apagado e o app não trava.
-                if (!novo.usuarios || novo.usuarios.length === 0) {
-                    novo.usuarios = db.usuarios; 
-                }
+                // MÁGICA 1: Preserva usuários atuais se o backup antigo não tiver
+                if (!novo.usuarios || novo.usuarios.length === 0) novo.usuarios = db.usuarios; 
                 
-                // MÁGICA 2: Garantir que os arrays existam, mesmo que o JSON seja muito antigo.
+                // MÁGICA 2: Garante arrays
                 ['pessoas','cartoes','categorias','pessoasInativas','cartoesInativos','categoriasInativas','emprestimos', 'despesas', 'pagamentos'].forEach(k => { if (!Array.isArray(novo[k])) novo[k] = []; });
                 
-                // Tratar formato antigo de cartões caso necessário
+                // Tratar formato antigo de cartões
                 novo.cartoes = novo.cartoes.map(c => typeof c === 'string' ? {nome: c, fechamento: 25, vencimento: 5} : c);
 
                 db = novo; salvarDB();
@@ -789,7 +762,7 @@
         } else {
             fetch(url).then(r => r.json()).then(nuvem => {
                 if(nuvem && nuvem.despesas) {
-                    if (!nuvem.usuarios || nuvem.usuarios.length === 0) nuvem.usuarios = db.usuarios; // Preserva logins se nuvem estiver velha
+                    if (!nuvem.usuarios || nuvem.usuarios.length === 0) nuvem.usuarios = db.usuarios;
                     ['pessoas','cartoes','categorias','pessoasInativas','cartoesInativos','categoriasInativas','emprestimos', 'despesas', 'pagamentos'].forEach(k => { if (!Array.isArray(nuvem[k])) nuvem[k] = []; });
                     
                     if(nuvem.despesas.length > db.despesas.length || clickUsuario) {
@@ -803,7 +776,7 @@
         }
     }
 
-    /* ================= SELECTS GERAIS (As Pessoas e Cartões) ================= */
+    /* ================= SELECTS GERAIS ================= */
     function montarFiltrosGlobais() {
         let selectOptions = `<option value="MES_ATUAL">MÊS ATUAL</option><option value="MES_ANTERIOR">MÊS ANTERIOR</option><option value="ULTIMOS_3">ÚLTIMOS 3 MESES</option><option value="ANO_ATUAL">ESTE ANO</option><option value="TUDO">TUDO</option><option value="PERSONALIZADO">PERSONALIZADO...</option>`;
         document.getElementById('dash-filtro-global').innerHTML = selectOptions; document.getElementById('extrato-filtro-global').innerHTML = selectOptions;
@@ -815,22 +788,20 @@
         let cAtivos = (db.cartoes||[]).filter(c => !(db.cartoesInativos||[]).includes(c.nome||c)).sort((a,b)=>(a.nome||a).localeCompare(b.nome||b));
         let catAtivas = (db.categorias||[]).filter(c => !(db.categoriasInativas||[]).includes(c)).sort();
 
-        // 1. Pessoas (Para os Modais de Lançamento e Filtros)
+        // Pessoas
         let pSelect = `<option value="" disabled selected>SELECIONE...</option>`;
         if (currentUser.role === 'admin') {
             pAtivas.forEach(p => pSelect += `<option value="${p}">${p}</option>`);
             document.getElementById('cal-filtro-pessoa').innerHTML = `<option value="TODOS">TODAS AS PESSOAS</option>` + pSelect;
             document.getElementById('extrato-pessoa').innerHTML = `<option value="TODOS">TODAS AS PESSOAS</option>` + pSelect;
         } else {
-            // Se for usuário comum, ele VÊ as outras pessoas na hora de lançar (para caso ele tenha comprado algo para outra pessoa no cartão que ele administra), mas no filtro dele, ele só vê a si mesmo por padrão.
             pAtivas.forEach(p => pSelect += `<option value="${p}">${p}</option>`);
             document.getElementById('cal-filtro-pessoa').innerHTML = `<option value="TODOS" selected>SOMENTE EU (${currentUser.nome})</option>`;
             document.getElementById('extrato-pessoa').innerHTML = `<option value="TODOS" selected>SOMENTE EU (${currentUser.nome})</option>`;
         }
-        
         document.querySelectorAll('.pessoa-lanc, #pag-pessoa, #emp-pessoa, #edit-pessoa, #parc-pessoa, #transf-de, #transf-para, #adm-login-pessoa').forEach(el => el.innerHTML = pSelect);
 
-        // 2. Cartões
+        // Cartões
         let cSelect = `<option value="" disabled selected>SELECIONE...</option>`;
         cAtivos.forEach(c => { let n = c.nome||c; cSelect += `<option value="${n}">${n}</option>`; });
         document.getElementById('cartao').innerHTML = cSelect; document.getElementById('edit-cartao').innerHTML = cSelect;
@@ -842,12 +813,12 @@
         });
         document.getElementById('cal-cartoes-chips').innerHTML = chipsHtml; document.getElementById('ext-cartoes-chips').innerHTML = chipsHtml;
 
-        // 3. Categorias
+        // Categorias
         let catSelect = `<option value="" disabled selected>SELECIONE...</option>`;
         catAtivas.forEach(c => catSelect += `<option value="${c}">${c}</option>`);
         document.getElementById('categoria-compra').innerHTML = catSelect; document.getElementById('edit-cat').innerHTML = catSelect;
 
-        // 4. Tabelas de Configuração
+        // Tabelas Cadastros
         carregarEdicaoCartoes(); carregarEdicaoCategorias(); carregarEdicaoPessoasSimples(); 
         if(currentUser.role === 'admin') { carregarConfigAdmin(); preencherListasCorrecao(); }
     }
@@ -1027,7 +998,7 @@
         return html;
     }
 
-    /* ================= CALENDÁRIO ================= */
+    /* ================= CALENDÁRIO COM LISTA CORRIGIDA ================= */
     function mudarMesCalendario(d) { dataCalendario.setMonth(dataCalendario.getMonth() + d); document.getElementById('cal-seletor-mes').value = `${dataCalendario.getFullYear()}-${String(dataCalendario.getMonth()+1).padStart(2,'0')}`; renderizarCalendario(); }
     function irParaMesCalendario() { let v = document.getElementById('cal-seletor-mes').value; if(v) { let p = v.split('-'); dataCalendario = new Date(p[0], p[1]-1, 1); renderizarCalendario(); } }
 
@@ -1084,11 +1055,21 @@
             if(!d.dataCompra && d.cartao) { let ci = db.cartoes.find(c => (c.nome||c) === d.cartao); dDia = ci && ci.vencimento ? ci.vencimento : 10; }
             return dDia === dia;
         });
+
+        let pagDia = obterPagamentosPermitidos().filter(p => {
+            if((p.dataRef || p.data.substring(0,7)) !== mesStr || (fP !== 'TODOS' && p.pessoa !== fP)) return false;
+            let pDia = p.data && p.data.includes('-') ? parseInt(p.data.split('-')[2]) : 1;
+            return pDia === dia;
+        });
         
         let html = '';
         despDia.forEach(d => {
             let i = formatarInfoItem(d, false); let v = getValorAjustadoEmprestimo(d);
             html += `<div class="t-row" onclick="abrirEdicao(${d.id}, 'desp')"><div class="t-desc"><strong>${i.descLimp} ${i.badgeP}</strong><span>👤 ${d.pessoa} | 💳 ${d.cartao||'💲'}</span></div><div class="t-val desp">R$ ${v.toFixed(2)}</div></div>`;
+        });
+        pagDia.forEach(pg => {
+            let i = formatarInfoItem(pg, true);
+            html += `<div class="t-row" onclick="abrirEdicao(${pg.id}, 'pag')"><div class="t-desc"><strong>${i.descLimp} ${i.badgeP}</strong><span>👤 ${pg.pessoa} | 💰 Recebido</span></div><div class="t-val pag">+ R$ ${pg.valor.toFixed(2)}</div></div>`;
         });
         
         document.getElementById('cal-dia-titulo').innerText = `DIA ${dia}`;
@@ -1097,7 +1078,7 @@
     }
     function fecharDetalheDia() { document.querySelectorAll('.cal-day').forEach(el => el.classList.remove('selected')); document.getElementById('cal-dia-detalhe').classList.remove('open'); }
 
-    /* ================= EXTRATO & COBRANÇA WHATSAPP ================= */
+    /* ================= EXTRATO & COBRANÇA ================= */
     let extSelecionados = new Set();
     function mudouFiltroExtrato() { document.getElementById('extrato-custom-dates').style.display = document.getElementById('extrato-filtro-global').value === 'PERSONALIZADO' ? 'grid' : 'none'; renderizarExtrato(); }
     
@@ -1168,7 +1149,7 @@
         window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`, '_blank');
     }
 
-    /* ================= MODAIS & LANÇAMENTO COMPLETO (EXATAMENTE COMO A v2.1) ================= */
+    /* ================= MODAIS DE LANÇAMENTO (MATEMÁTICA CORRIGIDA) ================= */
     let calcTargetInput = null; let calcExp = "";
     function abrirCalc(btn) { calcTargetInput = btn.previousElementSibling; calcExp = ""; document.getElementById('calc-display').innerText = "0"; document.getElementById('modal-calc').classList.add('open'); }
     function fecharCalc() { document.getElementById('modal-calc').classList.remove('open'); calcTargetInput = null; }
@@ -1210,7 +1191,6 @@
 
     function addPagador() {
         const id = Date.now();
-        // Clona as opções do select mestre de pessoas e joga no bloco
         let pSelect = document.getElementById('cal-filtro-pessoa').innerHTML
             .replace('<option value="TODOS">TODAS AS PESSOAS</option>', '')
             .replace('<option value="TODOS" selected="">SOMENTE EU ('+currentUser.nome+')</option>', '');
@@ -1255,10 +1235,13 @@
             if(!p || isNaN(v) || v<=0) return;
             let dFinal = descLoc || descGlobal || 'Compra Diversa';
             
+            // CORREÇÃO MATEMÁTICA: DIVIDIR O VALOR PELA QUANTIDADE DE PARCELAS
+            let valorCalculado = (tipo === 'P' && parc > 1) ? (v / parc) : v;
+            
             for(let i=1; i<=parc; i++) {
                 let mRef = gerarMesVencimentoBase(dtRef, i);
                 let dShow = (tipo === 'P' && parc > 1) ? `${dFinal} (${i}/${parc})` : dFinal;
-                transacoes.push({ id: idBase + loop, desc: dShow, valor: parseFloat(v.toFixed(2)), cartao, pessoa: p, dataCompra: dtReal, dataRef: mRef, categoria: cat, comprovante: base64Desp, isAssinatura: isAss, assinaturaId: isAss ? `ass_${idBase}_${p}` : null });
+                transacoes.push({ id: idBase + loop, desc: dShow, valor: parseFloat(valorCalculado.toFixed(2)), cartao, pessoa: p, dataCompra: dtReal, dataRef: mRef, categoria: cat, comprovante: base64Desp, isAssinatura: isAss, assinaturaId: isAss ? `ass_${idBase}_${p}` : null });
                 loop++;
             }
         });
@@ -1274,10 +1257,14 @@
         let parc = tipo === 'P' ? parseInt(document.getElementById('pag-parcelas').value)||2 : (isAss ? 36 : 1);
 
         if(!p || isNaN(v) || v<=0 || !dtReal || !dtRef) return toast('Preencha a pessoa, o valor e datas.', 'erro');
+        
+        // CORREÇÃO MATEMÁTICA: DIVIDIR O VALOR SE FOR PARCELADO
+        let valorCalculado = (tipo === 'P' && parc > 1) ? (v / parc) : v;
+
         let tr = []; let idB = Date.now();
         for(let i=1; i<=parc; i++) {
             let mRef = gerarMesVencimentoBase(dtRef, i); let dShow = (tipo === 'P' && parc > 1) ? `${desc} (${i}/${parc})` : desc;
-            tr.push({ id: idB + i, desc: dShow, pessoa: p, valor: v, data: dtReal, dataRef: mRef, comprovante: base64Pag, isAssinatura: isAss, assinaturaId: isAss ? `ass_p_${idB}_${p}` : null });
+            tr.push({ id: idB + i, desc: dShow, pessoa: p, valor: parseFloat(valorCalculado.toFixed(2)), data: dtReal, dataRef: mRef, comprovante: base64Pag, isAssinatura: isAss, assinaturaId: isAss ? `ass_p_${idB}_${p}` : null });
         }
         db.pagamentos.push(...tr); salvarDB(); fecharModais(); atualizarSaldos(); sincronizarManual(true); toast('Recebido confirmado!');
     }
