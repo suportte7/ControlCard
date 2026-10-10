@@ -7,8 +7,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#f59e0b">
-    <link id="pwa-manifest" rel="manifest" href="manifest.json?v=2">
-    <link rel="apple-touch-icon" href="icon-192.png?v=2">
+    <link id="pwa-manifest" rel="manifest" href="manifest.json?v=2.1">
+    <link rel="apple-touch-icon" href="icon-192.png?v=2.1">
     <link rel="icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f59e0b' rx='20'/%3E%3Ctext x='50' y='65' font-size='45' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'%3ECC%3C/text%3E%3C/svg%3E">
     
     <title>ControlCardMult</title>
@@ -528,7 +528,7 @@
         <div class="page-header">
             <div class="brand-line" style="margin-bottom: 0;">
                 <div class="brand-mark">CC</div>
-                <span class="brand-name">ControlCardMult <span class="v-badge" id="app-versao-badge">v2</span>
+                <span class="brand-name">ControlCardMult <span class="v-badge" id="app-versao-badge">v2.1</span>
                     <span id="cloud-status-icon" class="material-icons-outlined cloud-status synced" title="Sincronização">cloud_done</span>
                 </span>
             </div>
@@ -584,7 +584,6 @@
                 
                 <div id="cal-cartoes-chips" class="chip-container"></div>
 
-                <!-- CARDS MÉTRICOS NO MESMO PADRÃO DA TELA VISÃO -->
                 <div class="metric-grid" style="margin-bottom: 10px;">
                     <div class="metric"><small>Cobrado</small><strong id="cal-metric-cobrado" style="color:var(--danger)">R$ 0,00</strong></div>
                     <div class="metric"><small>Recebido</small><strong id="cal-metric-recebido" style="color:var(--success)">R$ 0,00</strong></div>
@@ -652,20 +651,10 @@
                 <div id="box-seguranca" style="text-align: center;"><button class="btn btn-outline" style="border-color: var(--danger); color: var(--danger); padding:12px;" onclick="removerPin()">REMOVER SENHA ATUAL</button></div>
             </div>
 
-            <!-- ADICIONADO: CONTROLE DE ADMIN -->
-            <div class="section-label" style="color: var(--primary);">👤 Acesso Restrito (Admin)</div>
-            <div class="card">
-                <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">admin_panel_settings</span> Identificação de Administrador</h3>
-                <p class="helper">Insira o e-mail de administrador para liberar as ferramentas de correção, limpeza e backup em nuvem.</p>
-                <div class="form-group" style="margin-bottom:0;">
-                    <input type="email" id="admin-email-input" class="form-input" placeholder="E-mail de acesso..." style="padding:10px; font-size: 0.9rem; text-transform: none;" oninput="verificarAdmin()">
-                </div>
-            </div>
-
             <div class="section-label" style="color: var(--primary);">🔔 Notificações &amp; Alertas Diários</div>
             <div class="card" style="border-color: var(--primary);">
-                <h3 style="font-size:0.9rem; color: var(--primary);"><span class="material-icons-outlined">notifications_active</span> Push Diário de Compras</h3>
-                <p class="helper">Configure um horário fixo para receber um aviso lembrando de registrar as compras do dia.</p>
+                <h3 style="font-size:0.9rem; color: var(--primary);"><span class="material-icons-outlined">notifications_active</span> Alertas de Fechamento e Vencimento</h3>
+                <p class="helper">Configure um horário fixo. O app vai analisar o dia e avisar sobre quais cartões vão fechar/vencer hoje ou amanhã, além de lembrar das compras do dia.</p>
                 <div class="edicao-field-row">
                     <div class="form-group" style="margin-bottom:0;">
                         <label>Horário do Alerta</label>
@@ -678,27 +667,74 @@
                 <button class="btn btn-outline" style="margin-top: 10px; border-color: var(--success); color: var(--success); padding: 8px;" onclick="testarPushAgora()">🧪 TESTAR ALERTA AGORA</button>
             </div>
 
-            <div class="section-label" style="color: var(--primary);">🛠 Ferramentas Extras</div>
-            <div class="card" style="border-color: var(--primary);">
-                <h3 style="color: var(--primary); font-size:0.9rem;"><span class="material-icons-outlined">layers</span> Gestão de Assinaturas e Parcelas</h3>
-                <p class="helper">Aumente, diminua a quantidade, edite o valor ou cancele as suas compras e os seus <strong style="color:var(--success);">recebimentos mensais</strong> em lote.</p>
-                <div class="form-group"><label>PESSOA:</label><select id="parc-pessoa" class="form-input up-text" style="padding:10px;" onchange="renderizarListaParcelamentos()"></select></div>
-                <div id="lista-parcelamentos-container" style="margin: 12px 0;"><p style="color:var(--text-light); font-size:0.85rem; text-align:center;">Nenhum registo em andamento encontrado.</p></div>
+            <!-- CADASTROS LIVRES (VISÍVEL PARA TODOS) -->
+            <div class="section-label">Cadastros Ativos (Edição Global)</div>
+            
+            <div class="card">
+                <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">people</span> Pessoas (Usuários)</h3>
+                <p class="helper">Adicione, edite ou oculte pessoas do sistema.</p>
+                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                    <div style="display:flex; flex:1; gap:4px;"><input type="text" id="nova-pessoa" class="form-input up-text" placeholder="Ex: 👨 NETO" style="margin-bottom:0; padding:10px;"><button class="btn-small" onclick="inserirEmoji(this, 'nova-pessoa')">😀</button></div>
+                    <button class="btn btn-primary" style="width: auto; padding: 0 12px;" onclick="addPessoa()">SALVAR</button>
+                </div>
+                <div id="lista-edit-pessoas"></div>
+            </div>
+
+            <div class="card">
+                <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">category</span> Categorias</h3>
+                <p class="helper">Gerencie as categorias de despesas.</p>
+                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                    <div style="display:flex; flex:1; gap:4px;"><input type="text" id="nova-categoria" class="form-input up-text" placeholder="Ex: 🛍 ALIMENTAÇÃO" style="margin-bottom:0; padding:10px;"><button class="btn-small" onclick="inserirEmoji(this, 'nova-categoria')">😀</button></div>
+                    <button class="btn btn-primary" style="width: auto; padding: 0 12px;" onclick="addCategoria()">SALVAR</button>
+                </div>
+                <div id="lista-edit-categorias"></div>
             </div>
             
             <div class="card">
-                <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">move_up</span> Repassar Dívida</h3>
-                <p class="helper">Transfira contas pendentes de uma pessoa para outra sem alterar faturas.</p>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                    <div class="form-group" style="margin:0;"><label>TIRAR DE:</label><select id="transf-de" class="form-input up-text" style="padding:10px;" onchange="renderizarListaTransferencia()"></select></div>
-                    <div class="form-group" style="margin:0;"><label>PASSAR PARA:</label><select id="transf-para" class="form-input up-text" style="padding:10px;"></select></div>
+                <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">credit_card</span> Cartões</h3>
+                <p class="helper">Configure nome, melhor dia de compra (fecha) e dia do pagamento (vence).</p>
+                <div class="form-group"><div style="display:flex; gap:4px; flex:1;"><input type="text" id="novo-cartao-nome" class="form-input up-text" placeholder="Ex: 💳 NUBANK" style="padding:10px;"><button class="btn-small" onclick="inserirEmoji(this, 'novo-cartao-nome')">😀</button></div></div>
+                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                    <div class="form-group" style="flex:1; margin:0;"><label>FECHA (DIA)</label><input type="number" id="novo-cartao-fecha" class="form-input" placeholder="25" style="padding:10px;"></div>
+                    <div class="form-group" style="flex:1; margin:0;"><label>VENCE (DIA)</label><input type="number" id="novo-cartao-vence" class="form-input" placeholder="05" style="padding:10px;"></div>
                 </div>
-                <div id="lista-transferencia-container" style="margin: 10px 0;"><p style="color:var(--text-light); font-size:0.8rem;">Nenhuma dívida para transferir.</p></div>
-                <button class="btn btn-outline" style="border-color: var(--primary); color: var(--primary); padding:10px;" onclick="executarTransferenciaInterativa()">Repassar Contas Marcadas</button>
+                <button class="btn btn-outline" style="margin-bottom: 10px; padding:10px;" onclick="addCartao()">ADICIONAR CARTÃO</button>
+                <div id="lista-edit-cartoes"></div>
+            </div>
+            <!-- FIM CADASTROS LIVRES -->
+
+            <!-- BARREIRA DE ACESSO RESTRITO -->
+            <div class="section-label" style="color: var(--danger); margin-top: 30px;">🔑 Área Restrita (Admin)</div>
+            <div class="card" style="border-color: var(--danger);">
+                <h3 style="font-size:0.9rem; color: var(--danger);"><span class="material-icons-outlined">admin_panel_settings</span> Identificação de Administrador</h3>
+                <p class="helper">Insira o e-mail do dono para liberar ferramentas de gestão em lote, correções e backup em nuvem.</p>
+                <div class="form-group" style="margin-bottom:0;">
+                    <input type="email" id="admin-email-input" class="form-input" placeholder="E-mail de acesso..." style="padding:10px; font-size: 0.9rem; text-transform: none; border-color: rgba(239, 68, 68, 0.5);" oninput="verificarAdmin()">
+                </div>
             </div>
 
-            <!-- CONTAINER OCULTO PARA FERRAMENTAS PERIGOSAS -->
+            <!-- CONTAINER OCULTO PARA FERRAMENTAS RESTRITAS E DESTRUTIVAS -->
             <div id="admin-tools-container" style="display: none;">
+                
+                <div class="section-label" style="color: var(--danger);">🛠 Gestão em Massa</div>
+                <div class="card" style="border-color: var(--danger);">
+                    <h3 style="color: var(--danger); font-size:0.9rem;"><span class="material-icons-outlined">layers</span> Gestão de Assinaturas e Parcelas</h3>
+                    <p class="helper">Aumente, diminua a quantidade, edite o valor ou cancele as suas compras e os seus <strong style="color:var(--success);">recebimentos mensais</strong> em lote.</p>
+                    <div class="form-group"><label>PESSOA:</label><select id="parc-pessoa" class="form-input up-text" style="padding:10px;" onchange="renderizarListaParcelamentos()"></select></div>
+                    <div id="lista-parcelamentos-container" style="margin: 12px 0;"><p style="color:var(--text-light); font-size:0.85rem; text-align:center;">Nenhum registo em andamento encontrado.</p></div>
+                </div>
+                
+                <div class="card" style="border-color: var(--danger);">
+                    <h3 style="color: var(--danger); font-size:0.9rem;"><span class="material-icons-outlined">move_up</span> Repassar Dívida</h3>
+                    <p class="helper">Transfira contas pendentes de uma pessoa para outra sem alterar faturas.</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        <div class="form-group" style="margin:0;"><label>TIRAR DE:</label><select id="transf-de" class="form-input up-text" style="padding:10px;" onchange="renderizarListaTransferencia()"></select></div>
+                        <div class="form-group" style="margin:0;"><label>PASSAR PARA:</label><select id="transf-para" class="form-input up-text" style="padding:10px;"></select></div>
+                    </div>
+                    <div id="lista-transferencia-container" style="margin: 10px 0;"><p style="color:var(--text-light); font-size:0.8rem;">Nenhuma dívida para transferir.</p></div>
+                    <button class="btn btn-outline" style="border-color: var(--danger); color: var(--danger); padding:10px;" onclick="executarTransferenciaInterativa()">Repassar Contas Marcadas</button>
+                </div>
+
                 <div class="section-label" style="color: var(--danger);">🔧 Correção Direta</div>
                 <div class="card" style="border: 1px solid var(--danger);">
                     <h3 style="color: var(--danger); font-size:0.9rem;"><span class="material-icons-outlined">build</span> Substituir em Massa</h3>
@@ -715,27 +751,29 @@
                     </div>
                     <button class="btn btn-danger" style="padding:10px;" onclick="executarCorrecaoLadoALado()">APLICAR CORREÇÃO</button>
                 </div>
-                <div class="section-label">Sistema &amp; Backup Nuvem v2</div>
-                <div class="card">
-                    <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">cloud_sync</span> Sincronizar Google Drive</h3>
+                
+                <div class="section-label" style="color: var(--danger);">Sistema &amp; Backup Nuvem v2.1</div>
+                <div class="card" style="border-color: var(--danger);">
+                    <h3 style="color: var(--danger); font-size:0.9rem;"><span class="material-icons-outlined">cloud_sync</span> Sincronizar Google Drive</h3>
                     <p class="helper">Use os botões abaixo para enviar ou puxar do Google Drive. O sistema detectará atualizações automaticamente ao abrir.</p>
                     <div class="form-group" style="display:flex; gap:8px; flex-direction: column;">
-                        <input type="url" id="drive-webhook" class="form-input" style="font-size: 0.8rem; text-transform: none; padding:10px;" placeholder="https://script.google.com/..." onchange="salvarWebhook()">
+                        <input type="url" id="drive-webhook" class="form-input" style="font-size: 0.8rem; text-transform: none; padding:10px; border-color: rgba(239, 68, 68, 0.5);" placeholder="https://script.google.com/..." onchange="salvarWebhook()">
                         <div style="display: flex; gap: 8px;">
                             <button class="btn btn-outline" style="flex:1; padding:10px; border-color: var(--primary); color: var(--primary);" onclick="puxarDoDrive()"><span class="material-icons-outlined">cloud_download</span> PUXAR (Vem)</button>
                             <button class="btn btn-primary" style="flex:1; padding:10px;" onclick="backupParaDrive(true)"><span class="material-icons-outlined">cloud_upload</span> ENVIAR (Vai)</button>
                         </div>
                     </div>
-                    <hr style="border: 1px solid var(--border); margin: 12px 0;">
-                    <button class="btn btn-outline" style="margin-bottom: 8px; padding:10px;" onclick="document.getElementById('import-file').click()"><span class="material-icons-outlined">file_upload</span> Importar Backup Manual</button>
+                    <hr style="border: 1px solid rgba(239, 68, 68, 0.2); margin: 12px 0;">
+                    <button class="btn btn-outline" style="margin-bottom: 8px; padding:10px; color: var(--text);" onclick="document.getElementById('import-file').click()"><span class="material-icons-outlined">file_upload</span> Importar Backup Manual</button>
                     <input type="file" id="import-file" accept=".json" onchange="importarBackup(event)" style="display:none;">
-                    <button class="btn btn-outline" style="margin-bottom: 8px; padding:10px;" onclick="exportarBackup(false)"><span class="material-icons-outlined">download</span> Baixar Backup JSON</button>
-                    <button class="btn btn-primary" style="margin-bottom: 12px; padding:10px;" onclick="exportarBackupHtml()"><span class="material-icons-outlined">code</span> Baixar Cópia HTML (App)</button>
-                    <hr style="border: 1px solid var(--border); margin: 12px 0;">
+                    <button class="btn btn-outline" style="margin-bottom: 8px; padding:10px; color: var(--text);" onclick="exportarBackup(false)"><span class="material-icons-outlined">download</span> Baixar Backup JSON</button>
+                    <button class="btn btn-outline" style="margin-bottom: 12px; padding:10px; color: var(--text); border-color: var(--border);" onclick="exportarBackupHtml()"><span class="material-icons-outlined">code</span> Baixar Cópia HTML (App)</button>
+                    <hr style="border: 1px solid rgba(239, 68, 68, 0.2); margin: 12px 0;">
                     <button class="btn btn-danger" style="padding:10px;" onclick="zerarApp()"><span class="material-icons-outlined">delete_forever</span> ZERAR BASE COMPLETA</button>
                 </div>
+                
                 <div class="section-label" style="color: var(--danger);">Limpeza de Base</div>
-                <div class="card" style="border-color: rgba(239, 68, 68, 0.3);">
+                <div class="card" style="border-color: rgba(239, 68, 68, 0.5);">
                     <h3 style="color: var(--danger); font-size:0.9rem;"><span class="material-icons-outlined">delete_sweep</span> Lixeira por Data</h3>
                     <p class="helper">Apague históricos velhos para deixar o app leve (Recomendado para aliviar fotos antigas).</p>
                     <div class="form-group">
@@ -743,48 +781,19 @@
                         <input type="month" id="corte-lixeira-mes" class="form-input" style="border-color: var(--danger); padding:10px;">
                     </div>
                     <button class="btn btn-danger" style="padding:10px;" onclick="executarLimpezaPorData()">APAGAR ANTIGOS</button>
-                    <hr style="border: 1px solid var(--border); margin: 12px 0;">
+                    <hr style="border: 1px solid rgba(239, 68, 68, 0.2); margin: 12px 0;">
                     <p class="helper">Limpeza automática de listas de opções (Cadastros não usados):</p>
-                    <button class="btn btn-outline" style="padding:10px;" onclick="limparOrfaos()">REMOVER CADASTROS VAZIOS</button>
+                    <button class="btn btn-outline" style="padding:10px; border-color: var(--danger); color: var(--danger);" onclick="limparOrfaos()">REMOVER CADASTROS VAZIOS</button>
                 </div>
-            </div>
 
-            <div class="section-label">Cadastros Ativos (Edição Global)</div>
-            <div class="card">
-                <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">category</span> Categorias</h3>
-                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                    <div style="display:flex; flex:1; gap:4px;"><input type="text" id="nova-categoria" class="form-input up-text" placeholder="Ex: 🛍 ALIMENTAÇÃO" style="margin-bottom:0; padding:10px;"><button class="btn-small" onclick="inserirEmoji(this, 'nova-categoria')">😀</button></div>
-                    <button class="btn btn-primary" style="width: auto; padding: 0 12px;" onclick="addCategoria()">SALVAR</button>
-                </div>
-                <div id="lista-edit-categorias"></div>
-            </div>
-            
-            <div class="card">
-                <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">people</span> Pessoas</h3>
-                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                    <div style="display:flex; flex:1; gap:4px;"><input type="text" id="nova-pessoa" class="form-input up-text" placeholder="Ex: 👨 NETO" style="margin-bottom:0; padding:10px;"><button class="btn-small" onclick="inserirEmoji(this, 'nova-pessoa')">😀</button></div>
-                    <button class="btn btn-primary" style="width: auto; padding: 0 12px;" onclick="addPessoa()">SALVAR</button>
-                </div>
-                <div id="lista-edit-pessoas"></div>
-            </div>
-            
-            <div class="card">
-                <h3 style="font-size:0.9rem;"><span class="material-icons-outlined">credit_card</span> Cartões</h3>
-                <div class="form-group"><div style="display:flex; gap:4px; flex:1;"><input type="text" id="novo-cartao-nome" class="form-input up-text" placeholder="Ex: 💳 NUBANK" style="padding:10px;"><button class="btn-small" onclick="inserirEmoji(this, 'novo-cartao-nome')">😀</button></div></div>
-                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                    <div class="form-group" style="flex:1; margin:0;"><label>FECHA</label><input type="number" id="novo-cartao-fecha" class="form-input" placeholder="25" style="padding:10px;"></div>
-                    <div class="form-group" style="flex:1; margin:0;"><label>VENCE</label><input type="number" id="novo-cartao-vence" class="form-input" placeholder="05" style="padding:10px;"></div>
-                </div>
-                <button class="btn btn-outline" style="margin-bottom: 10px; padding:10px;" onclick="addCartao()">ADICIONAR CARTÃO</button>
-                <div id="lista-edit-cartoes"></div>
-            </div>
+            </div> <!-- FIM ADMIN TOOLS CONTAINER -->
         </div>
     </div>
 </div>
 
 <script>
     /* ================= TEMAS E FORMATADORES ================= */
-    const APP_VERSION = '2';
+    const APP_VERSION = '2.1';
     const DB_NOME_FIXO = 'ControlCard_v1_DB'; 
     let db = JSON.parse(localStorage.getItem(DB_NOME_FIXO)) || { pessoas: [], cartoes: [], categorias: [], despesas: [], pagamentos: [], emprestimos: [] };
     if(!db.emprestimos) db.emprestimos = [];
@@ -873,7 +882,32 @@
             let hojeStr = getLocalToday();
 
             if (horaMin === horarioConfig && ultimoDisparo !== hojeStr) {
-                dispararPushNotificacao("🛒 Hora de lançar!", "Não se esqueça de registrar as compras e despesas de hoje no ControlCardMult.");
+                
+                let diaAtual = agora.getDate();
+                let amanhaObj = new Date(agora);
+                amanhaObj.setDate(amanhaObj.getDate() + 1);
+                let diaAmanha = amanhaObj.getDate();
+
+                let alertasCartoes = [];
+                db.cartoes.filter(c => !db.cartoesInativos.includes(c.nome || c)).forEach(c => {
+                    let nome = c.nome || c;
+                    let fecha = parseInt(c.fechamento);
+                    let vence = parseInt(c.vencimento);
+
+                    // Lógica para Melhor Dia (fechamento) e Vencimentos
+                    if (diaAtual === fecha) alertasCartoes.push(`✅ Melhor dia compra: ${nome}`);
+                    if (diaAtual === vence) alertasCartoes.push(`⚠️ Vence HOJE: ${nome}`);
+                    if (diaAmanha === vence) alertasCartoes.push(`⚠️ Vence AMANHÃ: ${nome}`);
+                });
+
+                let titulo = "🛒 Resumo do Dia";
+                let corpo = "Hora de registrar suas compras e recebimentos no ControlCard.";
+                
+                if (alertasCartoes.length > 0) {
+                    corpo = alertasCartoes.join("\n") + "\n\n" + corpo;
+                }
+
+                dispararPushNotificacao(titulo, corpo);
                 localStorage.setItem('cc_push_ultimo', hojeStr);
             }
         }, 30000);
@@ -893,11 +927,11 @@
         if (!("Notification" in window)) return alert("Seu navegador não suporta notificações.");
         if (Notification.permission !== "granted") {
             Notification.requestPermission().then(perm => {
-                if (perm === "granted") dispararPushNotificacao("🧪 Teste ControlCardMult", "As notificações estão funcionando perfeitamente!");
+                if (perm === "granted") dispararPushNotificacao("🧪 Teste Push", "✅ Melhor dia compra: NUBANK\n⚠️ Vence Amanhã: ITAÚ\n\nNotificações funcionando perfeitamente!");
                 else alert("Permissão de notificação negada pelo navegador.");
             });
         } else {
-            dispararPushNotificacao("🧪 Teste ControlCardMult", "As notificações estão funcionando perfeitamente!");
+            dispararPushNotificacao("🧪 Teste Push", "✅ Melhor dia compra: NUBANK\n⚠️ Vence Amanhã: ITAÚ\n\nNotificações funcionando perfeitamente!");
         }
     }
 
@@ -2903,6 +2937,8 @@
         if(n && !db.cartoes.find(x => (x.nome||x) === n)) { 
             db.cartoes.push({nome: n.toUpperCase(), fechamento: f, vencimento: v}); 
             document.getElementById('novo-cartao-nome').value=''; 
+            document.getElementById('novo-cartao-fecha').value=''; 
+            document.getElementById('novo-cartao-vence').value=''; 
             salvarDB(); carregarEdicaoCartoes(); preencherListasCorrecao(); 
         }
     }
@@ -3073,7 +3109,7 @@
     }
 
     function iniciarPWA() {
-        carregarAdminStorage(); // Ativa as ferramentas caso o e-mail já esteja salvo
+        carregarAdminStorage(); 
         
         carregarWebhook();
         carregarSelects(); 
@@ -3104,6 +3140,5 @@
         }
     }
 </script>
-
 
 </body></html>
