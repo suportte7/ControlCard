@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="midnight"><head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <!-- Configurações do App Instalável (PWA) -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="ControlCard">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <meta name="theme-color" content="#f59e0b">
-    <link rel="manifest" href="manifest.json?v=3.3">
+    <link rel="manifest" href="manifest.json?v=3.5">
     <link rel="icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f59e0b' rx='20'/%3E%3Ctext x='50' y='65' font-size='45' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'%3ECC%3C/text%3E%3C/svg%3E">
     
     <title>ControlCardMult</title>
@@ -23,6 +26,12 @@
         [data-theme="ocean"] { --bg: #f0f8ff; --surface: #ffffff; --text: #0f172a; --text-light: #64748b; --primary: #0284c7; --danger: #ef4444; --success: #059669; --border: #cbd5e1; }
         [data-theme="midnight"] { --bg: #0f172a; --surface: #1e293b; --text: #f8fafc; --text-light: #94a3b8; --primary: #c084fc; --danger: #f43f5e; --success: #10b981; --border: #334155; }
 
+        /* Comportamento de app nativo: sem puxar-para-atualizar, sem zoom por toque duplo, respeita o entalhe do celular */
+        html, body { overscroll-behavior-y: none; overscroll-behavior-x: none; }
+        html { -webkit-text-size-adjust: 100%; }
+        body { touch-action: manipulation; -webkit-touch-callout: none; padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+        .app-container { padding-top: calc(8px + env(safe-area-inset-top)); }
+        .dock-wrapper { bottom: calc(12px + env(safe-area-inset-bottom)) !important; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
         .app-container { max-width: 760px; margin: 0 auto; padding: 8px 8px 90px; box-sizing: border-box; }
         
@@ -189,6 +198,7 @@
             <label style="color: var(--primary);">PIN DE ACESSO</label>
             <input type="password" id="login-pin" class="form-input" placeholder="4 DÍGITOS" inputmode="numeric" maxlength="4" style="margin-bottom: 15px; font-size:1.1rem; letter-spacing: 4px;">
         </div>
+        <label style="display:flex; align-items:center; gap:8px; margin:0 0 14px; font-size:0.8rem; color:var(--text-light); cursor:pointer;"><input type="checkbox" id="login-manter" checked style="width:18px; height:18px; accent-color: var(--primary);"> Manter conectado neste aparelho</label>
         <button class="btn btn-primary" onclick="tentarLogin()">ENTRAR</button>
         
         <div id="btn-importar-login" style="margin-top: 15px; text-align: center; border-top: 1px dashed var(--border); padding-top: 15px;">
@@ -414,6 +424,7 @@
                     <input type="month" id="cal-seletor-mes" style="display:none;" onchange="irParaMesCalendario()">
                     <button class="cal-nav-btn" style="right:6px;" onclick="mudarMesCalendario(1)"><span class="material-icons-outlined">chevron_right</span></button>
                 </div>
+                <div style="text-align:center; margin:-2px 0 8px;"><span onclick="irParaHoje()" style="font-size:0.7rem; font-weight:800; letter-spacing:.06em; color:var(--primary); border:1px solid var(--border); border-radius:12px; padding:4px 14px; cursor:pointer;">HOJE</span></div>
                 <div class="form-group" style="margin-bottom: 10px;">
                     <select id="cal-filtro-pessoa" class="form-input up-text" style="padding: 10px; font-size:0.85rem;" onchange="renderizarCalendario()"></select>
                 </div>
@@ -440,7 +451,7 @@
                 <div class="form-group" style="margin-bottom: 8px;"><select id="extrato-filtro-global" class="form-input up-text" style="font-weight: 800; padding: 10px;" onchange="mudouFiltroExtrato()"></select></div>
                 <div id="extrato-custom-dates" class="date-custom-grid" style="display:none;"><div><label>INÍCIO</label><input type="date" id="extrato-dt-ini" onchange="renderizarExtrato()"></div><div><label>FIM</label><input type="date" id="extrato-dt-fim" onchange="renderizarExtrato()"></div></div>
                 <div class="form-group" style="margin-bottom: 8px;"><select id="extrato-pessoa" class="form-input up-text" style="padding:10px; color: var(--primary); border-color: var(--primary);" onchange="renderizarExtrato()"></select></div>
-                <div class="form-group" style="margin-bottom: 8px;"><input type="search" id="extrato-busca" class="form-input" placeholder="🔍 Buscar por descrição..." oninput="renderizarExtrato()" style="padding:10px;"></div>
+                <div class="form-group" style="margin-bottom: 8px;"><input type="search" id="extrato-busca" class="form-input" placeholder="🔍 Buscar descrição, pessoa, cartão ou valor..." oninput="renderizarExtrato()" style="padding:10px;"></div>
                 <div id="ext-cartoes-chips" class="chip-container" style="margin-bottom: 4px;"></div>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border: 1px solid var(--border); padding: 10px 12px; border-radius: 10px; background: var(--surface);">
@@ -566,7 +577,7 @@
 </div>
 
 <script>
-    const APP_VERSION = '3.3';
+    const APP_VERSION = '3.5';
     const DB_NOME = 'ControlCard_Multi_DB'; 
     
     // Core de Temas
@@ -599,17 +610,33 @@
     let currentUser = null; 
     let cartoesSelCal = [];
     let cartoesSelExt = [];
-    let dataCalendario = new Date();
+    let dataCalendario = new Date(); dataCalendario.setDate(1);
     let visaoDashboardAtual = 'pessoa';
     let base64Desp = null; let base64Pag = null;
     
-    function salvarDB() { localStorage.setItem(DB_NOME, JSON.stringify(db)); }
+    function salvarDB() {
+        try { localStorage.setItem(DB_NOME, JSON.stringify(db)); localStorage.setItem('cc_pendente_envio', '1'); return true; }
+        catch (e) { toast('⚠️ Memória do aparelho cheia! Baixe um backup e apague comprovantes antigos.', 'erro'); return false; }
+    }
+
+    // Comprovantes: a mesma foto de uma compra parcelada fica guardada UMA vez só
+    function obterComprovante(x) { return x.comprovante || ((db.comprovantes || {})[x.comprovanteId]) || null; }
+    function compactarComprovantes() {
+        db.comprovantes = db.comprovantes || {}; let mudou = false;
+        const todos = [...db.despesas, ...db.pagamentos];
+        const cont = {}; todos.forEach(x => { if (x.comprovante) cont[x.comprovante] = (cont[x.comprovante] || 0) + 1; });
+        const idDe = {}; let n = 0;
+        todos.forEach(x => { if (x.comprovante && cont[x.comprovante] > 1) { let id = idDe[x.comprovante]; if (!id) { id = idDe[x.comprovante] = 'c_dup' + (++n) + '_' + Date.now(); db.comprovantes[id] = x.comprovante; } x.comprovanteId = id; x.comprovante = null; mudou = true; } });
+        const usados = new Set(todos.map(x => x.comprovanteId).filter(Boolean));
+        Object.keys(db.comprovantes).forEach(k => { if (!usados.has(k)) { delete db.comprovantes[k]; mudou = true; } });
+        if (mudou) salvarDB();
+    }
     function brl(v) { return (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
     function getLocalToday() { let d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().split('T')[0]; }
 
     function toast(msg, tipo) {
         let t = document.getElementById('toast-app');
-        if (!t) return;
+        if (!t) { t = document.createElement('div'); t.id = 'toast-app'; document.body.appendChild(t); } // o aviso não existia no HTML: as mensagens nunca apareciam
         t.className = 'show ' + (tipo || 'ok');
         t.textContent = msg;
         clearTimeout(t._h); t._h = setTimeout(() => t.className = '', 3500);
@@ -617,7 +644,7 @@
 
     /* ================= LOGIN SEGURO (PRIVACIDADE MÁXIMA) ================= */
     window.onload = () => {
-        let savedSession = sessionStorage.getItem('cc_logged_user');
+        let savedSession = localStorage.getItem('cc_logged_user') || sessionStorage.getItem('cc_logged_user');
         if (savedSession && db.usuarios) {
             let u = db.usuarios.find(x => x.id === savedSession);
             if(u && u.ativo) { executarLoginReal(u); return; }
@@ -646,6 +673,8 @@
         document.getElementById('btn-importar-login').style.display = 'none';
     }
 
+    function manterConectado() { let c = document.getElementById('login-manter'); return c ? c.checked : true; }
+
     function tentarLogin() {
         let nome = document.getElementById('login-nome').value.trim().toUpperCase();
         let pin = document.getElementById('login-pin').value.trim();
@@ -660,22 +689,25 @@
             if(!db.pessoas) db.pessoas = [];
             if(!db.pessoas.includes(nome)) db.pessoas.push(nome);
             salvarDB();
-            executarLoginReal(db.usuarios[0]);
+            executarLoginReal(db.usuarios[0], manterConectado());
             return;
         }
 
         // Tenta achar o usuário digitado
         let u = usersAtivos.find(x => x.nome === nome && x.pin === pin);
         if(u) {
-            executarLoginReal(u);
+            executarLoginReal(u, manterConectado());
         } else {
             toast("Nome ou PIN Incorretos!", "erro");
             document.getElementById('login-pin').value = '';
         }
     }
 
-    function executarLoginReal(user) {
-        currentUser = user; sessionStorage.setItem('cc_logged_user', user.id);
+    function executarLoginReal(user, manter) {
+        currentUser = user;
+        // manter === true: lembra neste aparelho; false: só até fechar o app; undefined: não muda (sessão restaurada)
+        if (manter === true) { localStorage.setItem('cc_logged_user', user.id); sessionStorage.removeItem('cc_logged_user'); }
+        else if (manter === false) { sessionStorage.setItem('cc_logged_user', user.id); localStorage.removeItem('cc_logged_user'); }
         document.getElementById('tela-lock').style.display = 'none';
         let wrap = document.getElementById('app-wrapper');
         wrap.style.display = 'block'; setTimeout(()=> wrap.style.opacity = '1', 50);
@@ -684,6 +716,7 @@
         if(user.role === 'admin') document.getElementById('admin-panel').style.display = 'block';
         else document.getElementById('admin-panel').style.display = 'none';
 
+        compactarComprovantes();
         carregarWebhook();
         montarFiltrosGlobais();
         carregarSelectsGerais();
@@ -693,7 +726,7 @@
     }
 
     function fazerLogout() { 
-        sessionStorage.removeItem('cc_logged_user'); 
+        sessionStorage.removeItem('cc_logged_user'); localStorage.removeItem('cc_logged_user');
         currentUser = null; 
         document.getElementById('app-wrapper').style.opacity = '0'; 
         setTimeout(()=> renderizarTelaLogin(), 300); 
@@ -921,7 +954,7 @@
 
         if(forcePush) {
             fetch(url, { method: 'POST', body: JSON.stringify({ dados: db, versao: "v3" }) })
-            .then(r => { icon.innerText = 'cloud_done'; icon.classList.add('synced'); if(clickUsuario) toast("Enviado para nuvem!"); })
+            .then(r => { localStorage.removeItem('cc_pendente_envio'); icon.innerText = 'cloud_done'; icon.classList.add('synced'); if(clickUsuario) toast("Enviado para nuvem!"); })
             .catch(e => { icon.innerText = 'cloud_off'; icon.classList.add('offline'); });
         } else {
             fetch(url).then(r => r.json()).then(nuvem => {
@@ -929,9 +962,12 @@
                     if (!nuvem.usuarios || nuvem.usuarios.length === 0) nuvem.usuarios = db.usuarios;
                     ['pessoas','cartoes','categorias','pessoasInativas','cartoesInativos','categoriasInativas','emprestimos', 'despesas', 'pagamentos'].forEach(k => { if (!Array.isArray(nuvem[k])) nuvem[k] = []; });
                     
+                    const pendente = localStorage.getItem('cc_pendente_envio') === '1';
+                    if (pendente && !clickUsuario) { sincronizarManual(true, false); return; } // há alterações locais ainda não enviadas: envia em vez de sobrescrever
+                    if (clickUsuario && pendente && !confirm('Você tem alterações neste aparelho que ainda não foram enviadas. Puxar da nuvem vai SUBSTITUIR essas alterações. Continuar?')) return;
                     if(nuvem.despesas.length > db.despesas.length || clickUsuario) {
-                        db = nuvem; salvarDB(); carregarSelectsGerais();
-                        if(document.getElementById('tela-dashboard').style.display === 'block') atualizarSaldos();
+                        db = nuvem; salvarDB(); localStorage.removeItem('cc_pendente_envio'); carregarSelectsGerais();
+                        atualizarTelaAtual();
                         if(clickUsuario) toast("Sincronizado da Nuvem!");
                     }
                 }
@@ -954,12 +990,17 @@
 
         // Pessoas
         let pSelect = `<option value="" disabled selected>SELECIONE...</option>`;
+        pAtivas.forEach(p => pSelect += `<option value="${p}">${p}</option>`);
+        const vCal = document.getElementById('cal-filtro-pessoa').value, vExt = document.getElementById('extrato-pessoa').value;
         if (currentUser.role === 'admin') {
-            pAtivas.forEach(p => pSelect += `<option value="${p}">${p}</option>`);
-            document.getElementById('cal-filtro-pessoa').innerHTML = `<option value="TODOS">TODAS AS PESSOAS</option>` + pSelect;
-            document.getElementById('extrato-pessoa').innerHTML = `<option value="TODOS">TODAS AS PESSOAS</option>` + pSelect;
+            // Filtros NÃO levam a opção "SELECIONE..." (ela deixava o valor vazio e escondia tudo)
+            let optsFiltro = `<option value="TODOS">TODAS AS PESSOAS</option>` + pAtivas.map(p => `<option value="${p}">${p}</option>`).join('');
+            document.getElementById('cal-filtro-pessoa').innerHTML = optsFiltro;
+            document.getElementById('extrato-pessoa').innerHTML = optsFiltro;
+            // mantém a pessoa escolhida quando a lista é recarregada (ex.: ao tocar num cartão)
+            if (vCal && pAtivas.includes(vCal)) document.getElementById('cal-filtro-pessoa').value = vCal;
+            if (vExt && pAtivas.includes(vExt)) document.getElementById('extrato-pessoa').value = vExt;
         } else {
-            pAtivas.forEach(p => pSelect += `<option value="${p}">${p}</option>`);
             document.getElementById('cal-filtro-pessoa').innerHTML = `<option value="TODOS" selected>SOMENTE EU (${currentUser.nome})</option>`;
             document.getElementById('extrato-pessoa').innerHTML = `<option value="TODOS" selected>SOMENTE EU (${currentUser.nome})</option>`;
         }
@@ -1068,7 +1109,7 @@
         }
         let txtD = d.dataCompra || d.data;
         let textData = txtD ? txtD.split('-').reverse().join('/') : '--/--/----';
-        let compIcon = d.comprovante ? `<span class="material-icons-outlined" style="font-size:0.8rem; color:var(--primary); margin-left:4px;">image</span>` : '';
+        let compIcon = obterComprovante(d) ? `<span class="material-icons-outlined" style="font-size:0.8rem; color:var(--primary); margin-left:4px;">image</span>` : '';
         return { descLimp, badgeP, textData, cat, compIcon };
     }
 
@@ -1093,6 +1134,16 @@
         document.getElementById('lista-arvore-saldos').innerHTML = html || '<p style="color:var(--text-light); text-align:center;">Sem movimentos no período.</p>';
     }
     
+    // Re-desenha a tela que está aberta (dashboard, calendário, extrato ou config) depois de qualquer alteração
+    function atualizarTelaAtual() {
+        if (typeof currentUser === 'undefined' || !currentUser) return;
+        const aberta = id => { const el = document.getElementById('tela-' + id); return !!el && el.style.display === 'block'; };
+        if (aberta('dashboard')) atualizarSaldos();
+        if (aberta('calendario')) { fecharDetalheDia(); renderizarCalendario(); }
+        if (aberta('extrato')) renderizarExtrato();
+        if (aberta('config') && currentUser.role === 'admin') { renderizarListaParcelamentos(); renderizarListaTransferencia(); }
+    }
+
     function alternarVisaoDash(modo) { visaoDashboardAtual = modo; document.getElementById('btn-visao-pessoa').classList.toggle('active', modo === 'pessoa'); document.getElementById('btn-visao-cartao').classList.toggle('active', modo === 'cartao'); atualizarSaldos(); }
 
     function construirArvorePessoas(pessoasUnicas, despesas, pags) {
@@ -1164,6 +1215,7 @@
 
     /* ================= CALENDÁRIO COM LISTA CORRIGIDA ================= */
     function mudarMesCalendario(d) { dataCalendario.setMonth(dataCalendario.getMonth() + d); document.getElementById('cal-seletor-mes').value = `${dataCalendario.getFullYear()}-${String(dataCalendario.getMonth()+1).padStart(2,'0')}`; renderizarCalendario(); }
+    function irParaHoje() { dataCalendario = new Date(); dataCalendario.setDate(1); document.getElementById('cal-seletor-mes').value = `${dataCalendario.getFullYear()}-${String(dataCalendario.getMonth()+1).padStart(2,'0')}`; renderizarCalendario(); }
     function irParaMesCalendario() { let v = document.getElementById('cal-seletor-mes').value; if(v) { let p = v.split('-'); dataCalendario = new Date(p[0], p[1]-1, 1); renderizarCalendario(); } }
 
     function renderizarCalendario() {
@@ -1195,20 +1247,22 @@
         document.getElementById('cal-metric-saldo').innerText = brl(Math.abs(totD - totP));
 
         let primDia = new Date(ano, mes, 1).getDay();
+        const agora = new Date(); const ehMesAtual = agora.getFullYear() === ano && agora.getMonth() === mes;
+        const estHoje = n => (ehMesAtual && n === agora.getDate()) ? 'style="outline:2px solid var(--primary); outline-offset:-2px;"' : '';
         for(let i=0; i<primDia; i++) grid.innerHTML += `<div class="cal-day empty"></div>`;
         
         for(let dia=1; dia<=maxDias; dia++) {
             if(mapa[dia]) {
                 let tD = mapa[dia].d > 0 ? `${mapa[dia].d.toFixed(0)}` : '';
                 let tP = mapa[dia].p > 0 ? `<span style="color:var(--success)">+${mapa[dia].p.toFixed(0)}</span>` : '';
-                grid.innerHTML += `<div class="cal-day has-data" onclick="abrirDetalheCalendario(${dia})"><div class="c-date">${dia}</div><div class="c-val">${tD}${tD&&tP?'<br>':''}${tP}</div></div>`;
-            } else { grid.innerHTML += `<div class="cal-day"><div class="c-date" style="opacity:0.3;">${dia}</div></div>`; }
+                grid.innerHTML += `<div class="cal-day has-data" ${estHoje(dia)} onclick="abrirDetalheCalendario(${dia}, this)"><div class="c-date">${dia}</div><div class="c-val">${tD}${tD&&tP?'<br>':''}${tP}</div></div>`;
+            } else { grid.innerHTML += `<div class="cal-day" ${estHoje(dia)}><div class="c-date" style="opacity:0.3;">${dia}</div></div>`; }
         }
     }
 
-    function abrirDetalheCalendario(dia) {
+    function abrirDetalheCalendario(dia, el) {
         document.querySelectorAll('.cal-day').forEach(el => el.classList.remove('selected'));
-        event.currentTarget.classList.add('selected');
+        if (el) el.classList.add('selected');
         
         let mesStr = document.getElementById('cal-seletor-mes').value;
         const fP = document.getElementById('cal-filtro-pessoa').value;
@@ -1246,6 +1300,13 @@
     let extSelecionados = new Set();
     function mudouFiltroExtrato() { document.getElementById('extrato-custom-dates').style.display = document.getElementById('extrato-filtro-global').value === 'PERSONALIZADO' ? 'grid' : 'none'; renderizarExtrato(); }
     
+    function casaBusca(x, busca) {
+        if (!busca) return true;
+        const v = Number(x.valor) || 0;
+        const txt = [x.desc, x.pessoa, x.cartao, x.categoria, v.toFixed(2), v.toFixed(2).replace('.', ',')].join(' ').toLowerCase();
+        return busca.split(/\s+/).every(t => txt.includes(t));
+    }
+
     function renderizarExtrato() {
         extSelecionados.clear(); atualizarContadorExt();
         const fP = document.getElementById('extrato-pessoa').value;
@@ -1254,13 +1315,13 @@
         
         let filtradas = [];
         obterDespesasPermitidas().forEach(d => {
-            if (busca && !(d.desc||'').toLowerCase().includes(busca)) return;
+            if (!casaBusca(d, busca)) return;
             if (fP !== "TODOS" && d.pessoa !== fP) return;
             if (cartoesSelExt.length > 0 && d.cartao && !cartoesSelExt.includes(d.cartao)) return;
             if (dentroDoPeriodo(d, range)) filtradas.push({...d, _uid: 'desp_'+d.id, _tipo: 'desp'});
         });
         obterPagamentosPermitidos().forEach(pg => {
-            if (busca && !(pg.desc||'').toLowerCase().includes(busca)) return;
+            if (!casaBusca(pg, busca)) return;
             if (fP !== "TODOS" && pg.pessoa !== fP) return;
             if (cartoesSelExt.length > 0) return;
             if (dentroDoPeriodo(pg, range)) filtradas.push({...pg, _uid: 'pag_'+pg.id, _tipo: 'pag'});
@@ -1389,6 +1450,7 @@
         if(blocos.length === 0) return toast('Adicione pelo menos um pagador.', 'erro');
 
         let transacoes = []; let idBase = Date.now(); let loop = 0;
+        let cidD = null; if (base64Desp) { cidD = 'c_' + idBase; db.comprovantes = db.comprovantes || {}; db.comprovantes[cidD] = base64Desp; }
         
         blocos.forEach(b => {
             let p = b.querySelector('.pessoa-lanc').value; let descLoc = b.querySelector('.desc-lanc').value.trim();
@@ -1405,13 +1467,13 @@
             for(let i=1; i<=parc; i++) {
                 let mRef = gerarMesVencimentoBase(dtRef, i);
                 let dShow = (tipo === 'P' && parc > 1) ? `${dFinal} (${i}/${parc})` : dFinal;
-                transacoes.push({ id: idBase + loop, desc: dShow, valor: parseFloat(valorCalculado.toFixed(2)), cartao, pessoa: p, dataCompra: dtReal, dataRef: mRef, categoria: cat, comprovante: base64Desp, isAssinatura: isAss, assinaturaId: isAss ? `ass_${idBase}_${p}` : null });
+                transacoes.push({ id: idBase + loop, desc: dShow, valor: parseFloat(valorCalculado.toFixed(2)), cartao, pessoa: p, dataCompra: dtReal, dataRef: mRef, categoria: cat, comprovante: null, comprovanteId: cidD, isAssinatura: isAss, assinaturaId: isAss ? `ass_${idBase}_${p}` : null });
                 loop++;
             }
         });
 
         if(transacoes.length === 0) return toast('Verifique se escolheu a PESSOA e um VALOR.', 'erro');
-        db.despesas.push(...transacoes); salvarDB(); fecharModais(); atualizarSaldos(); sincronizarManual(true); toast('Lançado com sucesso!');
+        db.despesas.push(...transacoes); salvarDB(); fecharModais(); atualizarTelaAtual(); sincronizarManual(true); toast('Lançado com sucesso!');
     }
 
     function registrarBaixa() {
@@ -1426,11 +1488,12 @@
         let valorCalculado = (tipo === 'P' && parc > 1) ? (v / parc) : v;
 
         let tr = []; let idB = Date.now();
+        let cidP = null; if (base64Pag) { cidP = 'c_' + idB; db.comprovantes = db.comprovantes || {}; db.comprovantes[cidP] = base64Pag; }
         for(let i=1; i<=parc; i++) {
             let mRef = gerarMesVencimentoBase(dtRef, i); let dShow = (tipo === 'P' && parc > 1) ? `${desc} (${i}/${parc})` : desc;
-            tr.push({ id: idB + i, desc: dShow, pessoa: p, valor: parseFloat(valorCalculado.toFixed(2)), data: dtReal, dataRef: mRef, comprovante: base64Pag, isAssinatura: isAss, assinaturaId: isAss ? `ass_p_${idB}_${p}` : null });
+            tr.push({ id: idB + i, desc: dShow, pessoa: p, valor: parseFloat(valorCalculado.toFixed(2)), data: dtReal, dataRef: mRef, comprovante: null, comprovanteId: cidP, isAssinatura: isAss, assinaturaId: isAss ? `ass_p_${idB}_${p}` : null });
         }
-        db.pagamentos.push(...tr); salvarDB(); fecharModais(); atualizarSaldos(); sincronizarManual(true); toast('Recebido confirmado!');
+        db.pagamentos.push(...tr); salvarDB(); fecharModais(); atualizarTelaAtual(); sincronizarManual(true); toast('Recebido confirmado!');
     }
 
     function calcularParcelaEmpPorTotal() {
@@ -1452,7 +1515,7 @@
             let mRef = gerarMesVencimentoBase(dtRef, i); let dShow = qtd > 1 ? `${desc} (${i}/${qtd})` : desc;
             tr.push({ id: idB + i, desc: dShow, pessoa: p, valor: v, dataCompra: dtReal, dataRef: mRef, categoria: '💸 Dinheiro', cartao: null, isEmprestimo: true, emprestimoId: `emp_${idB}_${p}`, jurosRegra: jRegra });
         }
-        db.despesas.push(...tr); salvarDB(); fecharModais(); atualizarSaldos(); sincronizarManual(true); toast('Acordo registrado!');
+        db.despesas.push(...tr); salvarDB(); fecharModais(); atualizarTelaAtual(); sincronizarManual(true); toast('Acordo registrado!');
     }
 
     /* ================= FOTOS (COMPROVANTES) ================= */
@@ -1496,7 +1559,7 @@
             document.getElementById('edit-data-real').value = d.dataCompra||''; document.getElementById('edit-data-ref').value = d.dataRef;
             document.getElementById('box-edit-cat').style.display = d.isEmprestimo ? 'none' : 'block'; document.getElementById('box-edit-cartao').style.display = d.isEmprestimo ? 'none' : 'block';
             document.getElementById('edit-label-data-real').innerText = "DATA EXATA";
-            if(d.comprovante) { document.getElementById('edit-preview-comp').src = d.comprovante; document.getElementById('box-edit-comprovante').style.display = 'block'; }
+            if(obterComprovante(d)) { document.getElementById('edit-preview-comp').src = obterComprovante(d); document.getElementById('box-edit-comprovante').style.display = 'block'; }
         } else {
             let pg = db.pagamentos.find(x => x.id === id); if(!pg) return;
             document.getElementById('edit-title').innerText = "EDITAR RECEBIDO";
@@ -1509,7 +1572,7 @@
             document.getElementById('edit-data-real').value = pg.data||''; document.getElementById('edit-data-ref').value = pg.dataRef || pg.data.substring(0,7);
             document.getElementById('box-edit-cat').style.display = 'none'; document.getElementById('box-edit-cartao').style.display = 'none';
             document.getElementById('edit-label-data-real').innerText = "DATA DE ENTRADA";
-            if(pg.comprovante) { document.getElementById('edit-preview-comp').src = pg.comprovante; document.getElementById('box-edit-comprovante').style.display = 'block'; }
+            if(obterComprovante(pg)) { document.getElementById('edit-preview-comp').src = obterComprovante(pg); document.getElementById('box-edit-comprovante').style.display = 'block'; }
         }
         
         document.getElementById('modal-overlay').classList.add('open'); document.getElementById('modal-edicao').classList.add('open');
@@ -1532,7 +1595,18 @@
         let nA = isParc ? parseInt(document.getElementById('edit-parc-atual').value) : null;
         let nT = isParc ? parseInt(document.getElementById('edit-parc-total').value) : null;
 
-        if((isParc || isAss || isEmp) && confirm("Deseja aplicar essa alteração para os meses seguintes também?")) {
+        if (isEmp) {
+            // Acordo/dinheiro: altera só este registro e, se quiser, atualiza (sem recriar) as parcelas seguintes
+            const RE_SUF = /\s*\((\d+)\/(\d+)\)\s*$/;
+            obj.desc = dB; obj.valor = v; obj.pessoa = p; obj.dataRef = dRef; obj.dataCompra = dReal;
+            let seguintes = arr.filter(x => x.id !== obj.id && getGroupKey(x) === origKey && x.dataRef > obj.dataRef);
+            if (seguintes.length && confirm(`Aplicar valor, pessoa e descrição também às ${seguintes.length} parcelas seguintes deste acordo?`)) {
+                const baseNova = dB.replace(RE_SUF, '').trim();
+                seguintes.forEach(x => { const m = (x.desc || '').match(RE_SUF); x.desc = m ? `${baseNova} (${m[1]}/${m[2]})` : baseNova; x.valor = v; x.pessoa = p; x.dataCompra = dReal; });
+            }
+            salvarDB(); fecharModais(); atualizarTelaAtual(); sincronizarManual(true); return;
+        }
+        if((isParc || isAss) && confirm("Deseja aplicar essa alteração para os meses seguintes também?")) {
             let idsDel = arr.filter(x => getGroupKey(x) === origKey && x.dataRef > obj.dataRef).map(x => x.id);
             if(tipo === 'desp') db.despesas = db.despesas.filter(x => !idsDel.includes(x.id));
             else db.pagamentos = db.pagamentos.filter(x => !idsDel.includes(x.id));
@@ -1550,7 +1624,7 @@
             obj.desc = (isParc||isEmp) ? `${dB} (${nA}/${nT})` : dB; obj.valor = v; obj.pessoa = p; obj.dataRef = dRef;
             if(tipo === 'desp') { obj.cartao = c; obj.categoria = cat; obj.dataCompra = dReal; } else { obj.data = dReal; }
         }
-        salvarDB(); fecharModais(); atualizarSaldos(); sincronizarManual(true);
+        salvarDB(); fecharModais(); atualizarTelaAtual(); sincronizarManual(true);
     }
 
     function excluirLançamentoModal() {
@@ -1569,7 +1643,7 @@
                 else db.pagamentos = db.pagamentos.filter(x => x.id !== id);
             }
         }
-        salvarDB(); fecharModais(); atualizarSaldos(); sincronizarManual(true);
+        salvarDB(); fecharModais(); atualizarTelaAtual(); sincronizarManual(true);
     }
 
     /* ================= CADASTRAS GLOBAIS (LIVRES PARA TODOS NA TELA DE AJUSTES) ================= */
@@ -1731,7 +1805,7 @@
         if(de === para) return alert("Pessoas iguais."); if(transSelecionados.size === 0) return alert("Marque as contas.");
         if(!confirm(`Mover as parcelas de ${de} para ${para}?`)) return;
         let idsArray = Array.from(transSelecionados); db.despesas.forEach(d => { if(idsArray.includes(d.id)) d.pessoa = para; });
-        salvarDB(); alert('Repasse Concluído!'); renderizarListaTransferencia(); atualizarSaldos(); sincronizarManual(true);
+        salvarDB(); alert('Repasse Concluído!'); renderizarListaTransferencia(); atualizarTelaAtual(); sincronizarManual(true);
     }
 
     function preencherListasCorrecao() {
@@ -1762,7 +1836,7 @@
         if (pO !== "TODOS" && cO === "TODOS" && pD !== "") db.pagamentos.forEach(pg => { if(pg.pessoa === pO) pg.pessoa = pD; });
         if (count === 0) return alert("Nenhum lançamento encontrado.");
 
-        salvarDB(); carregarSelectsGerais(); atualizarSaldos(); sincronizarManual(true); alert(`${count} itens corrigidos.`);
+        salvarDB(); carregarSelectsGerais(); atualizarTelaAtual(); sincronizarManual(true); alert(`${count} itens corrigidos.`);
     }
 
     function adminZerarTudo() {
@@ -1770,6 +1844,16 @@
             db = { usuarios: [{ id: 'admin_master', nome: 'NETO', pin: '0000', role: 'admin', ativo: true }], cartoes: [], categorias: ["🛍 Mercado"], pessoas: ['NETO'], despesas: [], pagamentos: [] };
             salvarDB(); alert("Resetado. Você será desconectado."); fazerLogout();
         }
+    }
+
+    /* ================= PWA: SERVICE WORKER ================= */
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            const tinhaControle = !!navigator.serviceWorker.controller;
+            navigator.serviceWorker.register('./sw.js').catch(() => {});
+            let recarregou = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => { if (tinhaControle && !recarregou) { recarregou = true; toast('App atualizado! Recarregando...'); setTimeout(() => location.reload(), 800); } });
+        });
     }
 </script>
 </body>
